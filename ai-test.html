@@ -1,0 +1,19 @@
+<!DOCTYPE html><html><head>
+<link rel="stylesheet" href="shared.css">
+<title>AI Test</title></head><body>
+<div class="main">
+  <table id="t"><thead><tr><th>Col A</th><th>Col B</th></tr></thead>
+  <tbody id="tb"></tbody></table>
+</div>
+<script>
+  window.onload = function() {
+    var h = '';
+    for(var i=1;i<=5;i++){
+      h += '<tr><td>Row '+i+'</td><td>Data '+i+'</td></tr>';
+    }
+    document.getElementById('tb').innerHTML = h;
+    console.log('Rows injected:', document.getElementById('tb').innerHTML.length);
+  };
+</script>
+<script src="shared.js"></script>
+</body></html>

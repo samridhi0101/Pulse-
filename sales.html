@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="blue">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales — Pulse · Nalashaa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <style>
+    .tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 18px; }
+    .tab { padding: 10px 14px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-muted); border-bottom: 3px solid transparent; margin-bottom: -2px; }
+    .tab.active { color: var(--navy); border-bottom-color: var(--orange); }
+    [data-mode="dark"] .tab.active { color: #fff; }
+    .pane { display: none; } .pane.active { display: block; }
+    .kgrid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px; }
+    .kc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; border-left: 4px solid transparent; transition: all 0.15s; }
+    .kc.green { border-left-color: var(--green); } .kc.amber { border-left-color: var(--amber); } .kc.red { border-left-color: var(--red); }
+    .klbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; }
+    .kval { font-size: 22px; font-weight: 800; color: var(--navy); }
+    [data-mode="dark"] .kval { color: #fff; }
+    .ksub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .stitle { font-size: 13px; font-weight: 700; color: var(--navy); margin: 14px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--border); }
+    [data-mode="dark"] .stitle { color: #fff; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .card-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    .funnel-bar { background: var(--border); height: 28px; border-radius: 6px; overflow: hidden; cursor: pointer; }
+    .funnel-fill { height: 100%; display: flex; align-items: center; padding-left: 10px; color: #fff; font-size: 11px; font-weight: 700; }
+    .funnel-fill.s1 { background: linear-gradient(90deg, #FF9933 0%, #FFB976 100%); }
+    .funnel-fill.s2 { background: linear-gradient(90deg, #F47C28 0%, #FFA868 100%); }
+    .funnel-fill.s3 { background: linear-gradient(90deg, #E66B1F 0%, #F89954 100%); }
+    .funnel-fill.s4 { background: linear-gradient(90deg, #C95819 0%, #E48944 100%); }
+    .funnel-fill.s5 { background: linear-gradient(90deg, #A6450F 0%, #C97132 100%); }
+    .data-fresh { font-size: 10px; color: var(--text-muted); margin-bottom: 10px; }
+    .tbl { width: 100%; font-size: 12px; border-collapse: collapse; }
+    .tbl th { padding: 8px 10px; background: var(--navy); color: #fff !important; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .tbl td { padding: 8px 10px; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .tbl tr:hover td { background: var(--bg); }
+    .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+    .badge.green { background: #D1FAE5; color: #065F46; }
+    .badge.amber { background: #FEF3C7; color: #92400E; }
+    .badge.red { background: #FEE2E2; color: #991B1B; }
+    .badge.grey { background: #F1F5F9; color: #475569; }
+    .badge.future { background: #E0E7FF; color: #3730A3; }
+
+    /* ── Inside Sales tab ─────────────────────────────────────────────── */
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .chart-wrap { width: 100%; }
+    .stitle-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; color: var(--navy); margin: 16px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--border); }
+    [data-mode="dark"] .stitle-row { color: #fff; }
+    .stitle-row .stitle-meta { font-size: 10px; font-weight: 400; color: var(--text-muted); }
+
+    /* BDE scorecard table */
+    .bde-tbl { width: 100%; font-size: 12px; border-collapse: collapse; }
+    .bde-tbl th { padding: 8px 8px; background: var(--navy); color: #fff; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 700; text-align: left; white-space: nowrap; }
+    .bde-tbl th.r { text-align: right; }
+    .bde-tbl td { padding: 8px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .bde-tbl td.r { text-align: right; font-weight: 700; font-size: 11px; }
+    .bde-tbl tr:hover td { background: var(--bg); cursor: pointer; }
+    .bde-name { font-weight: 700; font-size: 12px; }
+    .bde-rag { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+    .bde-rag.green { background: var(--green); }
+    .bde-rag.amber { background: var(--amber); }
+    .bde-rag.red { background: var(--red); }
+    .mini-bar-wrap { display: flex; align-items: center; gap: 6px; }
+    .mini-bar-track { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; min-width: 40px; }
+    .mini-bar-fill { height: 100%; border-radius: 3px; }
+    .mini-bar-fill.green { background: var(--green); }
+    .mini-bar-fill.amber { background: var(--amber); }
+    .mini-bar-fill.red   { background: var(--red); }
+    .mini-val { font-size: 11px; font-weight: 700; width: 34px; text-align: right; flex-shrink: 0; }
+    .mini-val.green { color: var(--green); }
+    .mini-val.amber { color: var(--amber); }
+    .mini-val.red   { color: var(--red); }
+    .is-filter-wrap { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:8px; }
+    .is-btn { padding:3px 10px; border:none; border-radius:14px; font-size:10px; font-weight:700; cursor:pointer; background:var(--border); color:var(--text-muted); font-family:inherit; transition:all 0.15s; }
+    .is-btn.active { background:var(--navy); color:#fff; }
+    /* BDE perf cards */
+    .bde-perf-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+    .bde-perf-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:7px 10px; cursor:pointer; transition:all 0.15s; }
+    .bde-perf-card:hover { box-shadow:0 4px 14px rgba(0,0,0,0.08); transform:translateY(-1px); }
+    .bde-perf-hdr { display:flex; align-items:center; gap:8px; margin-bottom:10px; font-size:13px; }
+    .bde-q-circle { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; font-size:10px; font-weight:800; color:#fff; flex-shrink:0; }
+    .bde-q-circle.green { background:#16A34A; } .bde-q-circle.amber { background:#F59E0B; } .bde-q-circle.red { background:#DC2626; }
+    .bde-bar-row { display:flex; align-items:center; gap:6px; margin-bottom:1px; }
+    .bde-bar-cat { font-size:9px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.3px; width:28px; flex-shrink:0; }
+    .bde-bar-track { flex:1; height:5px; background:var(--bg); border-radius:3px; overflow:hidden; }
+    .bde-bar-fill { height:100%; border-radius:3px; min-width:3px; }
+    .bde-calls { background:#CBD5E1; } .bde-inter { background:#FF9933; } .bde-mtgs { background:#16A34A; } .bde-opp { background:#1E3A5F; }
+    .bde-bar-val { font-size:10px; font-weight:700; color:var(--text); min-width:52px; flex-shrink:0; }
+    /* Section divider rows in flyout tables — force all text white */
+    .g-fly-body .g-tbl td[style*="background:var(--navy)"],
+    .g-fly-body .g-tbl td[style*="background:#1E3A5F"],
+    .g-fly-body .g-tbl td[style*="background:var(--navy)"] *,
+    .g-fly-body .g-tbl td[style*="background:#1E3A5F"] * {
+      color: #fff !important;
+    }
+    /* dim the subtitle span only */
+    .g-fly-body .g-tbl td[style*="background:var(--navy)"] span.sec-sub,
+    .g-fly-body .g-tbl td[style*="background:#1E3A5F"] span.sec-sub {
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:0;">
+      <button class="hamburger-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <div class="pulse-logo">
+        <span class="pulse-icon"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="2" width="25" height="17" rx="2.5" stroke="#FF9933" stroke-width="1.5"/><line x1="14" y1="19" x2="14" y2="23.5" stroke="#FF9933" stroke-width="1.5"/><line x1="9" y1="23.5" x2="19" y2="23.5" stroke="#FF9933" stroke-width="1.8" stroke-linecap="round"/><polyline points="4,10.5 7,10.5 8.5,6.5 10,14.5 11.5,10.5 13,10.5 14,8 15,13 16.5,10.5 18,10.5 24,10.5" stroke="#FF9933" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg></span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <button class="help-btn">?</button>
+      <div class="alert-bell"><i class="bi bi-bell-fill" style="font-size:16px;"></i></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html" class="active"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+    <div class="sidebar-brand"><img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo"></div>
+  </div>
+
+  <div class="main" style="padding:18px 28px;">
+    <div class="dept-meta-above"><i class="bi bi-clock"></i> Data as of 2026-05-05 09:14 · Source: HubSpot CRM</div>
+    <div class="dept-banner">
+      <div class="dept-banner-top">
+        <div class="dept-banner-titleblock">
+          <div class="dept-banner-title">Sales <span class="info-i" data-tip-title="Sales" data-tip="Pipeline health, deal velocity, and rep accountability. Owned by Vikram S.">i</span></div>
+          <div class="dept-banner-sub">Owner: Vikram S. · 8 reps · 186 active deals</div>
+        </div>
+        <div class="dept-banner-stats">
+          <div class="dept-banner-stat"><div class="dept-banner-stat-val green">$5.1M</div><div class="dept-banner-stat-lbl">Open Pipeline</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val green">186</div><div class="dept-banner-stat-lbl">Deals</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">28</div><div class="dept-banner-stat-lbl">Meetings This Wk</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val green">6</div><div class="dept-banner-stat-lbl">Wins MTD</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val green">$0.82M</div><div class="dept-banner-stat-lbl">Wins $</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val red">14</div><div class="dept-banner-stat-lbl">Aging >60d</div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('is', this)"><i class="bi bi-telephone-fill"></i> Inside Sales</div>
+      <div class="tab" onclick="showTab('mr', this)"><i class="bi bi-calendar-check-fill"></i> Meeting Readiness <span class="badge red">3 missing</span></div>
+      <div class="tab" onclick="showTab('pa', this)"><i class="bi bi-funnel-fill"></i> Pipeline Activity</div>
+    </div>
+
+    <!-- ══ TAB 1: INSIDE SALES ════════════════════════════════════════════════ -->
+    <div class="pane active" id="pane-is">
+
+      <!-- 5 KPI tiles -->
+      <div class="kgrid" style="grid-template-columns:repeat(5,1fr);margin-bottom:16px;">
+        <div class="kc green" style="cursor:pointer;" onclick="openKPITile('calls')">
+          <div class="klbl">Calls This Week</div><div class="kval">312</div>
+          <div class="ksub">↑ 9% vs W18 · 6 BDEs</div>
+        </div>
+        <div class="kc amber" style="cursor:pointer;" onclick="openKPITile('contact')">
+          <div class="klbl">Contact Rate</div><div class="kval">26%</div>
+          <div class="ksub">Calls → Interactions · W19</div>
+        </div>
+        <div class="kc green" style="cursor:pointer;" onclick="openKPITile('conversion')">
+          <div class="klbl">Conversion Rate</div><div class="kval">34%</div>
+          <div class="ksub">Interaction → meeting · W19</div>
+        </div>
+        <div class="kc amber" style="cursor:pointer;" onclick="openKPITile('meetings')">
+          <div class="klbl">Meetings Scheduled</div><div class="kval">28</div>
+          <div class="ksub">↑ 5 vs W18 · target 30</div>
+        </div>
+        <div class="kc amber" style="cursor:pointer;" onclick="openKPITile('opp')">
+          <div class="klbl">Opp Worthy Rate</div><div class="kval">25%</div>
+          <div class="ksub">of held meetings · last 30d</div>
+        </div>
+      </div>
+
+      <!-- BDE Performance overlapping bar -->
+      <div class="stitle-row">
+        <span>BDE Performance · W19</span>
+        <span class="stitle-meta">Calls → Interactions → Meetings → Opp Worthy · click any bar to drill down</span>
+      </div>
+      <div class="card-box" style="margin-bottom:16px;">
+        <div id="chartBDEPerf"></div>
+      </div>
+
+      <!-- WoW dual-axis + Outcome 100% stacked -->
+      <div class="grid2" style="margin-bottom:16px;">
+        <div class="card-box">
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Week-on-Week Trend · Team Total</div>
+          <div id="chartWoWDual" style="height:210px;"></div>
+        </div>
+        <div class="card-box">
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Meeting Outcome Distribution · Monthly</div>
+          <div class="is-filter-wrap" id="outcomeFilters"></div>
+          <div id="chartOutcome100" style="height:185px;"></div>
+        </div>
+      </div>
+
+      <!-- Proposals Awaited -->
+      <div class="stitle-row" style="margin-top:4px;">
+        <span>Proposals Awaited · CRM Action Required</span>
+        <span class="stitle-meta">Opportunities in Proposal / Negotiation · Source: HubSpot CRM · click row for full deal detail</span>
+      </div>
+      <div class="card-box" style="padding:0;overflow:hidden;margin-bottom:8px;">
+        <div class="tbl-scroll">
+        <table class="tbl">
+          <thead><tr>
+            <th>Account</th><th>Opportunity</th><th>Rep</th><th>Stage</th>
+            <th>Value</th><th>Proposal Status</th><th>Awaited</th><th style="text-align:left;">Action Required</th>
+          </tr></thead>
+          <tbody>
+            <tr onclick="openProposalDetail('MedTech Module Demo')">
+              <td><strong>MedTech Corp</strong></td><td>Module Demo → SOW</td><td>Vikram S.</td><td>Proposal</td>
+              <td>$0.25M</td><td><span class="badge red">Not Sent</span></td>
+              <td><span class="badge amber">7d</span></td>
+              <td style="font-size:11px;text-align:left;">Send commercial proposal by May 8</td>
+            </tr>
+            <tr onclick="openProposalDetail('BioGen Phase 2')">
+              <td><strong>BioGen Labs</strong></td><td>BioGen Phase 2 Expansion</td><td>Kiran R.</td><td>Proposal</td>
+              <td>$0.17M</td><td><span class="badge amber">Sent · No Response</span></td>
+              <td><span class="badge red">42d</span></td>
+              <td style="font-size:11px;text-align:left;">CIO alignment required — re-engage new sponsor</td>
+            </tr>
+            <tr onclick="openProposalDetail('HealthFirst DR')">
+              <td><strong>HealthFirst Inc</strong></td><td>DR Setup SOW</td><td>Anita M.</td><td>Proposal</td>
+              <td>$0.10M</td><td><span class="badge amber">Draft Shared</span></td>
+              <td><span class="badge amber">28d</span></td>
+              <td style="font-size:11px;text-align:left;">InfoSec review checkpoint May 12</td>
+            </tr>
+            <tr onclick="openProposalDetail('PediaCare Platform')">
+              <td><strong>PediaCare</strong></td><td>Platform License</td><td>Rohan T.</td><td>Negotiation</td>
+              <td>$0.20M</td><td><span class="badge amber">Revision Requested</span></td>
+              <td><span class="badge amber">12d</span></td>
+              <td style="font-size:11px;text-align:left;">Send revised pricing by May 9</td>
+            </tr>
+            <tr onclick="openProposalDetail('OrthoFix Mobile')">
+              <td><strong>OrthoFix</strong></td><td>Mobile App</td><td>Kiran R.</td><td>Negotiation</td>
+              <td>$0.08M</td><td><span class="badge grey">Awaiting Approval</span></td>
+              <td><span class="badge amber">25d</span></td>
+              <td style="font-size:11px;text-align:left;">Director sign-off pending — follow up May 10</td>
+            </tr>
+            <tr onclick="openProposalDetail('CardioTech Dashboard')">
+              <td><strong>CardioTech</strong></td><td>Custom Dashboard Build</td><td>Divya L.</td><td>Qualification</td>
+              <td>$0.12M</td><td><span class="badge red">Not Started</span></td>
+              <td><span class="badge red">22d</span></td>
+              <td style="font-size:11px;text-align:left;">Scope clarification call needed before proposal</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+    </div><!-- /pane-is -->
+
+    <!-- TAB 2: MEETING READINESS — tiles non-clickable, table sorted by date -->
+    <div class="pane" id="pane-mr">
+      <div class="kgrid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="kc amber"><div class="klbl">Meetings This Week</div><div class="kval">28</div><div class="ksub">8 reps · 12 strategic</div></div>
+        <div class="kc red"><div class="klbl">Battle Cards Ready</div><div class="kval">68%</div><div class="ksub">Target ≥ 90%</div></div>
+        <div class="kc amber"><div class="klbl">Avg Call Score</div><div class="kval">7.4/10</div><div class="ksub">Last 30d</div></div>
+        </div>
+
+      <div class="stitle">Meeting Readiness · Sorted by date (chronological)</div>
+      <div class="card-box" style="padding:0;overflow:hidden;">
+      <div class="tbl-scroll">
+      <table class="tbl">
+        <thead><tr><th>Date</th><th>Account</th><th>Rep</th><th>Battle Card</th><th>Interaction Brief</th><th>Outcome</th><th>Score</th></tr></thead>
+        <tbody>
+          <tr onclick="openMeetingRow('PharmCare','Suresh K.','Apr 22')" style="cursor:pointer;"><td><span class="badge grey">Apr 22 · Past</span></td><td><strong>PharmCare</strong></td><td>Suresh K.</td><td><span class="badge red">Missing</span></td><td style="text-align:left;font-size:11px;">Quarterly review · pricing pushback expected</td><td><span class="badge red">No-show</span></td><td>—</td></tr>
+          <tr onclick="openMeetingRow('CardioTech','Divya L.','Apr 24')" style="cursor:pointer;"><td><span class="badge grey">Apr 24 · Past</span></td><td><strong>CardioTech</strong></td><td>Divya L.</td><td><span class="badge red">Missing</span></td><td style="text-align:left;font-size:11px;">Demo · feature gap follow-up needed</td><td><span class="badge amber">Held</span></td><td>6.4</td></tr>
+          <tr onclick="openMeetingRow('BioGen Labs','Kiran R.','Apr 28')" style="cursor:pointer;"><td><span class="badge grey">Apr 28 · Past</span></td><td><strong>BioGen Labs</strong></td><td>Kiran R.</td><td><span class="badge amber">Draft</span></td><td style="text-align:left;font-size:11px;">Stakeholder alignment · CIO turnover impact</td><td><span class="badge amber">Rescheduled</span></td><td>—</td></tr>
+          <tr onclick="openMeetingRow('NeuroLab','Arjun N.','Apr 29')" style="cursor:pointer;"><td><span class="badge grey">Apr 29 · Past</span></td><td><strong>NeuroLab</strong></td><td>Arjun N.</td><td><span class="badge amber">Draft</span></td><td style="text-align:left;font-size:11px;">Discovery · imaging integration scope</td><td><span class="badge green">Held</span></td><td>7.0</td></tr>
+          <tr onclick="openMeetingRow('MedTech Corp','Vikram S.','Apr 30')" style="cursor:pointer;"><td><span class="badge grey">Apr 30 · Past</span></td><td><strong>MedTech Corp</strong></td><td>Vikram S.</td><td><span class="badge green">Ready</span></td><td style="text-align:left;font-size:11px;">Phase 2 demo · 4 stakeholders incl VP</td><td><span class="badge green">Closed-won next steps</span></td><td>8.4</td></tr>
+          <tr onclick="openMeetingRow('HealthFirst Inc','Anita M.','May 1')" style="cursor:pointer;"><td><span class="badge grey">May 1 · Past</span></td><td><strong>HealthFirst Inc</strong></td><td>Anita M.</td><td><span class="badge green">Ready</span></td><td style="text-align:left;font-size:11px;">Renewal discussion · expansion appetite</td><td><span class="badge green">Follow-up scheduled</span></td><td>8.1</td></tr>
+          <tr onclick="openMeetingRow('WellnessOne','Meera P.','May 2')" style="cursor:pointer;"><td><span class="badge grey">May 2 · Past</span></td><td><strong>WellnessOne</strong></td><td>Meera P.</td><td><span class="badge green">Ready</span></td><td style="text-align:left;font-size:11px;">Renewal verbal closing call</td><td><span class="badge green">Renewal verbal</span></td><td>7.9</td></tr>
+          <tr onclick="openMeetingRow('PharmCare','Suresh K.','May 6')" style="cursor:pointer;"><td><span class="badge future">May 6 · Future</span></td><td><strong>PharmCare</strong></td><td>Suresh K.</td><td><span class="badge red">Missing</span></td><td style="text-align:left;font-size:11px;">Quarterly review · pricing pushback expected</td><td>—</td><td>—</td></tr>
+          <tr onclick="openMeetingRow('CardioTech','Divya L.','May 7')" style="cursor:pointer;"><td><span class="badge future">May 7 · Future</span></td><td><strong>CardioTech</strong></td><td>Divya L.</td><td><span class="badge red">Missing</span></td><td style="text-align:left;font-size:11px;">Demo · feature gap follow-up needed</td><td>—</td><td>—</td></tr>
+          <tr onclick="openMeetingRow('PediaCare','Rohan T.','May 7')" style="cursor:pointer;"><td><span class="badge future">May 7 · Future</span></td><td><strong>PediaCare</strong></td><td>Rohan T.</td><td><span class="badge red">Missing</span></td><td style="text-align:left;font-size:11px;">Discovery · platform fit assessment</td><td>—</td><td>—</td></tr>
+          <tr onclick="openMeetingRow('OrthoFix','Kiran R.','May 8')" style="cursor:pointer;"><td><span class="badge future">May 8 · Future</span></td><td><strong>OrthoFix</strong></td><td>Kiran R.</td><td><span class="badge amber">Draft</span></td><td style="text-align:left;font-size:11px;">Pricing approval · director sign-off needed</td><td>—</td><td>—</td></tr>
+          <tr onclick="openMeetingRow('MedTech Corp','Vikram S.','May 9')" style="cursor:pointer;"><td><span class="badge future">May 9 · Future</span></td><td><strong>MedTech Corp</strong></td><td>Vikram S.</td><td><span class="badge green">Ready</span></td><td style="text-align:left;font-size:11px;">Phase 2 demo · 4 stakeholders incl VP</td><td>—</td><td>—</td></tr>
+          <tr onclick="openMeetingRow('BioGen Labs','Kiran R.','May 12')" style="cursor:pointer;"><td><span class="badge future">May 12 · Future</span></td><td><strong>BioGen Labs</strong></td><td>Kiran R.</td><td><span class="badge amber">Draft</span></td><td style="text-align:left;font-size:11px;">Stakeholder alignment · CIO turnover impact</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+      </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PIPELINE ACTIVITY — opp funnel + opp aging (KPIs already on banner) -->
+    <div class="pane" id="pane-pa">
+      <div class="stitle">Opportunity Pipeline Funnel by Stage · click stage for deals</div>
+      <div class="card-box">
+        <div onclick="openStageFlyout('Discovery', 84, '$1.49M')" style="margin-bottom:6px;"><div class="funnel-bar"><div class="funnel-fill s1" style="width:100%;">Discovery · 84 deals · $1.49M</div></div></div>
+        <div onclick="openStageFlyout('Qualification', 52, '$1.78M')" style="margin-bottom:6px;"><div class="funnel-bar"><div class="funnel-fill s2" style="width:62%;">Qualification · 52 · $1.78M</div></div></div>
+        <div onclick="openStageFlyout('Proposal', 28, '$1.03M')" style="margin-bottom:6px;"><div class="funnel-bar"><div class="funnel-fill s3" style="width:33%;">Proposal · 28 · $1.03M</div></div></div>
+        <div onclick="openStageFlyout('Negotiation', 14, '$0.50M')" style="margin-bottom:6px;"><div class="funnel-bar"><div class="funnel-fill s4" style="width:17%;">Negotiation · 14 · $0.50M</div></div></div>
+        <div onclick="openStageFlyout('Verbal Yes', 8, '$0.34M')" style="margin-bottom:6px;"><div class="funnel-bar"><div class="funnel-fill s5" style="width:10%;">Verbal Yes · 8 · $0.34M</div></div></div>
+      </div>
+
+      <div class="stitle">Opportunity Aging · Days since last action</div>
+      <div class="card-box" style="padding:0;overflow:hidden;">
+      <div class="tbl-scroll">
+      <table class="tbl">
+        <thead><tr><th>Account</th><th>Opportunity</th><th>Opportunity Brief</th><th>Next Step Plan</th><th>Owner</th><th>Stage</th><th>Value</th><th>Days Since Last Action</th></tr></thead>
+        <tbody>
+          <tr onclick="openOppDetail('BioGen Phase 2','Kiran R.')"><td><strong>BioGen Labs</strong></td><td>BioGen Phase 2</td><td style="text-align:left;font-size:11px;">Phase 2 expansion · stuck on CIO alignment</td><td style="text-align:left;font-size:11px;">CIO alignment meeting May 14</td><td>Kiran R.</td><td>Proposal</td><td>$0.17M</td><td><span class="badge red">42 days</span></td></tr>
+          <tr onclick="openOppDetail('PharmCare Analytics','Suresh K.')"><td><strong>PharmCare</strong></td><td>PharmCare Analytics</td><td style="text-align:left;font-size:11px;">Analytics POC · awaiting data access</td><td style="text-align:left;font-size:11px;">Escalate data access to PharmCare CTO May 8</td><td>Suresh K.</td><td>Qualification</td><td>$0.07M</td><td><span class="badge red">35 days</span></td></tr>
+          <tr onclick="openOppDetail('CardioTech Dashboard','Divya L.')"><td><strong>CardioTech</strong></td><td>CardioTech Dashboard</td><td style="text-align:left;font-size:11px;">Custom dashboard build · scope ambiguity</td><td style="text-align:left;font-size:11px;">Scope clarification call this week</td><td>Divya L.</td><td>Qualification</td><td>$0.12M</td><td><span class="badge amber">22 days</span></td></tr>
+          <tr onclick="openOppDetail('PediaCare Platform','Rohan T.')"><td><strong>PediaCare</strong></td><td>PediaCare Platform</td><td style="text-align:left;font-size:11px;">Platform license · pricing negotiation</td><td style="text-align:left;font-size:11px;">Send revised pricing May 9</td><td>Rohan T.</td><td>Negotiation</td><td>$0.20M</td><td><span class="badge amber">38 days</span></td></tr>
+          <tr onclick="openOppDetail('OrthoFix Mobile','Kiran R.')"><td><strong>OrthoFix</strong></td><td>OrthoFix Mobile</td><td style="text-align:left;font-size:11px;">Mobile app · waiting on director approval</td><td style="text-align:left;font-size:11px;">Follow up on director sign-off May 10</td><td>Kiran R.</td><td>Negotiation</td><td>$0.08M</td><td><span class="badge amber">25 days</span></td></tr>
+          <tr onclick="openOppDetail('HealthFirst DR','Anita M.')"><td><strong>HealthFirst Inc</strong></td><td>HealthFirst DR</td><td style="text-align:left;font-size:11px;">DR setup · SOW under InfoSec review</td><td style="text-align:left;font-size:11px;">InfoSec review checkpoint May 12</td><td>Anita M.</td><td>Proposal</td><td>$0.10M</td><td><span class="badge amber">28 days</span></td></tr>
+          <tr onclick="openOppDetail('MedTech Module Demo','Vikram S.')"><td><strong>MedTech Corp</strong></td><td>MedTech Module Demo</td><td style="text-align:left;font-size:11px;">Module add-on · demo Apr 28 successful</td><td style="text-align:left;font-size:11px;">Send commercial proposal by May 8</td><td>Vikram S.</td><td>Proposal</td><td>$0.25M</td><td><span class="badge green">15 days</span></td></tr>
+          <tr onclick="openOppDetail('NeuroLab Imaging','Arjun N.')"><td><strong>NeuroLab</strong></td><td>NeuroLab Imaging</td><td style="text-align:left;font-size:11px;">Imaging integration · early scope</td><td style="text-align:left;font-size:11px;">Discovery workshop May 13</td><td>Arjun N.</td><td>Discovery</td><td>$0.08M</td><td><span class="badge green">5 days</span></td></tr>
+          <tr onclick="openOppDetail('WellnessOne Renewal','Meera P.')"><td><strong>WellnessOne</strong></td><td>WellnessOne Renewal</td><td style="text-align:left;font-size:11px;">Renewal · verbal yes received May 2</td><td style="text-align:left;font-size:11px;">Contract execution by May 12</td><td>Meera P.</td><td>Verbal Yes</td><td>$0.10M</td><td><span class="badge green">3 days</span></td></tr>
+          <tr onclick="openOppDetail('MedTech DevOps add-on','Vikram S.')"><td><strong>MedTech Corp</strong></td><td>MedTech DevOps add-on</td><td style="text-align:left;font-size:11px;">DevOps add-on · SOW signature pending</td><td style="text-align:left;font-size:11px;">Chase MedTech procurement May 9</td><td>Vikram S.</td><td>Verbal Yes</td><td>$0.04M</td><td><span class="badge green">2 days</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+      </div>
+    </div>
+
+    
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    function showTab(t, el) {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.pane').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('pane-' + t).classList.add('active');
+      if (t === 'is') setTimeout(renderISCharts, 60);
+    }
+
+    /* ══════════════════════════════════════════════════════
+       INSIDE SALES — data + chart renderers
+    ══════════════════════════════════════════════════════ */
+    const IS_BDES    = ['Kavya L.','Neha M.','Priya S.','Rohan D.','Arjun T.','Sid P.','Dev K.','Riya S.'];
+    const IS_W19     = { calls:[52,54,62,58,48,38,53,30], inter:[15,16,18,14,10,9,15,6], mtgs:[7,6,5,4,3,3,5,2], opp:[2,2,1,1,1,1,1,0] };
+    const IS_QUALITY = [8.2, 7.9, 7.4, 7.1, 6.5, 6.2, 7.2, 5.5];
+    const IS_WEEKS   = ['W16','W17','W18','W19'];
+    const IS_HIST    = {
+      'Kavya L.': {calls:[48,51,50,52], inter:[13,14,15,15], mtgs:[6,7,6,7],  opp:[2,2,2,2]},
+      'Neha M.':  {calls:[50,52,54,54], inter:[14,15,16,16], mtgs:[5,6,6,6],  opp:[1,2,2,2]},
+      'Priya S.': {calls:[58,60,64,62], inter:[16,17,18,18], mtgs:[4,5,5,5],  opp:[1,1,1,1]},
+      'Rohan D.': {calls:[55,57,60,58], inter:[13,14,15,14], mtgs:[3,4,4,4],  opp:[1,1,1,1]},
+      'Arjun T.': {calls:[45,47,50,48], inter:[ 9,10,11,10], mtgs:[2,3,3,3],  opp:[0,1,1,1]},
+      'Sid P.':   {calls:[35,37,40,38], inter:[ 8, 9,10, 9], mtgs:[2,3,3,3],  opp:[0,1,1,1]},
+      'Dev K.':   {calls:[50,52,54,53], inter:[14,15,15,15], mtgs:[4,5,5,5],  opp:[1,1,1,1]},
+      'Riya S.':  {calls:[26,28,30,30], inter:[ 5, 6, 6, 6], mtgs:[1,2,2,2],  opp:[0,0,0,0]},
+    };
+    const BDE_QUALITY = {
+      'Kavya L.': [7.4,7.6,7.8,8.0,8.1,8.2], 'Neha M.':  [7.1,7.3,7.5,7.7,7.8,7.9],
+      'Priya S.': [6.8,7.0,7.1,7.3,7.5,7.4], 'Rohan D.': [6.6,6.8,6.9,7.0,7.0,7.1],
+      'Arjun T.': [6.2,6.3,6.4,6.5,6.7,6.5], 'Sid P.':   [5.8,6.0,6.1,6.2,6.4,6.2],
+      'Dev K.':   [6.8,6.9,7.0,7.1,7.2,7.2], 'Riya S.':  [5.0,5.1,5.2,5.3,5.4,5.5],
+    };
+    const WOW_WEEKS = ['W14','W15','W16','W17','W18','W19 ▸'];
+    const WOW_CALLS = [285,298,278,304,295,312];
+    const WOW_INTER = [ 70, 74, 68, 78, 72, 82];
+    const WOW_MTGS  = [ 22, 24, 21, 25, 23, 28];
+    const OUTCOME_MONTHS = ['Dec','Jan','Feb','Mar','Apr','May'];
+    const OUTCOME_CATS   = ['No Budget','Not Relevant','Nurture','Potential','Opp Worthy'];
+    const OUTCOME_COLORS = ['#FCA5A5','#CBD5E1','#FDE68A','#93C5FD','#6EE7B7'];
+    const OUTCOME_RAW = {
+      'All':      [[18,14,22,38,28],[17,12,24,40,30],[15,13,20,42,30],[14,12,22,44,32],[16,13,24,42,30],[8,6,12,22,16]],
+      'Kavya L.': [[3,2,3,7,6],[3,2,4,7,6],[2,2,3,8,6],[2,2,3,8,7],[3,2,4,7,6],[1,1,2,3,3]],
+      'Neha M.':  [[3,2,4,6,5],[3,2,4,6,5],[2,2,3,7,5],[2,2,4,7,5],[3,2,4,6,5],[1,1,2,3,3]],
+      'Priya S.': [[3,3,4,6,4],[3,2,4,6,4],[3,2,3,7,4],[2,2,4,7,4],[3,2,4,6,4],[2,1,2,3,2]],
+      'Rohan D.': [[3,3,4,6,3],[3,2,4,7,4],[3,2,3,7,4],[3,2,4,7,4],[3,2,4,7,4],[2,1,3,4,2]],
+      'Arjun T.': [[3,2,4,7,4],[3,2,4,7,4],[3,2,4,7,4],[3,2,4,7,4],[2,2,4,6,3],[1,1,2,5,2]],
+      'Sid P.':   [[3,2,3,4,3],[2,2,3,5,3],[2,3,3,5,3],[2,2,3,6,4],[2,3,4,6,4],[1,1,1,4,2]],
+      'Dev K.':   [[2,2,3,6,4],[2,2,3,6,4],[2,2,3,6,4],[2,2,3,6,4],[2,2,3,6,4],[1,1,2,3,2]],
+      'Riya S.':  [[2,1,2,3,1],[2,1,2,3,1],[1,1,2,3,1],[1,1,2,3,1],[1,1,2,2,1],[1,1,1,2,1]]
+    };
+
+    var _isChartsInit = false;
+    var _outcomeChart = null;
+    var _currentOutcomeBDE = 'All';
+
+    function renderISCharts() {
+      if (_isChartsInit) {
+        ['chartWoWDual','chartOutcome100'].forEach(id => {
+          var c = echarts.getInstanceByDom(document.getElementById(id)); if (c) c.resize();
+        });
+        return;
+      }
+      _isChartsInit = true;
+      _buildBDEPerfChart();
+      _buildWoWChart();
+      _buildOutcomeToggle();
+      _buildOutcomeChart('All');
+    }
+
+    function _buildBDEPerfChart() {
+      const maxCalls = Math.max(...IS_W19.calls);
+      const row = (cat,cls,w,lbl) => `<div class="bde-bar-row" style="margin-bottom:2px;"><span class="bde-bar-cat">${cat}</span><div class="bde-bar-track"><div class="bde-bar-fill ${cls}" style="width:${w}%;"></div></div><span style="font-size:9px;font-weight:700;color:var(--text);flex-shrink:0;min-width:30px;">${lbl}</span></div>`;
+      const html = IS_BDES.map((name,i) => {
+        const calls=IS_W19.calls[i], inter=IS_W19.inter[i], mtgs=IS_W19.mtgs[i], opp=IS_W19.opp[i];
+        const q=IS_QUALITY[i], qRag=q>=7.5?'green':q>=6.8?'amber':'red';
+        const interPct=calls?Math.round(inter/calls*100):0;
+        const mtgPct=inter?Math.round(mtgs/inter*100):0;
+        const oppPct=mtgs?Math.round(opp/mtgs*100):0;
+        const callsW=Math.round(calls/maxCalls*100);
+        return `<div class="bde-perf-card" onclick="openBDEFlyout('${name}')">
+          <div style="display:flex;align-items:stretch;gap:0;">
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:48px;padding-right:8px;border-right:1px solid var(--border);gap:2px;">
+              <span class="bde-q-circle ${qRag}" style="width:26px;height:26px;font-size:9px;">${q}</span>
+              <div style="font-size:8.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46px;text-align:center;">${name}</div>
+            </div>
+            <div style="flex:1;padding-left:8px;display:grid;grid-template-columns:1fr 1fr;gap:1px 6px;align-content:center;">
+              ${row('Calls','bde-calls',callsW,calls)}
+              ${row('Mtgs','bde-mtgs',mtgPct,mtgs+' ('+mtgPct+'%)')}
+              ${row('Inter','bde-inter',interPct,inter+' ('+interPct+'%)')}
+              ${row('Opp','bde-opp',oppPct,opp+' ('+oppPct+'%)')}
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+      document.getElementById('chartBDEPerf').innerHTML = `<div class="bde-perf-grid">${html}</div>`;
+    }
+
+    function _buildWoWChart() {
+      const c = echarts.init(document.getElementById('chartWoWDual'));
+      c.setOption({
+        tooltip: { trigger:'axis' },
+        legend: { data:['Calls','Interactions','Meetings'], top:4, itemGap:14, textStyle:{fontSize:10} },
+        grid: { left:36, right:48, top:38, bottom:26, containLabel:false },
+        xAxis: { type:'category', data:WOW_WEEKS, axisLabel:{fontSize:10} },
+        yAxis: [
+          { type:'value', name:'Calls/Int', nameTextStyle:{fontSize:9,color:'#94A3B8'}, axisLabel:{fontSize:9}, min:0, max:340, splitNumber:4 },
+          { type:'value', name:'Mtgs',      nameTextStyle:{fontSize:9,color:'#16A34A'}, axisLabel:{fontSize:9}, min:0, max:34,  splitNumber:4, splitLine:{show:false} }
+        ],
+        series: [
+          { name:'Calls',        type:'bar',  data:WOW_CALLS, yAxisIndex:0, barMaxWidth:20, itemStyle:{color:'#E2E8F0'} },
+          { name:'Interactions', type:'line', data:WOW_INTER, yAxisIndex:0, smooth:true, symbol:'circle', symbolSize:5, lineStyle:{color:'#FF9933',width:2},   itemStyle:{color:'#FF9933'} },
+          { name:'Meetings',     type:'line', data:WOW_MTGS,  yAxisIndex:1, smooth:true, symbol:'circle', symbolSize:5, lineStyle:{color:'#16A34A',width:2.5}, itemStyle:{color:'#16A34A'} }
+        ]
+      });
+    }
+
+    function _buildOutcomeToggle() {
+      var wrap = document.getElementById('outcomeFilters'); if (!wrap) return;
+      wrap.innerHTML = ['All',...IS_BDES].map((b,i) =>
+        `<button class="is-btn${i===0?' active':''}" onclick="setOutcomeFilter('${b}',this)">${b}</button>`
+      ).join('');
+    }
+
+    function setOutcomeFilter(bde, btn) {
+      document.querySelectorAll('#outcomeFilters .is-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      _currentOutcomeBDE = bde;
+      _buildOutcomeChart(bde);
+    }
+
+    function _buildOutcomeChart(bde) {
+      const raw = OUTCOME_RAW[bde] || OUTCOME_RAW['All'];
+      const pct = raw.map(row => { const t=row.reduce((a,v)=>a+v,0); return row.map(v=>t>0?Math.round(v/t*100):0); });
+      const series = OUTCOME_CATS.map((cat,ci) => ({
+        name:cat, type:'bar', stack:'total', itemStyle:{color:OUTCOME_COLORS[ci]}, label:{show:false},
+        data: pct.map(row => row[ci])
+      }));
+      if (!_outcomeChart) _outcomeChart = echarts.init(document.getElementById('chartOutcome100'));
+      _outcomeChart.setOption({
+        tooltip:{ trigger:'axis', axisPointer:{type:'shadow'}, formatter:function(p){ let h='<strong>'+p[0].axisValue+'</strong><br>'; p.forEach(s=>{h+=s.marker+s.seriesName+': '+s.value+'%<br>';}); return h; }},
+        legend:{ data:OUTCOME_CATS, top:0, right:0, textStyle:{fontSize:9}, icon:'circle', itemWidth:8, itemHeight:8 },
+        grid:{ left:32, right:8, top:30, bottom:22, containLabel:false },
+        xAxis:{ type:'category', data:OUTCOME_MONTHS, axisLabel:{fontSize:10} },
+        yAxis:{ type:'value', max:100, axisLabel:{fontSize:9, formatter:'{value}%'} },
+        series
+      }, true);
+      _outcomeChart.off('click');
+      _outcomeChart.on('click', function(params) { openOutcomeFlyout(params.dataIndex, params.seriesName, _currentOutcomeBDE||'All'); });
+    }
+
+    /* ── Meeting Outcome Log (per month, used in chart click flyout) ─── */
+    const MEETING_LOG = {
+      'Dec': [
+        {account:'MedTech Corp',    bde:'Kavya L.', date:'Dec 4',  outcome:'Opp Worthy'},
+        {account:'HealthFirst',     bde:'Kavya L.', date:'Dec 11', outcome:'Opp Worthy'},
+        {account:'BioGen Labs',     bde:'Neha M.',  date:'Dec 6',  outcome:'Potential'},
+        {account:'WellnessOne',     bde:'Neha M.',  date:'Dec 14', outcome:'Opp Worthy'},
+        {account:'PharmCare',       bde:'Priya S.', date:'Dec 3',  outcome:'Nurture'},
+        {account:'CardioTech',      bde:'Priya S.', date:'Dec 10', outcome:'Potential'},
+        {account:'NovaMed',         bde:'Priya S.', date:'Dec 17', outcome:'No Budget'},
+        {account:'AlphaCare',       bde:'Rohan D.', date:'Dec 5',  outcome:'Potential'},
+        {account:'PediaCare',       bde:'Rohan D.', date:'Dec 12', outcome:'Nurture'},
+        {account:'TheraClin',       bde:'Rohan D.', date:'Dec 19', outcome:'Not Relevant'},
+        {account:'OrthoFix',        bde:'Arjun T.', date:'Dec 8',  outcome:'Potential'},
+        {account:'PharmaCore',      bde:'Arjun T.', date:'Dec 15', outcome:'Nurture'},
+        {account:'GenMed',          bde:'Arjun T.', date:'Dec 22', outcome:'No Budget'},
+        {account:'NeuroLab',        bde:'Sid P.',   date:'Dec 7',  outcome:'Nurture'},
+        {account:'ClinPath',        bde:'Sid P.',   date:'Dec 16', outcome:'No Budget'},
+        {account:'BioMark',         bde:'Dev K.',   date:'Dec 9',  outcome:'Potential'},
+        {account:'InfraHealth',     bde:'Dev K.',   date:'Dec 18', outcome:'Nurture'},
+        {account:'SmartClinic',     bde:'Riya S.',  date:'Dec 13', outcome:'Nurture'},
+      ],
+      'Jan': [
+        {account:'MedTech Corp',    bde:'Kavya L.', date:'Jan 8',  outcome:'Opp Worthy'},
+        {account:'HealthFirst',     bde:'Kavya L.', date:'Jan 15', outcome:'Potential'},
+        {account:'WellnessOne',     bde:'Neha M.',  date:'Jan 10', outcome:'Opp Worthy'},
+        {account:'BioGen Labs',     bde:'Neha M.',  date:'Jan 18', outcome:'Potential'},
+        {account:'CardioTech',      bde:'Priya S.', date:'Jan 7',  outcome:'Nurture'},
+        {account:'PharmCare',       bde:'Priya S.', date:'Jan 14', outcome:'No Budget'},
+        {account:'NovaMed',         bde:'Priya S.', date:'Jan 21', outcome:'Potential'},
+        {account:'AlphaCare',       bde:'Rohan D.', date:'Jan 9',  outcome:'Opp Worthy'},
+        {account:'PediaCare',       bde:'Rohan D.', date:'Jan 16', outcome:'Potential'},
+        {account:'TheraClin',       bde:'Rohan D.', date:'Jan 23', outcome:'Nurture'},
+        {account:'OrthoFix',        bde:'Arjun T.', date:'Jan 11', outcome:'Potential'},
+        {account:'PharmaCore',      bde:'Arjun T.', date:'Jan 18', outcome:'Nurture'},
+        {account:'GenMed',          bde:'Arjun T.', date:'Jan 25', outcome:'No Budget'},
+        {account:'NeuroLab',        bde:'Sid P.',   date:'Jan 13', outcome:'Potential'},
+        {account:'ClinPath',        bde:'Sid P.',   date:'Jan 20', outcome:'Nurture'},
+        {account:'BioMark',         bde:'Dev K.',   date:'Jan 10', outcome:'Opp Worthy'},
+        {account:'InfraHealth',     bde:'Dev K.',   date:'Jan 22', outcome:'Potential'},
+        {account:'SmartClinic',     bde:'Riya S.',  date:'Jan 17', outcome:'Nurture'},
+      ],
+      'Feb': [
+        {account:'MedTech Corp',    bde:'Kavya L.', date:'Feb 5',  outcome:'Opp Worthy'},
+        {account:'CardioTech',      bde:'Kavya L.', date:'Feb 13', outcome:'Potential'},
+        {account:'WellnessOne',     bde:'Neha M.',  date:'Feb 7',  outcome:'Opp Worthy'},
+        {account:'PharmCare',       bde:'Neha M.',  date:'Feb 14', outcome:'Nurture'},
+        {account:'BioGen Labs',     bde:'Priya S.', date:'Feb 6',  outcome:'Potential'},
+        {account:'NovaMed',         bde:'Priya S.', date:'Feb 12', outcome:'Nurture'},
+        {account:'AlphaCare',       bde:'Priya S.', date:'Feb 20', outcome:'No Budget'},
+        {account:'PediaCare',       bde:'Rohan D.', date:'Feb 8',  outcome:'Potential'},
+        {account:'OrthoFix',        bde:'Rohan D.', date:'Feb 15', outcome:'Opp Worthy'},
+        {account:'TheraClin',       bde:'Rohan D.', date:'Feb 22', outcome:'Nurture'},
+        {account:'HealthFirst',     bde:'Arjun T.', date:'Feb 10', outcome:'Potential'},
+        {account:'PharmaCore',      bde:'Arjun T.', date:'Feb 17', outcome:'Nurture'},
+        {account:'GenMed',          bde:'Sid P.',   date:'Feb 11', outcome:'Nurture'},
+        {account:'NeuroLab',        bde:'Sid P.',   date:'Feb 19', outcome:'No Budget'},
+        {account:'BioMark',         bde:'Dev K.',   date:'Feb 9',  outcome:'Potential'},
+        {account:'InfraHealth',     bde:'Dev K.',   date:'Feb 18', outcome:'Opp Worthy'},
+        {account:'SmartClinic',     bde:'Riya S.',  date:'Feb 14', outcome:'Nurture'},
+      ],
+      'Mar': [
+        {account:'MedTech Corp',    bde:'Kavya L.', date:'Mar 4',  outcome:'Opp Worthy'},
+        {account:'HealthFirst',     bde:'Kavya L.', date:'Mar 12', outcome:'Opp Worthy'},
+        {account:'WellnessOne',     bde:'Neha M.',  date:'Mar 6',  outcome:'Opp Worthy'},
+        {account:'BioGen Labs',     bde:'Neha M.',  date:'Mar 14', outcome:'Potential'},
+        {account:'CardioTech',      bde:'Priya S.', date:'Mar 5',  outcome:'Potential'},
+        {account:'PharmCare',       bde:'Priya S.', date:'Mar 11', outcome:'Nurture'},
+        {account:'NovaMed',         bde:'Priya S.', date:'Mar 19', outcome:'No Budget'},
+        {account:'AlphaCare',       bde:'Rohan D.', date:'Mar 7',  outcome:'Potential'},
+        {account:'PediaCare',       bde:'Rohan D.', date:'Mar 15', outcome:'Potential'},
+        {account:'OrthoFix',        bde:'Arjun T.', date:'Mar 9',  outcome:'Potential'},
+        {account:'TheraClin',       bde:'Arjun T.', date:'Mar 17', outcome:'Nurture'},
+        {account:'NeuroLab',        bde:'Sid P.',   date:'Mar 10', outcome:'Potential'},
+        {account:'ClinPath',        bde:'Sid P.',   date:'Mar 18', outcome:'Nurture'},
+        {account:'BioMark',         bde:'Dev K.',   date:'Mar 8',  outcome:'Potential'},
+        {account:'InfraHealth',     bde:'Dev K.',   date:'Mar 16', outcome:'Opp Worthy'},
+        {account:'SmartClinic',     bde:'Riya S.',  date:'Mar 13', outcome:'No Budget'},
+      ],
+      'Apr': [
+        {account:'MedTech Corp',    bde:'Kavya L.', date:'Apr 3',  outcome:'Opp Worthy'},
+        {account:'CardioTech',      bde:'Kavya L.', date:'Apr 14', outcome:'Potential'},
+        {account:'WellnessOne',     bde:'Neha M.',  date:'Apr 5',  outcome:'Opp Worthy'},
+        {account:'BioGen Labs',     bde:'Neha M.',  date:'Apr 12', outcome:'Nurture'},
+        {account:'PharmCare',       bde:'Priya S.', date:'Apr 4',  outcome:'Nurture'},
+        {account:'NovaMed',         bde:'Priya S.', date:'Apr 10', outcome:'No Budget'},
+        {account:'AlphaCare',       bde:'Priya S.', date:'Apr 18', outcome:'Potential'},
+        {account:'PediaCare',       bde:'Rohan D.', date:'Apr 7',  outcome:'Potential'},
+        {account:'OrthoFix',        bde:'Rohan D.', date:'Apr 16', outcome:'Opp Worthy'},
+        {account:'TheraClin',       bde:'Rohan D.', date:'Apr 24', outcome:'Nurture'},
+        {account:'HealthFirst',     bde:'Arjun T.', date:'Apr 9',  outcome:'Nurture'},
+        {account:'PharmaCore',      bde:'Arjun T.', date:'Apr 21', outcome:'No Budget'},
+        {account:'NeuroLab',        bde:'Sid P.',   date:'Apr 11', outcome:'Potential'},
+        {account:'ClinPath',        bde:'Sid P.',   date:'Apr 22', outcome:'Nurture'},
+        {account:'BioMark',         bde:'Dev K.',   date:'Apr 8',  outcome:'Potential'},
+        {account:'InfraHealth',     bde:'Dev K.',   date:'Apr 19', outcome:'Opp Worthy'},
+        {account:'SmartClinic',     bde:'Riya S.',  date:'Apr 15', outcome:'Potential'},
+      ],
+      'May': [
+        {account:'MedTech Corp',    bde:'Kavya L.', date:'May 2',  outcome:'Opp Worthy'},
+        {account:'HealthFirst',     bde:'Kavya L.', date:'May 9',  outcome:'Opp Worthy'},
+        {account:'WellnessOne',     bde:'Neha M.',  date:'May 4',  outcome:'Opp Worthy'},
+        {account:'CardioTech',      bde:'Neha M.',  date:'May 11', outcome:'Potential'},
+        {account:'BioGen Labs',     bde:'Priya S.', date:'May 3',  outcome:'Nurture'},
+        {account:'NovaMed',         bde:'Priya S.', date:'May 10', outcome:'No Budget'},
+        {account:'PharmCare',       bde:'Rohan D.', date:'May 5',  outcome:'Potential'},
+        {account:'PediaCare',       bde:'Rohan D.', date:'May 13', outcome:'Opp Worthy'},
+        {account:'OrthoFix',        bde:'Arjun T.', date:'May 6',  outcome:'Potential'},
+        {account:'TheraClin',       bde:'Arjun T.', date:'May 12', outcome:'Nurture'},
+        {account:'NeuroLab',        bde:'Sid P.',   date:'May 7',  outcome:'Potential'},
+        {account:'InfraHealth',     bde:'Dev K.',   date:'May 8',  outcome:'Opp Worthy'},
+        {account:'SmartClinic',     bde:'Riya S.',  date:'May 9',  outcome:'Nurture'},
+      ]
+    };
+
+    var _outcomeFlyoutCtx = { month:'', category:'' };
+
+    function openOutcomeFlyout(monthIdx, category, bdeFilter) {
+      const month = OUTCOME_MONTHS[monthIdx];
+      _outcomeFlyoutCtx = { month, category };
+      const catColor = {'No Budget':'#FCA5A5','Not Relevant':'#CBD5E1','Nurture':'#FDE68A','Potential':'#93C5FD','Opp Worthy':'#6EE7B7'}[category]||'#CBD5E1';
+      const bdeOptions = ['All',...IS_BDES].map(b=>`<option value="${b}"${b===bdeFilter?' selected':''}>${b}</option>`).join('');
+      const filterBar = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:8px 10px;background:var(--bg);border-radius:6px;">
+        <span style="font-size:11px;font-weight:700;color:var(--text);">BDE:</span>
+        <select onchange="updateOutcomeFlyoutTable(this.value)" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:5px;background:var(--card);color:var(--text);cursor:pointer;">
+          ${bdeOptions}
+        </select>
+        <span style="flex:1;text-align:right;font-size:10px;color:var(--text-muted);">${month} · <span style="font-weight:700;color:var(--navy);">${category}</span></span>
+      </div>`;
+      const tableHtml = _buildOutcomeTable(month, category, bdeFilter||'All');
+      openFlyout({
+        title: 'Meeting Outcomes · ' + month,
+        sub: category + ' · ' + (bdeFilter||'All') + ' BDEs',
+        body: filterBar + `<div id="outcomeFlyoutTable">${tableHtml}</div>`
+      });
+    }
+
+    function updateOutcomeFlyoutTable(bde) {
+      const el = document.getElementById('outcomeFlyoutTable');
+      if (!el) return;
+      el.innerHTML = _buildOutcomeTable(_outcomeFlyoutCtx.month, _outcomeFlyoutCtx.category, bde);
+    }
+
+    function _buildOutcomeTable(month, category, bde) {
+      const all = MEETING_LOG[month] || [];
+      const filtered = all.filter(m => (category==='All'||m.outcome===category) && (bde==='All'||m.bde===bde));
+      if (!filtered.length) return `<div style="text-align:center;padding:20px;font-size:12px;color:var(--text-muted);">No meetings found for this selection.</div>`;
+      const catDot = c => {
+        const bg={'No Budget':'#FCA5A5','Not Relevant':'#CBD5E1','Nurture':'#FDE68A','Potential':'#93C5FD','Opp Worthy':'#6EE7B7'}[c]||'#CBD5E1';
+        const tx={'No Budget':'#991B1B','Not Relevant':'#475569','Nurture':'#92400E','Potential':'#1E40AF','Opp Worthy':'#065F46'}[c]||'#475569';
+        return `<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:${bg};color:${tx};">${c}</span>`;
+      };
+      const rows = filtered.map(m=>`<tr><td><strong>${m.account}</strong></td><td style="font-size:11px;">${m.bde}</td><td style="font-size:11px;">${m.date}</td><td>${catDot(m.outcome)}</td></tr>`).join('');
+      return `<table class="g-tbl"><thead><tr><th>Account</th><th>BDE</th><th>Date</th><th>Outcome</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+
+    function openKPITile(type) {
+      const CFG = {
+        calls:      {title:'Calls This Week',    sub:'W16–W19',    vals:nm=>IS_HIST[nm].calls, fmt:v=>v,      cls:v=>v>=50?'green':v>=40?'amber':'red'},
+        inter:      {title:'Interactions',       sub:'W16–W19',    vals:nm=>IS_HIST[nm].inter, fmt:v=>v,      cls:v=>v>=14?'green':v>=10?'amber':'red'},
+        meetings:   {title:'Meetings Scheduled', sub:'W16–W19',    vals:nm=>IS_HIST[nm].mtgs,  fmt:v=>v,      cls:v=>v>=6?'green':v>=4?'amber':'red'},
+        contact:    {title:'Contact Rate',       sub:'Calls → Interactions',vals:nm=>IS_HIST[nm].calls.map((c,j)=>c?Math.round(IS_HIST[nm].inter[j]/c*100):0), fmt:v=>v+'%', cls:v=>v>=28?'green':v>=20?'amber':'red'},
+        conversion: {title:'Conversion Rate',    sub:'Inter→Mtg',  vals:nm=>IS_HIST[nm].inter.map((n,j)=>n?Math.round(IS_HIST[nm].mtgs[j]/n*100):0),  fmt:v=>v+'%', cls:v=>v>=35?'green':v>=25?'amber':'red'},
+        opp:        {title:'Opp Worthy Rate',    sub:'Mtg→Opp',    vals:nm=>IS_HIST[nm].mtgs.map((m,j)=>m?Math.round(IS_HIST[nm].opp[j]/m*100):0),   fmt:v=>v+'%', cls:v=>v>=28?'green':v>=18?'amber':'red'}
+      };
+      const cols = IS_WEEKS.length + 2; // BDE + 4 weeks + Trend
+      const thdr = `<thead><tr><th>BDE</th>${IS_WEEKS.map(w=>`<th style="text-align:right;">${w}</th>`).join('')}<th style="text-align:right;">Trend</th></tr></thead>`;
+      const secRow = (t,s) => `<tr><td colspan="${cols}" style="background:var(--navy);color:#fff;padding:6px 10px;font-size:10px;font-weight:700;letter-spacing:0.3px;">${t} <span style="opacity:0.55;font-weight:400;">· ${s}</span></td></tr>`;
+      const insights = lines => `<div style="background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.18);border-radius:6px;padding:10px 14px;margin-top:14px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#1D4ED8;margin-bottom:8px;">✦ Insights</div>
+        <ul style="margin:0;padding-left:15px;">${lines.map(l=>`<li style="font-size:11px;color:var(--text);line-height:1.55;margin-bottom:4px;">${l}</li>`).join('')}</ul>
+      </div>`;
+      function makeRows(key) {
+        const cfg=CFG[key];
+        const dataRows=IS_BDES.map(nm=>{
+          const vals=cfg.vals(nm),curr=vals[3],rag=cfg.cls(curr);
+          const spark=miniSparkline(vals,rag==='green'?'#16A34A':rag==='amber'?'#F59E0B':'#DC2626');
+          return `<tr><td><strong>${nm}</strong></td>${IS_WEEKS.map((w,j)=>`<td style="text-align:right;font-size:11px;font-weight:${j===3?700:400};color:${j===3?'var(--navy)':'var(--text-muted)'};">${cfg.fmt(vals[j])}</td>`).join('')}<td style="text-align:right;">${spark}${trendArrow(vals)}</td></tr>`;
+        }).join('');
+        return secRow(cfg.title,cfg.sub)+dataRows;
+      }
+      let title, sub, body;
+      if (type==='calls'||type==='meetings') {
+        title='Activity · W16–W19 per BDE'; sub='Calls · Interactions · Meetings';
+        body = `<table class="g-tbl">${thdr}<tbody>${makeRows('calls')}${makeRows('inter')}${makeRows('meetings')}</tbody></table>`;
+        const topIdx=IS_W19.calls.indexOf(Math.max(...IS_W19.calls));
+        const lowBDEs=IS_BDES.filter((n,i)=>IS_W19.calls[i]<45&&IS_W19.mtgs[i]<4);
+        const cd=WOW_CALLS[5]-WOW_CALLS[4], md=WOW_MTGS[5]-WOW_MTGS[4];
+        body += insights([
+          `🏆 <strong>${IS_BDES[topIdx]}</strong> leads with <strong>${IS_W19.calls[topIdx]}</strong> calls and <strong>${IS_W19.mtgs[topIdx]}</strong> meetings this week.`,
+          lowBDEs.length ? `⚠ <strong>${lowBDEs.join(', ')}</strong> below team average — review call cadence and pipeline coverage.` : `✅ All BDEs at or above team floor for both calls and meetings.`,
+          `📈 WoW: calls <strong>${cd>0?'↑+':'↓'}${cd}</strong> vs W18 · meetings <strong>${md>0?'↑+':'↓'}${md}</strong>. Momentum is <strong>${cd+md>0?'positive':'softening'}</strong> — maintain outreach pace.`
+        ]);
+      } else {
+        title='Conversion Rates · W16–W19 per BDE'; sub='Contact Rate · Conversion Rate · Opp Worthy';
+        body = `<table class="g-tbl">${thdr}<tbody>${makeRows('contact')}${makeRows('conversion')}${makeRows('opp')}</tbody></table>`;
+        const cr=IS_BDES.map((n,i)=>IS_W19.calls[i]?Math.round(IS_W19.inter[i]/IS_W19.calls[i]*100):0);
+        const vr=IS_BDES.map((n,i)=>IS_W19.inter[i]?Math.round(IS_W19.mtgs[i]/IS_W19.inter[i]*100):0);
+        const bci=cr.indexOf(Math.max(...cr)), bvi=vr.indexOf(Math.max(...vr));
+        const below=IS_BDES.filter((n,i)=>cr[i]<20||vr[i]<25);
+        const avgCr=Math.round(cr.reduce((a,v)=>a+v,0)/cr.length), avgVr=Math.round(vr.reduce((a,v)=>a+v,0)/vr.length);
+        body += insights([
+          `🏆 Best contact rate: <strong>${IS_BDES[bci]}</strong> (${cr[bci]}%) · Best conversion: <strong>${IS_BDES[bvi]}</strong> (${vr[bvi]}%).`,
+          below.length ? `⚠ <strong>${below.join(', ')}</strong> below threshold — prioritise 1:1 coaching on call depth and follow-up urgency.` : `✅ All BDEs meeting minimum conversion thresholds this week.`,
+          `💡 Team avg contact rate <strong>${avgCr}%</strong> vs target 30% · conversion <strong>${avgVr}%</strong> approaching 35% target. Improving interaction → meeting handoff is the highest-leverage action.`
+        ]);
+      }
+      openFlyout({ title, sub, body });
+    }
+
+    const BDE_AI_INSIGHTS = {
+      'Kavya L.': {
+        callScore: [
+          '📞 Call openings are strong — avg greeting score 8.5. Minor drop when prospect raises pricing objections early; tends to deflect rather than reframe.',
+          '🔍 Needs improvement on discovery depth: probing questions score 6.8/10. Recommend using SPIN framework on qualification calls.',
+          '✅ Objection handling has improved 0.4pts over 4 weeks — reinforce this in team coaching.'
+        ],
+        interactions: [
+          '💬 Response time after initial interaction is fast (avg 3.2h) — this is a key reason for higher contact-to-meeting conversion.',
+          '📅 Follow-up cadence good for warm leads; cold interactions see ~40% drop-off after 2 touches. Suggest a 3-touch template for cold prospects.',
+          '🎯 Personalisation score in emails: 7.1/10. Adding account-specific pain points in opener could push meeting rate by est. 8–12%.'
+        ]
+      },
+      'Neha M.': {
+        callScore: [
+          '📞 Call pacing is slightly fast — avg 112 wpm vs team norm of 95. Prospects are cutting off before value proposition lands.',
+          '🔍 Strong on product knowledge (score: 8.2) but weak on business case articulation. Calls end without a clear "so what" for the prospect.',
+          '📋 Action clarity at call close scores 6.5 — recommend confirming next steps out loud before ending every call.'
+        ],
+        interactions: [
+          '💬 Interaction volume is consistent but email open rates lower than team avg (34% vs 48%). Subject lines are too generic — try specificity.',
+          '📅 LinkedIn touch rate is low (1 per prospect vs team avg 2.1). Adding a personalised connection note lifts reply rates significantly.',
+          '🎯 WhatsApp follow-ups after demo interactions show 2× meeting conversion vs email-only — adopt this for warm pipeline.'
+        ]
+      },
+      'Priya S.': {
+        callScore: [
+          '📞 Highest call volume but quality score trending flat at 7.4 for 2 weeks. Volume-quality balance needs attention.',
+          '🔍 Discovery calls score well (7.8) but qualification calls drop to 6.6 — not clearly communicating differentiation vs competition.',
+          '⚠️ Talking time ratio is 68:32 (rep:prospect) — target is closer to 45:55. Allow prospects more space to articulate problems.'
+        ],
+        interactions: [
+          '💬 Strong interaction volume but meeting conversion is 27% vs team avg 35%. The gap is in demo-readiness: decks sent before meetings lack personalisation.',
+          '📅 Follow-up timing skews late (avg 6.1h after cold call vs ideal <2h). Faster turnaround could recover 3–4 meetings per week.',
+          '🎯 Recommend pre-call prep checklist — Priya performs significantly better when account context is reviewed before the interaction.'
+        ]
+      },
+      'Rohan D.': {
+        callScore: [
+          '📞 Call score has been flat (7.0–7.1) for 4 weeks — no regression but no growth. Confidence on pricing discussions is a blocker.',
+          '🔍 Rapport-building in the first 60s scores 8.0 — use this strength to anchor earlier on business pain before product pitch.',
+          '⚠️ Losing momentum after the second call — third-call conversion to meeting is only 18%. Introduce a structured "are you the right person" qualifier earlier.'
+        ],
+        interactions: [
+          '💬 Email click-through on case studies is 2.3× the team average — lean into this. Attach relevant case studies earlier in the sequence.',
+          '📅 Meeting reschedule rate is high (31%). Consider shorter, 20-min slots as default to lower commitment friction.',
+          '🎯 Contact rate drops sharply Fri afternoons — shift 12 calls to Mon–Wed mornings where connect rates are strongest for this territory.'
+        ]
+      },
+      'Arjun T.': {
+        callScore: [
+          '📞 Quality score dropped 0.2 in W19 (6.7→6.5). Calls flagged for insufficient probing after the prospect expresses initial interest.',
+          '🔍 Strong first impressions but poor at value quantification — when asked "why Nalashaa?" answers are generic. Needs a sharper elevator pitch.',
+          '⚠️ 3 of last 5 scored calls ended without a confirmed next step. This is the single biggest driver of score reduction — fix with a closing checklist.'
+        ],
+        interactions: [
+          '💬 Interaction-to-meeting gap widening: 10 interactions this week but only 3 meetings. 4 interactions stalled with no follow-up after 48h.',
+          '📅 Recommend setting auto-reminder at 24h post-interaction. Follow-up speed is the most statistically significant variable for this BDE\'s conversion.',
+          '🎯 Demo requests convert at 60% for Arjun — more demos earlier in the interaction cycle. Current ratio is 1 demo per 3.3 meetings; industry norm is 1:1.5.'
+        ]
+      },
+      'Dev K.': {
+        callScore: [
+          '📞 Quality score plateauing at 7.2 for 3 consecutive weeks — solid baseline but no growth vector. Need to break the ceiling.',
+          '🔍 Discovery questions score well (7.5) but business impact articulation is weak. Prospects disengage when value proposition shifts to technical features.',
+          '📋 Call close rate is consistent at 72% — above average. Main gap is mid-call momentum: energy drops after objection #1, recovers slowly.'
+        ],
+        interactions: [
+          '💬 Good interaction volume and cadence. Follow-up speed is the best on the team (avg 1.8h). This is a strong habit — protect it.',
+          '📅 Email personalisation is average (6.4/10). Dev relies on templates too heavily for warm prospects. Custom openers for re-engagements would help.',
+          '🎯 Meeting-to-opp conversion at 20% — below the 28% target. The handoff from meeting to discovery proposal needs tightening. A structured next-step confirmation at meeting close is recommended.'
+        ]
+      },
+      'Sid P.': {
+        callScore: [
+          '📞 Lowest quality score (6.2) with declining trend. Primary issue: calls are too short (avg 4.1 min vs team avg 7.8 min). Not enough discovery happening.',
+          '🔍 Objection handling score: 5.4 — needs structured training. Top 3 objections (pricing, timing, incumbent vendor) handled inconsistently across calls.',
+          '⚠️ Recommend mandatory listen-back on 2 top-performer calls per week. Gap is most visible in mid-call transitions — from discovery to pitch.'
+        ],
+        interactions: [
+          '💬 Lowest interaction count (9) despite average call volume. Call-to-interaction conversion is 23% vs team avg 28%. Needs better qualifying before scheduling.',
+          '📅 Only 1 LinkedIn touchpoint per prospect (team avg: 2.4). Multi-channel approach is key — calls alone are insufficient for cold outreach.',
+          '🎯 Priority: schedule 1:1 with TL this week. A structured 2-week coaching sprint targeting opening & closing techniques could add 4–6 meetings/week based on team benchmarks.'
+        ]
+      },
+      'Riya S.': {
+        callScore: [
+          '📞 New hire (Month 3) — score of 5.5 is expected at this stage. Focus should be on building good habits, not fixing bad ones.',
+          '🔍 Opening and rapport-building scores are encouraging (6.2). Main gap: not probing beyond the first answer. Needs to practice the "5 Whys" drill.',
+          '📋 Recommend pairing Riya with Kavya L. for 2 joint calls per week. Shadow-call assignments are the fastest path to score improvement for early-tenure BDEs.'
+        ],
+        interactions: [
+          '💬 Only 6 interactions from 30 calls (20%) — below team floor. A portion of calls are not qualifying to interaction due to early hang-ups. Needs better opening hooks.',
+          '📅 Zero multi-channel follow-up observed. Email + LinkedIn combo after a call has 2× the meeting conversion rate vs call-only. Introduce this as standard practice.',
+          '🎯 Set a realistic W19 target: 8 interactions and 2 meetings. Build consistency before volume. Manager check-in at end of W19 to assess progress against this target.'
+        ]
+      }
+    };
+
+    function openBDEFlyout(name) {
+      const i = IS_BDES.indexOf(name); if (i < 0) return;
+      const h = IS_HIST[name];
+      const rag = IS_QUALITY[i]>=7.5?'green':IS_QUALITY[i]>=6.8?'amber':'red';
+      const ins = BDE_AI_INSIGHTS[name] || { callScore:[], interactions:[] };
+      const metrics = [
+        {label:'Calls',        vals:h.calls, fmt:v=>v,      cls:v=>v>=50?'green':v>=40?'amber':'red'},
+        {label:'Interactions', vals:h.inter, fmt:v=>v,      cls:v=>v>=14?'green':v>=10?'amber':'red'},
+        {label:'Meetings',     vals:h.mtgs,  fmt:v=>v,      cls:v=>v>=6?'green':v>=4?'amber':'red'},
+        {label:'Opp Worthy',   vals:h.opp,   fmt:v=>v,      cls:v=>v>=2?'green':v>=1?'amber':'red'},
+        {label:'Contact Rate', vals:h.calls.map((c,j)=>c?Math.round(h.inter[j]/c*100):0), fmt:v=>v+'%', cls:v=>v>=28?'green':v>=20?'amber':'red'},
+        {label:'Conv Rate',    vals:h.inter.map((n,j)=>n?Math.round(h.mtgs[j]/n*100):0),  fmt:v=>v+'%', cls:v=>v>=35?'green':v>=25?'amber':'red'},
+        {label:'Quality',      vals:(BDE_QUALITY[name]||[]).slice(-4), fmt:v=>v.toFixed(1), cls:v=>v>=7.5?'green':v>=6.8?'amber':'red'},
+      ];
+      const rows = metrics.map(m =>
+        `<tr><td style="font-size:11px;font-weight:700;">${m.label}</td>${m.vals.map((v,j)=>`<td style="text-align:right;font-size:11px;font-weight:${j===m.vals.length-1?700:400};color:${j===m.vals.length-1?'var(--navy)':'var(--text-muted)'};">${m.fmt(v)}</td>`).join('')}<td style="text-align:right;">${trendArrow(m.vals)}</td></tr>`
+      ).join('');
+
+      const insightSection = (title, color, lines) => `
+        <div style="margin-top:14px;">
+          <div style="background:${color};color:#fff;padding:6px 12px;border-radius:5px;margin-bottom:8px;font-size:11px;font-weight:700;letter-spacing:0.3px;">${title}</div>
+          <div style="display:flex;flex-direction:column;gap:5px;">
+
+            ${lines.map(l=>`<div style="font-size:11px;color:var(--text);line-height:1.5;padding:6px 10px;background:var(--bg);border-radius:5px;">${l}</div>`).join('')}
+          </div>
+        </div>`;
+
+      openFlyout({
+        title: name + ' · Inside Sales',
+        sub: `Quality Score: ${IS_QUALITY[i]} · ${rag==='green'?'Top performer':rag==='amber'?'On track':'Needs coaching'}`,
+        body:
+          `<table class="g-tbl"><thead><tr><th>Metric</th>${IS_WEEKS.map(w=>`<th style="text-align:right;">${w}</th>`).join('')}<th style="text-align:right;">Δ</th></tr></thead><tbody>${rows}</tbody></table>
+          <div style="margin-top:12px;padding:8px 12px;background:rgba(255,153,51,0.06);border-left:3px solid var(--orange);border-radius:4px;font-size:11px;">
+            <strong>Coaching note:</strong> ${rag==='green'?'Top performer — share techniques with team.':rag==='amber'?'On track. Focus on interaction-to-meeting conversion.':'Needs support — schedule 1:1 coaching with TL.'}</div>` +
+          insightSection('✦ Insights · Call Score Improvement', 'var(--navy)', ins.callScore) +
+          insightSection('✦ Insights · Interaction → Meeting Conversion', '#FF9933', ins.interactions)
+      });
+    }
+
+    function miniSparkline(vals, color) {
+      if (!vals||vals.length<2) return '';
+      const w=48,h=18,mn=Math.min(...vals),mx=Math.max(...vals),range=mx-mn||1;
+      const pts=vals.map((v,i)=>Math.round(i/(vals.length-1)*w)+','+Math.round(h-(v-mn)/range*h)).join(' ');
+      return `<svg width="${w}" height="${h}" style="vertical-align:middle;"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+    }
+
+    function trendArrow(vals) {
+      if (!vals||vals.length<2) return '';
+      const l=vals[vals.length-1],p=vals[vals.length-2];
+      return l>p?'<span style="color:#16A34A;font-weight:700;font-size:11px;">↑</span>':l<p?'<span style="color:#DC2626;font-weight:700;font-size:11px;">↓</span>':'<span style="color:#94A3B8;font-size:11px;">→</span>';
+    }
+
+    /* Proposal activity timeline data */
+    const PROPOSAL_DATA = {
+      'MedTech Module Demo': {
+        account:'MedTech Corp', owner:'Vikram S.', value:'$25K', stage:'Proposal', awaited:15,
+        pendingWith:'Client — CTO (SOW review)', daysSinceLastMeeting:3,
+        summary:'Scope finalized for a reporting module covering 4 clinical specialties. Client keen on go-live before Q3. Key stakeholder: CTO + Medical Director. Decision expected end of May.',
+        lastCall:{ date:'12 May 2026', type:'Video Call', notes:'CTO confirmed budget approval. Asked for T&M vs fixed-price split. Vikram to send revised SOW by 14 May.' },
+        activity:[
+          { date:'12 May 2026', type:'Video Call',    title:'Budget confirmation + SOW review',    notes:'CTO confirmed approval. Requested revised T&M breakdown.' },
+          { date:'06 May 2026', type:'Email',          title:'Proposal v2 sent',                   notes:"Addressed Medical Director's concern on HL7 integration timeline." },
+          { date:'28 Apr 2026', type:'Meeting',        title:'Technical deep-dive (on-site)',       notes:'Demoed reporting engine. Client IT team satisfied with API coverage.' },
+          { date:'18 Apr 2026', type:'Proposal Sent',  title:'Initial proposal submitted',         notes:'Fixed-price option at $25K for 14-week engagement.' },
+          { date:'09 Apr 2026', type:'Discovery Call', title:'Scope alignment call',               notes:'Identified 4 specialties, 12 report templates, 2 integration points.' }
+        ]
+      },
+      'BioGen Phase 2': {
+        account:'BioGen Labs', owner:'Kiran R.', value:'$17K', stage:'Proposal', awaited:42,
+        pendingWith:'Client — Procurement (vendor registration)', daysSinceLastMeeting:6,
+        summary:'Phase 2 extension of LIMS integration project. Phase 1 delivered successfully in Feb. Client wants to expand to 3 more lab sites. Procurement process is the bottleneck.',
+        lastCall:{ date:'09 May 2026', type:'Phone Call', notes:'Procurement team requested vendor registration docs. Kiran submitted on 10 May. Approval expected in 2 weeks.' },
+        activity:[
+          { date:'09 May 2026', type:'Phone Call',    title:'Procurement docs requested',          notes:'Submitted vendor registration. Approval ETA: ~23 May.' },
+          { date:'29 Apr 2026', type:'Email',          title:'Revised scope for Site 3 & 4',       notes:'Added on-site support weeks per client request.' },
+          { date:'14 Apr 2026', type:'Meeting',        title:'Phase 2 scoping workshop',           notes:'Walked through site-specific requirements. All 3 lab heads present.' },
+          { date:'01 Apr 2026', type:'Proposal Sent',  title:'Phase 2 proposal submitted',        notes:'$17K for 3-site rollout over 18 weeks.' },
+          { date:'20 Mar 2026', type:'Review Call',    title:'Phase 1 closure + Phase 2 intent',  notes:'Client confirmed Phase 1 success and verbal intent for Phase 2.' }
+        ]
+      },
+      'HealthFirst DR': {
+        account:'HealthFirst Systems', owner:'Anita M.', value:'$10K', stage:'Proposal', awaited:28,
+        pendingWith:'Nalashaa — Anita M. (RTO/RPO doc)', daysSinceLastMeeting:5,
+        summary:"Disaster Recovery setup for HealthFirst's EHR platform. Compliance-driven — NABH audit in Aug. InfoSec team is primary decision-maker. Timeline is critical.",
+        lastCall:{ date:'10 May 2026', type:'Email', notes:'InfoSec lead asked for RTO/RPO matrix and compliance mapping doc. Anita to send by 15 May.' },
+        activity:[
+          { date:'10 May 2026', type:'Email',          title:'RTO/RPO matrix requested by InfoSec',notes:'Compliance mapping doc to be sent by 15 May.' },
+          { date:'02 May 2026', type:'Video Call',     title:'InfoSec review session',             notes:'Reviewed proposed DR architecture. Concern raised on geo-redundancy cost.' },
+          { date:'22 Apr 2026', type:'Proposal Sent',  title:'DR proposal submitted',              notes:'AWS-based DR with 4h RTO, 1h RPO. $10K.' },
+          { date:'11 Apr 2026', type:'Discovery Call', title:'DR requirements gathering',          notes:'NABH compliance + InfoSec requirements documented.' }
+        ]
+      },
+      'PediaCare Platform': {
+        account:'PediaCare India', owner:'Rohan T.', value:'$20K', stage:'Negotiation', awaited:38,
+        pendingWith:'Nalashaa — Delivery Head (milestone discount feasibility)', daysSinceLastMeeting:7,
+        summary:'Full-stack pediatric care platform — scheduling, EMR, parent app. Client pushing for 10% reduction on integration costs. Close to agreement on revised milestone structure.',
+        lastCall:{ date:'08 May 2026', type:'Meeting', notes:'Discussed 5% discount on milestone 3 in exchange for 2-week schedule compression. Rohan escalated to delivery head for feasibility.' },
+        activity:[
+          { date:'08 May 2026', type:'Meeting',        title:'Negotiation — milestone 3 discount', notes:'Client wants 5% off in exchange for schedule compression. Feasibility check in progress.' },
+          { date:'30 Apr 2026', type:'Video Call',     title:'Counter-proposal discussion',        notes:'Nalashaa counter: phase payment model. Client reviewing.' },
+          { date:'21 Apr 2026', type:'Email',          title:'Client counter received (-10%)',     notes:'Rejected flat 10% ask. Offered phased payment instead.' },
+          { date:'07 Apr 2026', type:'Proposal Sent',  title:'Final proposal v3 submitted',       notes:'$20K, 3-milestone structure, 22-week timeline.' },
+          { date:'24 Mar 2026', type:'Demo',           title:'Prototype walkthrough (parent app)',notes:'Client team loved the UX. CTO gave verbal green light.' }
+        ]
+      },
+      'OrthoFix Mobile': {
+        account:'OrthoFix Clinics', owner:'Kiran R.', value:'$8K', stage:'Negotiation', awaited:25,
+        pendingWith:'Nalashaa — Legal (warranty policy check)', daysSinceLastMeeting:4,
+        summary:'Mobile app for OrthoFix physiotherapy tracking — exercise library, adherence monitoring, clinician dashboard. Small engagement but strategic for healthcare vertical expansion.',
+        lastCall:{ date:'11 May 2026', type:'Phone Call', notes:'Client okay with scope but wants warranty extended to 12 months. Kiran checking internal policy.' },
+        activity:[
+          { date:'11 May 2026', type:'Phone Call',    title:'12-month warranty request',           notes:'Client wants extended warranty. Internal policy check pending.' },
+          { date:'05 May 2026', type:'Email',          title:'Legal review of MSA initiated',      notes:'OrthoFix legal sent markup. Reviewing with Nalashaa legal.' },
+          { date:'25 Apr 2026', type:'Meeting',        title:'Final scope lock',                   notes:'3 user roles, 40 exercise templates, offline mode confirmed.' },
+          { date:'14 Apr 2026', type:'Proposal Sent',  title:'Proposal submitted — $8K',          notes:'12-week engagement. Fixed price.' }
+        ]
+      },
+      'CardioTech Dashboard': {
+        account:'CardioTech Devices', owner:'Divya L.', value:'$12K', stage:'Qualification', awaited:22,
+        pendingWith:'Nalashaa — Divya L. (PoC scope estimate)', daysSinceLastMeeting:8,
+        summary:"Real-time device analytics dashboard for CardioTech's wearable portfolio. Early stage — still qualifying budget and approver. Business sponsor is VP Product; IT not yet in the loop.",
+        lastCall:{ date:'07 May 2026', type:'Video Call', notes:'VP Product showed interest in a quick PoC to take to the board. Divya to prepare PoC scope and budget estimate by 16 May.' },
+        activity:[
+          { date:'07 May 2026', type:'Video Call',    title:'PoC scoping discussion with VP Product',notes:'PoC scope + estimate to be ready by 16 May.' },
+          { date:'28 Apr 2026', type:'Meeting',        title:'Initial discovery — product analytics gaps',notes:'Identified 3 key gaps: real-time alerts, cohort analysis, OTA update tracking.' },
+          { date:'15 Apr 2026', type:'Intro Call',    title:'First contact via LinkedIn referral',  notes:'30-min intro. VP Product responsive. Warm lead.' }
+        ]
+      }
+    };
+
+    function openProposalDetail(name) {
+      const d = PROPOSAL_DATA[name];
+      if (!d) return;
+      const awaitedRag = d.awaited>35?'#DC2626':d.awaited>20?'#F59E0B':'#16A34A';
+      const statChip = (lbl,val,color) => `<div style="text-align:center;min-width:70px;"><div style="font-size:18px;font-weight:800;color:${color};">${val}</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);margin-top:2px;">${lbl}</div></div>`;
+      const divider = `<div style="width:1px;background:var(--border);margin:0 4px;align-self:stretch;"></div>`;
+      const statsRow = `<div style="display:flex;align-items:center;gap:4px;margin-bottom:12px;flex-wrap:wrap;">${statChip('Value',d.value,'var(--navy)')}${divider}${statChip('Stage',d.stage,'#FF9933')}${divider}${statChip('Awaited',d.awaited+'d',awaitedRag)}${divider}${statChip('Owner',d.owner,'var(--text)')}</div>`;
+      const summaryBox = `<div style="background:rgba(255,153,51,0.07);border-left:3px solid #FF9933;border-radius:0 6px 6px 0;padding:9px 13px;margin-bottom:12px;"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#FF9933;margin-bottom:5px;">Opportunity Context</div><div style="font-size:11px;color:var(--text);line-height:1.55;">${d.summary}</div></div>`;
+      const lastCard = `<div style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px 13px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;"><span style="font-size:10px;font-weight:700;color:var(--navy);">Last Touchpoint</span><span style="font-size:10px;color:var(--text-muted);">${d.lastCall.date} · ${d.lastCall.type}</span></div><div style="font-size:11px;color:var(--text);line-height:1.5;">${d.lastCall.notes}</div></div>`;
+      const pinned = statsRow + summaryBox + lastCard;
+      const typeColor = t => ({'Video Call':'#3B82F6','Phone Call':'#FF9933','Meeting':'#16A34A','Email':'#64748B','Proposal Sent':'#7C3AED','Demo':'#0891B2','Discovery Call':'#D97706','Intro Call':'#059669','Review Call':'#6B7280'}[t]||'#94A3B8');
+      const timelineCards = d.activity.map((ev,i) => {
+        const isFirst=i===0, isLast=i===d.activity.length-1;
+        const dotColor=isFirst?'#FF9933':'var(--border)', dotBorder=isFirst?'#FF9933':'var(--text-muted)';
+        return `<div style="display:flex;gap:12px;"><div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:18px;"><div style="width:12px;height:12px;border-radius:50%;background:${dotColor};border:2px solid ${dotBorder};flex-shrink:0;margin-top:4px;"></div>${!isLast?`<div style="flex:1;width:2px;background:var(--border);margin:4px 0;min-height:20px;"></div>`:''}</div><div style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:${isLast?'0':'10px'};"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;"><span style="font-size:11px;font-weight:700;color:var(--navy);">${ev.title}</span><span style="font-size:9px;font-weight:700;padding:2px 7px;background:${typeColor(ev.type)}20;color:${typeColor(ev.type)};border-radius:10px;flex-shrink:0;margin-left:8px;">${ev.type}</span></div><div style="font-size:10px;color:var(--text-muted);margin-bottom:5px;">${ev.date}</div><div style="font-size:11px;color:var(--text);line-height:1.5;">${ev.notes}</div></div></div>`;
+      }).join('');
+      const daysRag = d.daysSinceLastMeeting>10?'#DC2626':d.daysSinceLastMeeting>5?'#F59E0B':'#16A34A';
+      const actionItem = `<div style="margin-top:16px;background:rgba(220,38,38,0.04);border:1px solid rgba(220,38,38,0.2);border-radius:8px;padding:11px 14px;"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#DC2626;margin-bottom:7px;">⚡ Action Item</div><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;"><div style="font-size:11px;color:var(--text);line-height:1.5;flex:1;"><strong>Pending with:</strong> ${d.pendingWith}</div><div style="text-align:center;flex-shrink:0;"><div style="font-size:20px;font-weight:800;color:${daysRag};">${d.daysSinceLastMeeting}d</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;color:var(--text-muted);">since last<br>meeting</div></div></div></div>`;
+      const body = `<div style="padding:4px 0;"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);margin-bottom:12px;">Activity Timeline</div>${timelineCards}${actionItem}</div>`;
+      window.openFlyoutPinned({ title:name, sub:d.account+' · '+d.owner, pinned, body });
+    }
+
+    /* init IS charts on page load (default tab) */
+    document.addEventListener('DOMContentLoaded', function() { setTimeout(renderISCharts, 80); });
+    function toggleSidebar() { var sb=document.querySelector('.sidebar'); if(sb) sb.classList.toggle('collapsed'); document.body.classList.toggle('sidebar-collapsed'); }
+
+    function openStageFlyout(stage, count, value) {
+      const dealsByStage = {
+        'Discovery':     [['MedTech Reporting Module','MedTech Corp','Vikram S.','$0.05M','12d'],['HealthFirst Mobile','HealthFirst','Anita M.','$0.10M','8d'],['BioGen LIMS','BioGen','Kiran R.','$0.15M','22d'],['NeuroLab Imaging','NeuroLab','Arjun N.','$0.08M','5d']],
+        'Qualification': [['MedTech DevOps','MedTech Corp','Vikram S.','$0.04M','18d'],['PharmCare Analytics','PharmCare','Suresh K.','$0.07M','35d'],['CardioTech Dashboard','CardioTech','Divya L.','$0.12M','22d']],
+        'Proposal':      [['HealthFirst DR','HealthFirst','Anita M.','$0.10M','28d'],['BioGen Phase 2','BioGen','Kiran R.','$0.17M','42d'],['MedTech Module Demo','MedTech','Vikram S.','$0.25M','15d']],
+        'Negotiation':   [['PediaCare Platform','PediaCare','Rohan T.','$0.20M','38d'],['OrthoFix Mobile','OrthoFix','Kiran R.','$0.08M','25d']],
+        'Verbal Yes':    [['WellnessOne Renewal','WellnessOne','Meera P.','$0.10M','12d'],['MedTech DevOps','MedTech','Vikram S.','$0.04M','22d']]
+      };
+      const rows=(dealsByStage[stage]||[]).map(d=>`<tr><td>${d[0]}</td><td>${d[1]}</td><td>${d[2]}</td><td>${d[3]}</td><td>${d[4]}</td></tr>`).join('');
+      openFlyout({ title:'Pipeline · '+stage, sub:count+' deals · '+value,
+        body:`<table class="g-tbl"><thead><tr><th>Opportunity</th><th>Account</th><th>Owner</th><th>Value</th><th>Idle</th></tr></thead><tbody>${rows}</tbody></table>` });
+    }
+
+    function openOppDetail(opp, owner) {
+      const OPP_STAGES = {
+        'BioGen Phase 2':        { stages:['Requirement','Scoping','Proposal Sent','Awaiting PO'], current:2, note:'Procurement bottleneck — vendor registration submitted 10 May.' },
+        'PharmCare Analytics':   { stages:['Requirement','Scoping','Proposal Sent','Awaiting PO'], current:1, note:'Data access approval stuck with PharmCare CTO.' },
+        'CardioTech Dashboard':  { stages:['Requirement','Scoping','Proposal Sent','Awaiting PO'], current:1, note:'Scope ambiguity — clarification call scheduled this week.' },
+        'PediaCare Platform':    { stages:['Requirement','Scoping','Proposal Sent','Negotiation','Awaiting PO'], current:3, note:'5% discount request under internal feasibility review.' },
+        'OrthoFix Mobile':       { stages:['Requirement','Scoping','Proposal Sent','Negotiation','Awaiting PO'], current:3, note:'12-month warranty request — Nalashaa legal reviewing.' },
+        'HealthFirst DR':        { stages:['Requirement','Scoping','Proposal Sent','Awaiting PO'], current:2, note:'InfoSec review checkpoint — RTO/RPO doc due 15 May.' },
+        'MedTech Module Demo':   { stages:['Requirement','Scoping','Proposal Sent','Negotiation','Awaiting PO'], current:2, note:'SOW revision in progress — CTO review pending.' },
+        'NeuroLab Imaging':      { stages:['Requirement','Scoping','Proposal Sent','Awaiting PO'], current:0, note:'Discovery workshop scheduled 13 May.' },
+        'WellnessOne Renewal':   { stages:['Requirement','Scoping','Verbal Yes','Contract Exec'], current:3, note:'Verbal yes received — contract execution by 12 May.' },
+        'MedTech DevOps add-on': { stages:['Requirement','Scoping','Verbal Yes','Contract Exec'], current:3, note:'SOW signature pending — chasing procurement.' }
+      };
+      const d = OPP_STAGES[opp]||{ stages:['Requirement','Scoping','Proposal Sent','Awaiting PO'], current:0, note:'No additional notes.' };
+      const stageHtml = d.stages.map((s,i)=>{
+        const done=i<d.current, active=i===d.current;
+        const bg=done?'#16A34A':active?'#FF9933':'var(--border)', col=done||active?'#fff':'var(--text-muted)';
+        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><div style="width:28px;height:28px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:${col};font-size:11px;font-weight:700;">${done?'✓':(i+1)}</span></div><div style="font-size:12px;font-weight:${active?700:400};color:${active?'var(--navy)':'var(--text)'};">${s}</div>${active?'<span style="font-size:9px;background:#FEF3C7;color:#92400E;padding:2px 7px;border-radius:10px;font-weight:700;">Current</span>':''}</div>`;
+      }).join('');
+      openFlyout({ title:opp, sub:owner+' · SDLC Status',
+        body:`<div style="margin-bottom:14px;">${stageHtml}</div><div style="padding:8px 12px;background:rgba(255,153,51,0.06);border-left:3px solid var(--orange);border-radius:4px;font-size:11px;"><strong>Note:</strong> ${d.note}</div>` });
+    }
+
+    /* ── Meeting Readiness row flyout ───────────────────────────────── */
+    const MR_DATA = {
+      'PharmCare|Apr 22': {
+        account:'PharmCare', rep:'Suresh K.', date:'Apr 22', stage:'Qualification', value:'$0.07M', outcome:'No-show', score:'—',
+        brief:'Quarterly review — pricing pushback expected. PharmCare CTO has raised concerns about incumbent vendor costs. Goal was to advance to Proposal stage.',
+        interactions:[
+          { date:'Apr 18', type:'Email',     notes:'Sent agenda and pre-read ahead of review meeting. No reply received.' },
+          { date:'Apr 14', type:'Phone Call',notes:'Confirmed meeting time with PA. CTO travelling — rescheduled once already.' },
+          { date:'Apr 5',  type:'Meeting',   notes:'Initial qualification call. CTO positive but asked for ROI case before committing to proposal.' }
+        ],
+        actions:[
+          { item:'Send ROI comparison deck to CTO', owner:'Suresh K.', status:'Overdue', age:'17d' },
+          { item:'Re-schedule Apr 22 no-show — confirm new date', owner:'Suresh K.', status:'Open', age:'3d' }
+        ]
+      },
+      'CardioTech|Apr 24': {
+        account:'CardioTech', rep:'Divya L.', date:'Apr 24', stage:'Qualification', value:'$0.12M', outcome:'Held', score:'6.4',
+        brief:'Demo call — feature gap follow-up needed. VP Product attended. Raised questions about real-time alert latency and offline mode support.',
+        interactions:[
+          { date:'Apr 24', type:'Meeting',   notes:'Demo held. VP Product engaged. Two feature gaps flagged: real-time alert latency >2s and offline mode.' },
+          { date:'Apr 19', type:'Email',     notes:'Sent demo prep materials and confirmed attendees.' },
+          { date:'Apr 10', type:'Phone Call',notes:'Scoping call — confirmed dashboard requirements, 3 integration points.' }
+        ],
+        actions:[
+          { item:'Respond to real-time latency concern with technical note', owner:'Divya L.', status:'Open', age:'1d' },
+          { item:'Check feasibility of offline mode with delivery team', owner:'Divya L.', status:'Open', age:'1d' }
+        ]
+      },
+      'BioGen Labs|Apr 28': {
+        account:'BioGen Labs', rep:'Kiran R.', date:'Apr 28', stage:'Proposal', value:'$0.17M', outcome:'Rescheduled', score:'—',
+        brief:'Stakeholder alignment — CIO turnover impact. Meeting rescheduled due to new CIO joining. Phase 2 proposal already submitted; alignment with new stakeholder required.',
+        interactions:[
+          { date:'Apr 28', type:'Meeting',   notes:'Meeting rescheduled — new CIO not yet briefed. Kiran to reconnect after onboarding period (est. 2 weeks).' },
+          { date:'Apr 15', type:'Meeting',   notes:'Phase 2 scoping workshop completed. All 3 lab heads aligned.' },
+          { date:'Apr 1',  type:'Proposal Sent', notes:'Phase 2 proposal submitted at $17K for 3-site rollout.' }
+        ],
+        actions:[
+          { item:'Connect with new CIO post-onboarding (est. May 12)', owner:'Kiran R.', status:'Scheduled', age:'—' },
+          { item:'Brief new CIO on Phase 1 outcomes — prepare summary deck', owner:'Kiran R.', status:'Open', age:'2d' }
+        ]
+      },
+      'NeuroLab|Apr 29': {
+        account:'NeuroLab', rep:'Arjun N.', date:'Apr 29', stage:'Discovery', value:'$0.08M', outcome:'Held', score:'7.0',
+        brief:'Discovery call — imaging integration scope. Good engagement from IT lead. Identified 3 key integration points with existing PACS system.',
+        interactions:[
+          { date:'Apr 29', type:'Meeting',   notes:'Discovery held. IT lead present. Identified PACS, RIS, and EMR as 3 integration points. Score: 7.0.' },
+          { date:'Apr 22', type:'Phone Call',notes:'Pre-discovery call to confirm attendees and share intake questionnaire.' },
+          { date:'Apr 15', type:'Intro Call',notes:'LinkedIn referral from existing client. 30-min intro. Warm lead, imaging integration as primary need.' }
+        ],
+        actions:[
+          { item:'Send discovery summary and proposed solution outline', owner:'Arjun N.', status:'Open', age:'1d' },
+          { item:'Schedule follow-up scoping workshop by May 13', owner:'Arjun N.', status:'Open', age:'1d' }
+        ]
+      },
+      'MedTech Corp|Apr 30': {
+        account:'MedTech Corp', rep:'Vikram S.', date:'Apr 30', stage:'Proposal', value:'$0.25M', outcome:'Closed-won next steps', score:'8.4',
+        brief:'Phase 2 demo — 4 stakeholders including VP Engineering. Successful demo with strong buy-in. CTO confirmed budget approval pending SOW review.',
+        interactions:[
+          { date:'Apr 30', type:'Meeting',   notes:'Phase 2 demo successful. VP Eng, CTO, Medical Director, IT Lead attended. CTO confirmed budget. Score: 8.4.' },
+          { date:'Apr 22', type:'Email',     notes:'Sent revised proposal v2 addressing HL7 integration timeline concerns.' },
+          { date:'Apr 18', type:'Proposal Sent', notes:'Initial proposal submitted at $25K for 14-week engagement.' }
+        ],
+        actions:[
+          { item:'Send revised SOW with T&M split to CTO by May 14', owner:'Vikram S.', status:'In Progress', age:'2d' }
+        ]
+      },
+      'HealthFirst Inc|May 1': {
+        account:'HealthFirst Inc', rep:'Anita M.', date:'May 1', stage:'Proposal', value:'$0.10M', outcome:'Follow-up scheduled', score:'8.1',
+        brief:'DR Setup renewal and expansion discussion. InfoSec lead present. RTO/RPO matrix requested. Follow-up scheduled for May 15 for compliance review checkpoint.',
+        interactions:[
+          { date:'May 1',  type:'Meeting',   notes:'DR scoping discussion. InfoSec raised geo-redundancy cost concern. Follow-up booked May 15. Score: 8.1.' },
+          { date:'Apr 25', type:'Email',     notes:'Sent pre-meeting agenda and compliance readiness checklist.' },
+          { date:'Apr 11', type:'Meeting',   notes:'Initial DR requirements gathering. NABH compliance and InfoSec requirements documented.' }
+        ],
+        actions:[
+          { item:'Prepare RTO/RPO matrix and compliance mapping doc by May 15', owner:'Anita M.', status:'In Progress', age:'—' }
+        ]
+      },
+      'WellnessOne|May 2': {
+        account:'WellnessOne', rep:'Meera P.', date:'May 2', stage:'Verbal Yes', value:'$0.10M', outcome:'Renewal verbal', score:'7.9',
+        brief:'Renewal closing call. Client confirmed verbal yes for renewal at same scope. Contract execution targeted by May 12. Strong relationship — no competitive threat.',
+        interactions:[
+          { date:'May 2',  type:'Meeting',   notes:'Verbal yes received. Meera to send contract for signature by May 12. Client satisfied with Phase 1 delivery.' },
+          { date:'Apr 28', type:'Phone Call',notes:'Pre-closing check — confirmed renewal scope and commercial terms.' },
+          { date:'Apr 15', type:'Meeting',   notes:'Renewal scoping — client wants same scope, same team.' }
+        ],
+        actions:[
+          { item:'Send contract for signature by May 12', owner:'Meera P.', status:'In Progress', age:'—' }
+        ]
+      },
+      'PharmCare|May 6': {
+        account:'PharmCare', rep:'Suresh K.', date:'May 6', stage:'Qualification', value:'$0.07M', outcome:'—', score:'—',
+        brief:'Quarterly review rescheduled from Apr 22 no-show. CTO now confirmed. Pricing objection expected — ROI deck must be ready. Critical to advance to Proposal.',
+        interactions:[
+          { date:'Apr 22', type:'Meeting',   notes:'No-show. Rescheduled to May 6.' },
+          { date:'Apr 14', type:'Phone Call',notes:'Confirmed original Apr 22 slot. CTO travelling at the time.' },
+          { date:'Apr 5',  type:'Meeting',   notes:'Qualification call. ROI case requested by CTO before proceeding.' }
+        ],
+        actions:[
+          { item:'Send ROI comparison deck to CTO BEFORE May 6', owner:'Suresh K.', status:'Overdue', age:'17d' },
+          { item:'Confirm CTO attendance for May 6 slot', owner:'Suresh K.', status:'Open', age:'1d' }
+        ]
+      },
+      'CardioTech|May 7': {
+        account:'CardioTech', rep:'Divya L.', date:'May 7', stage:'Qualification', value:'$0.12M', outcome:'—', score:'—',
+        brief:'Follow-up demo — feature gap resolution. VP Product attending. Must address real-time latency and offline mode concerns raised in Apr 24 demo.',
+        interactions:[
+          { date:'Apr 24', type:'Meeting',   notes:'Demo held. Two feature gaps flagged by VP Product.' },
+          { date:'Apr 19', type:'Email',     notes:'Demo materials sent. Attendees confirmed.' }
+        ],
+        actions:[
+          { item:'Respond to real-time latency concern with technical note', owner:'Divya L.', status:'Overdue', age:'13d' },
+          { item:'Confirm offline mode feasibility before May 7', owner:'Divya L.', status:'Open', age:'1d' }
+        ]
+      },
+      'PediaCare|May 7': {
+        account:'PediaCare', rep:'Rohan T.', date:'May 7', stage:'Discovery', value:'$0.20M', outcome:'—', score:'—',
+        brief:'Platform fit assessment — discovery call. New prospect. Goal is to qualify budget, identify decision-maker, and confirm platform scope for pediatric care.',
+        interactions:[
+          { date:'Apr 28', type:'Intro Call',notes:'30-min intro via partner referral. CMO interested in scheduling a discovery call.' },
+          { date:'Apr 22', type:'Email',     notes:'Sent intake questionnaire and case study for pediatric workflow automation.' }
+        ],
+        actions:[
+          { item:'Prepare discovery call deck with pediatric-specific case studies', owner:'Rohan T.', status:'Open', age:'2d' }
+        ]
+      },
+      'OrthoFix|May 8': {
+        account:'OrthoFix', rep:'Kiran R.', date:'May 8', stage:'Negotiation', value:'$0.08M', outcome:'—', score:'—',
+        brief:'Pricing approval — director sign-off needed. Client okay on scope; final blocker is 12-month warranty request and director budget approval.',
+        interactions:[
+          { date:'May 5',  type:'Email',     notes:'OrthoFix legal sent MSA markup. Reviewing with Nalashaa legal.' },
+          { date:'Apr 25', type:'Meeting',   notes:'Final scope locked: 3 roles, 40 exercise templates, offline mode.' },
+          { date:'Apr 14', type:'Proposal Sent', notes:'$8K fixed-price proposal submitted.' }
+        ],
+        actions:[
+          { item:'Internal warranty policy check — confirm 12-month offer viability', owner:'Kiran R.', status:'In Progress', age:'4d' },
+          { item:'Follow up on director budget approval before May 8', owner:'Kiran R.', status:'Open', age:'1d' }
+        ]
+      },
+      'MedTech Corp|May 9': {
+        account:'MedTech Corp', rep:'Vikram S.', date:'May 9', stage:'Proposal', value:'$0.25M', outcome:'—', score:'—',
+        brief:'SOW review with CTO — revised T&M split under review. Phase 2 demo already successful. This meeting is to close the SOW and get PO initiation.',
+        interactions:[
+          { date:'Apr 30', type:'Meeting',   notes:'Demo successful. CTO confirmed budget. SOW revision requested.' },
+          { date:'Apr 22', type:'Email',     notes:'Proposal v2 sent addressing HL7 concerns.' },
+          { date:'Apr 18', type:'Proposal Sent', notes:'Initial proposal at $25K.' }
+        ],
+        actions:[
+          { item:'Send revised SOW with T&M breakdown to CTO by May 14', owner:'Vikram S.', status:'In Progress', age:'—' }
+        ]
+      },
+      'BioGen Labs|May 12': {
+        account:'BioGen Labs', rep:'Kiran R.', date:'May 12', stage:'Proposal', value:'$0.17M', outcome:'—', score:'—',
+        brief:'CIO alignment meeting — new CIO introduced to Phase 2 proposal. Phase 2 scoping complete; procurement pending CIO sign-off. High priority re-engagement.',
+        interactions:[
+          { date:'Apr 28', type:'Meeting',   notes:'Apr 28 meeting rescheduled due to CIO transition.' },
+          { date:'Apr 15', type:'Meeting',   notes:'Phase 2 scoping workshop completed with all 3 lab heads.' },
+          { date:'Apr 1',  type:'Proposal Sent', notes:'Phase 2 proposal at $17K submitted.' }
+        ],
+        actions:[
+          { item:'Prepare CIO onboarding brief covering Phase 1 outcomes', owner:'Kiran R.', status:'Open', age:'2d' },
+          { item:'Confirm May 12 attendance with new CIO EA', owner:'Kiran R.', status:'Open', age:'1d' }
+        ]
+      }
+    };
+
+    function openMeetingRow(account, rep, date) {
+      const key = account + '|' + date;
+      const d = MR_DATA[key];
+      if (!d) return;
+      const outcomeColor = {'No-show':'#DC2626','Held':'#16A34A','Rescheduled':'#F59E0B','Closed-won next steps':'#059669','Follow-up scheduled':'#3B82F6','Renewal verbal':'#7C3AED'}[d.outcome]||'#94A3B8';
+      const scoreBg = d.score==='—'?'#F1F5F9':parseFloat(d.score)>=7.5?'#D1FAE5':parseFloat(d.score)>=6?'#FEF3C7':'#FEE2E2';
+      const scoreCol = d.score==='—'?'#64748B':parseFloat(d.score)>=7.5?'#065F46':parseFloat(d.score)>=6?'#92400E':'#991B1B';
+
+      const chip = (l,v,bg,col) => `<div style="text-align:center;padding:5px 10px;background:${bg};border-radius:6px;min-width:60px;">
+        <div style="font-size:14px;font-weight:800;color:${col};">${v}</div>
+        <div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:#64748B;margin-top:1px;">${l}</div>
+      </div>`;
+      const statsRow = `<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+        ${chip('Stage',d.stage,'var(--bg)','var(--navy)')}
+        ${chip('Value',d.value,'var(--bg)','var(--navy)')}
+        ${chip('Score',d.score,scoreBg,scoreCol)}
+        ${d.outcome!=='—'?chip('Outcome',d.outcome,outcomeColor+'22',outcomeColor):''}
+      </div>`;
+
+      const briefBox = `<div style="background:rgba(255,153,51,0.07);border-left:3px solid #FF9933;border-radius:0 6px 6px 0;padding:9px 13px;margin-bottom:14px;">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#FF9933;margin-bottom:5px;">Meeting Brief</div>
+        <div style="font-size:11px;color:var(--text);line-height:1.55;">${d.brief}</div>
+      </div>`;
+
+      const typeColor = t => ({'Meeting':'#16A34A','Phone Call':'#FF9933','Email':'#64748B','Proposal Sent':'#7C3AED','Intro Call':'#059669'}[t]||'#94A3B8');
+      const interHtml = d.interactions.map((it,i) => {
+        const isLast=i===d.interactions.length-1;
+        return `<div style="display:flex;gap:10px;"><div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:14px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:${i===0?'#FF9933':'var(--border)'};border:2px solid ${i===0?'#FF9933':'#94A3B8'};margin-top:3px;flex-shrink:0;"></div>
+          ${!isLast?`<div style="flex:1;width:2px;background:var(--border);margin:3px 0;min-height:14px;"></div>`:''}
+        </div><div style="flex:1;padding-bottom:${isLast?'0':'8px'};">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+            <span style="font-size:9px;font-weight:700;padding:1px 6px;background:${typeColor(it.type)}20;color:${typeColor(it.type)};border-radius:8px;">${it.type}</span>
+            <span style="font-size:10px;color:var(--text-muted);">${it.date}</span>
+          </div>
+          <div style="font-size:11px;color:var(--text);line-height:1.45;">${it.notes}</div>
+        </div></div>`;
+      }).join('');
+
+      const statusColor = s => ({'Overdue':'#DC2626','Open':'#F59E0B','In Progress':'#3B82F6','Scheduled':'#16A34A'}[s]||'#94A3B8');
+      const actionsHtml = d.actions.length ? `<div style="margin-top:14px;">
+        <div style="background:var(--navy);color:#fff;padding:6px 10px;border-radius:5px;margin-bottom:8px;font-size:10px;font-weight:700;letter-spacing:0.3px;">⚡ Action Items</div>
+        ${d.actions.map(a=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">
+          <span style="font-size:9px;font-weight:700;padding:2px 7px;background:${statusColor(a.status)}20;color:${statusColor(a.status)};border-radius:8px;flex-shrink:0;margin-top:1px;">${a.status}</span>
+          <div style="flex:1;font-size:11px;color:var(--text);">${a.item}</div>
+          <div style="font-size:10px;color:var(--text-muted);flex-shrink:0;text-align:right;">${a.owner}${a.age!=='—'?`<br><span style="color:${statusColor(a.status)};font-weight:700;">${a.age}</span>`:''}</div>
+        `).join('')}
+      </div>` : '';
+
+      openFlyoutPinned({
+        title: account + ' · ' + date,
+        sub: 'Rep: ' + d.rep + ' · Stage: ' + d.stage + ' · ' + d.value,
+        pinned: statsRow,
+        body: briefBox + '<div class="g-section-title">Activity Timeline</div>' + interHtml + actionsHtml
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() { });
+  </script>
+</body>
+</html>

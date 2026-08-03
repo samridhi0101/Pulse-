@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="blue">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Talent Acquisition — Pulse · Nalashaa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .ta-tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 18px; flex-wrap: wrap; }
+    .ta-tab { padding: 10px 14px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-muted); border-bottom: 3px solid transparent; margin-bottom: -2px; }
+    .ta-tab.active { color: var(--navy); border-bottom-color: var(--orange); }
+    [data-mode="dark"] .ta-tab.active { color: #fff; }
+    .ta-pane { display: none; }
+    .ta-pane.active { display: block; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px; }
+    .kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; border-left: 4px solid transparent; }
+    .kpi-card.green { border-left-color: var(--green); }
+    .kpi-card.amber { border-left-color: var(--amber); }
+    .kpi-card.red { border-left-color: var(--red); }
+    .kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; }
+    .kpi-value { font-size: 22px; font-weight: 800; color: var(--navy); }
+    [data-mode="dark"] .kpi-value { color: #fff; }
+    .kpi-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .funnel-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .funnel-stage { width: 140px; font-weight: 700; font-size: 12px; color: var(--navy); }
+    [data-mode="dark"] .funnel-stage { color: #fff; }
+    .funnel-bar { flex: 1; height: 24px; background: var(--border); border-radius: 4px; position: relative; overflow: hidden; }
+    .funnel-bar-fill { height: 100%; background: linear-gradient(90deg, var(--orange), var(--blue)); }
+    .funnel-count { width: 80px; text-align: right; font-weight: 700; font-size: 13px; }
+    .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+    .badge.green { background: #D1FAE5; color: #065F46; }
+    .badge.amber { background: #FEF3C7; color: #92400E; }
+    .badge.red { background: #FEE2E2; color: #991B1B; }
+    .ta-tbl { width: 100%; font-size: 12px; border-collapse: collapse; background: var(--card); border-radius: 10px; overflow: hidden; }
+    .ta-tbl th { padding: 10px 12px; background: var(--navy); color: #fff; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; text-align: left; }
+    .ta-tbl td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+    .ta-tbl tr:hover td { background: var(--bg); }
+    .gauge-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+    .gauge-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+    .gauge-name { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px; }
+    .gauge-val { font-size: 28px; font-weight: 800; color: var(--navy); }
+    [data-mode="dark"] .gauge-val { color: #fff; }
+    .gauge-target { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+    .gauge-bar { height: 8px; background: var(--border); border-radius: 4px; margin-top: 10px; position: relative; overflow: hidden; }
+    .gauge-bar-fill { height: 100%; border-radius: 4px; }
+    .gauge-bar-fill.green { background: var(--green); }
+    .gauge-bar-fill.amber { background: var(--amber); }
+    .gauge-bar-fill.red { background: var(--red); }
+    .section-title { font-size: 13px; font-weight: 700; color: var(--navy); margin: 14px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--border); }
+    [data-mode="dark"] .section-title { color: #fff; }
+    .data-fresh { font-size: 10px; color: var(--text-muted); margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:0;">
+      <button class="hamburger-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <div class="pulse-logo">
+        <span class="pulse-icon"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="2" width="25" height="17" rx="2.5" stroke="#FF9933" stroke-width="1.5"/><line x1="14" y1="19" x2="14" y2="23.5" stroke="#FF9933" stroke-width="1.5"/><line x1="9" y1="23.5" x2="19" y2="23.5" stroke="#FF9933" stroke-width="1.8" stroke-linecap="round"/><polyline points="4,10.5 7,10.5 8.5,6.5 10,14.5 11.5,10.5 13,10.5 14,8 15,13 16.5,10.5 18,10.5 24,10.5" stroke="#FF9933" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg></span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <button class="help-btn">?</button>
+      <div class="alert-bell"><i class="bi bi-bell-fill" style="font-size:16px;"></i></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html" class="active"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+    <div class="sidebar-brand"><img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo"></div>
+  </div>
+
+  <div class="main" style="padding:18px 28px;">
+    <div class="dept-meta-above"><i class="bi bi-clock"></i> Data as of 2026-05-05 09:14 · Source: Lever ATS</div>
+    <div class="dept-banner">
+      <div class="dept-banner-top">
+        <div class="dept-banner-titleblock">
+          <div class="dept-banner-title">Talent Acquisition <span class="info-i" data-tip-title="Talent Acquisition" data-tip="JR pipeline, screening throughput, interview velocity, offer management, and hiring outcomes — owned by TA Head Priya Menon.">i</span></div>
+          <div class="dept-banner-sub">Owner: Priya Menon · 30 open JRs · 84 candidates in funnel</div>
+        </div>
+        <div class="dept-banner-stats">
+          <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">30</div><div class="dept-banner-stat-lbl">Open JRs</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">84</div><div class="dept-banner-stat-lbl">In Funnel</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val red">14</div><div class="dept-banner-stat-lbl">Stuck</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">42d</div><div class="dept-banner-stat-lbl">Time to Hire</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val green">78%</div><div class="dept-banner-stat-lbl">Offer Accept</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val green">5</div><div class="dept-banner-stat-lbl">Hires MTD</div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div class="ta-tabs">
+      <div class="ta-tab active" onclick="showTab('jr', this)"><i class="bi bi-briefcase-fill"></i> Requisition Mgmt <span class="badge red">2 overdue</span></div>
+      <div class="ta-tab" onclick="showTab('pipeline', this)"><i class="bi bi-funnel-fill"></i> Pipeline</div>
+      <div class="ta-tab" onclick="showTab('offer', this)"><i class="bi bi-envelope-paper-fill"></i> Offer Management</div>
+      <div class="ta-tab" onclick="showTab('outcome', this)"><i class="bi bi-award-fill"></i> Hiring Outcomes</div>
+    </div>
+
+    <!-- TAB 1: Requisition Management -->
+    <div class="ta-pane active" id="pane-jr">
+      <div class="kpi-grid">
+        <div class="kpi-card amber static-tile"><div class="kpi-label">Open JRs</div><div class="kpi-value">42</div><div class="kpi-sub">12 critical · 18 normal · 12 future-dated</div></div>
+        <div class="kpi-card red static-tile"><div class="kpi-label">JR Approval TAT <span class="info-i" data-tip="Average days from JR raised to JR approved.">i</span></div><div class="kpi-value">5.8d</div><div class="kpi-sub">Target ≤ 3d · 2 overdue &gt; 7d</div></div>
+        
+        
+      </div>
+
+      <div class="section-title">Open Requisitions · JR ID · Pipeline · CV Sourced · Interviews</div>
+      <table class="ta-tbl">
+        <thead><tr><th>JR ID</th><th>Role</th><th>BU</th><th>Hiring Manager</th><th>Stage</th><th>Days Open</th><th>Pipeline</th><th>CV Sourced</th><th>Interviews</th></tr></thead>
+        <tbody>
+          <tr onclick="openJRFunnel('NLS-JR-2026-0142')"><td><strong>NLS-JR-2026-0142</strong></td><td>Senior Java Engineer</td><td>HLS</td><td>John Doe</td><td><span class="badge red">Pending Approval</span></td><td>9d</td><td>12 candidates</td><td>24</td><td>5</td></tr>
+          <tr onclick="openJRFunnel('NLS-JR-2026-0156')"><td><strong>NLS-JR-2026-0156</strong></td><td>UX Designer</td><td>NHS</td><td>Karthik R.</td><td><span class="badge amber">Sourcing</span></td><td>14d</td><td>4 candidates</td><td>18</td><td>3</td></tr>
+          <tr onclick="openJRFunnel('NLS-JR-2026-0148')"><td><strong>NLS-JR-2026-0148</strong></td><td>Data Engineer</td><td>HLS</td><td>John Doe</td><td><span class="badge green">Interview</span></td><td>22d</td><td>8 candidates · 3 stuck</td><td>12</td><td>4</td></tr>
+          <tr onclick="openJRFunnel('NLS-JR-2026-0162')"><td><strong>NLS-JR-2026-0162</strong></td><td>QA Lead</td><td>NHS</td><td>Sarah Patel</td><td><span class="badge red">Pending Approval</span></td><td>8d</td><td>6 candidates</td><td>22</td><td>6</td></tr>
+          <tr onclick="openJRFunnel('NLS-JR-2026-0151')"><td><strong>NLS-JR-2026-0151</strong></td><td>Product Manager</td><td>NHS</td><td>Vikram S.</td><td><span class="badge amber">Sourcing</span></td><td>18d</td><td>16 candidates</td><td>16</td><td>2</td></tr>
+          <tr onclick="openJRFunnel('NLS-JR-2026-0128')"><td><strong>NLS-JR-2026-0128</strong></td><td>DevOps Engineer</td><td>HLS</td><td>John Doe</td><td><span class="badge green">Offer</span></td><td>32d</td><td>3 candidates · 1 in offer</td><td>9</td><td>4</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TAB 2: Pipeline (merged Sourcing+Screening + Interview) -->
+    <div class="ta-pane" id="pane-pipeline">
+      <div class="kpi-grid">
+        <div class="kpi-card green static-tile"><div class="kpi-label">Applications (MTD)</div><div class="kpi-value">1,248</div><div class="kpi-sub">↑ 18% MoM</div></div>
+        <div class="kpi-card amber"><div class="kpi-label">Screening-to-Schedule Rate</div><div class="kpi-value">22%</div><div class="kpi-sub">Target ≥ 30%</div></div>
+        <div class="kpi-card amber"><div class="kpi-label">Avg Days per Stage</div><div class="kpi-value">4.2d</div><div class="kpi-sub">Target ≤ 3d</div></div>
+        <div class="kpi-card red"><div class="kpi-label">Stuck Candidates</div><div class="kpi-value">14</div><div class="kpi-sub">No movement &gt; 7d</div></div>
+      </div>
+
+      <div class="section-title">Pipeline Funnel · All stages combined</div>
+      <div style="background:var(--card);padding:18px;border:1px solid var(--border);border-radius:10px;">
+        <div class="funnel-row" onclick="openPipelineStage('Applied', 1248)"><div class="funnel-stage">Applied</div><div class="funnel-bar"><div class="funnel-bar-fill" style="width:100%;"></div></div><div class="funnel-count">1,248</div></div>
+        <div class="funnel-row" onclick="openPipelineStage('Screened', 474)"><div class="funnel-stage">Screened</div><div class="funnel-bar"><div class="funnel-bar-fill" style="width:38%;"></div></div><div class="funnel-count">474</div></div>
+        <div class="funnel-row" onclick="openPipelineStage('Phone Screen', 280)"><div class="funnel-stage">Phone Screen</div><div class="funnel-bar"><div class="funnel-bar-fill" style="width:22%;"></div></div><div class="funnel-count">280</div></div>
+        <div class="funnel-row" onclick="openPipelineStage('Tech Round', 168)"><div class="funnel-stage">Tech Round</div><div class="funnel-bar"><div class="funnel-bar-fill" style="width:13%;"></div></div><div class="funnel-count">168</div></div>
+        <div class="funnel-row" onclick="openPipelineStage('Hiring Manager', 96)"><div class="funnel-stage">Hiring Manager</div><div class="funnel-bar"><div class="funnel-bar-fill" style="width:8%;"></div></div><div class="funnel-count">96</div></div>
+        <div class="funnel-row" onclick="openPipelineStage('Final / Offer', 42)"><div class="funnel-stage">Final / Offer</div><div class="funnel-bar"><div class="funnel-bar-fill" style="width:3%;"></div></div><div class="funnel-count">42</div></div>
+      </div>
+
+      <div class="section-title">Active Candidates · Sorted by days at stage (stuck first)</div>
+      <table class="ta-tbl">
+        <thead><tr><th>Candidate</th><th>JR</th><th>Role</th><th>Hiring Manager</th><th>Stage</th><th>Days at Stage</th><th>Recruiter</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr onclick="openCandidate('B. Khan')"><td><strong>B. Khan</strong></td><td>NLS-JR-2026-0166</td><td>Senior React</td><td>John Doe</td><td>Phone Screen</td><td><span class="badge amber">6d</span></td><td>Neha B.</td><td><span class="badge amber">Active</span></td></tr>
+          <tr onclick="openCandidate('E. Nair')"><td><strong>E. Nair</strong></td><td>NLS-JR-2026-0162</td><td>QA Engineer</td><td>Sarah Patel</td><td>Phone Screen</td><td><span class="badge green">2d</span></td><td>Neha B.</td><td><span class="badge green">On track</span></td></tr>
+          <tr onclick="openCandidate('S. Krishna')"><td><strong>S. Krishna</strong></td><td>NLS-JR-2026-0148</td><td>Data Engineer</td><td>John Doe</td><td>Tech Round</td><td><span class="badge red">12d</span></td><td>Rakesh G.</td><td><span class="badge red">Stuck</span></td></tr>
+          <tr onclick="openCandidate('A. Sen')"><td><strong>A. Sen</strong></td><td>NLS-JR-2026-0162</td><td>QA Lead</td><td>Sarah Patel</td><td>Tech Round</td><td><span class="badge amber">7d</span></td><td>Rakesh G.</td><td><span class="badge amber">Slow</span></td></tr>
+          <tr onclick="openCandidate('C. Pillai')"><td><strong>C. Pillai</strong></td><td>NLS-JR-2026-0142</td><td>Senior Java Eng</td><td>John Doe</td><td>Tech Round</td><td><span class="badge green">4d</span></td><td>Priya M.</td><td><span class="badge green">On track</span></td></tr>
+          <tr onclick="openCandidate('R. Iyer')"><td><strong>R. Iyer</strong></td><td>NLS-JR-2026-0142</td><td>Senior Java Eng</td><td>John Doe</td><td>Hiring Manager</td><td><span class="badge red">14d</span></td><td>Priya M.</td><td><span class="badge red">Stuck</span></td></tr>
+          <tr onclick="openCandidate('D. Naidu')"><td><strong>D. Naidu</strong></td><td>NLS-JR-2026-0158</td><td>DevOps Engineer</td><td>Anita Mehta</td><td>Hiring Manager</td><td><span class="badge amber">8d</span></td><td>Priya M.</td><td><span class="badge amber">Awaiting</span></td></tr>
+          <tr onclick="openCandidate('D. Ramesh')"><td><strong>D. Ramesh</strong></td><td>NLS-JR-2026-0171</td><td>Mobile Developer</td><td>John Doe</td><td>Hiring Manager</td><td><span class="badge green">3d</span></td><td>Rakesh G.</td><td><span class="badge green">On track</span></td></tr>
+          <tr onclick="openCandidate('M. Bhatia')"><td><strong>M. Bhatia</strong></td><td>NLS-JR-2026-0156</td><td>UX Designer</td><td>Karthik R.</td><td>Final / Offer</td><td><span class="badge red">10d</span></td><td>Neha B.</td><td><span class="badge amber">Counter offer</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TAB 4: Offer Management -->
+    <div class="ta-pane" id="pane-offer">
+      <div class="kpi-grid">
+        <div class="kpi-card green" onclick="openOfferAcceptance()"><div class="kpi-label">Offer Acceptance Rate</div><div class="kpi-value">78%</div><div class="kpi-sub">Target ≥ 70%</div></div>
+        <div class="kpi-card amber static-tile"><div class="kpi-label">Offers Pending</div><div class="kpi-value">14</div><div class="kpi-sub">Avg 5d since extended</div></div>
+        <div class="kpi-card green" onclick="openBudgetSaving()"><div class="kpi-label">Budget vs Offer (Saving)</div><div class="kpi-value">$2,880</div><div class="kpi-sub">Avg saving per closed hire MTD</div></div>
+        <div class="kpi-card amber" onclick="openOfferToJoin()"><div class="kpi-label">Offer-to-Join TAT</div><div class="kpi-value">38d</div><div class="kpi-sub">Target ≤ 30d</div></div>
+      </div>
+      <div class="section-title">Offers Outstanding</div>
+      <table class="ta-tbl">
+        <thead><tr><th>Candidate</th><th>JR</th><th>Role</th><th>Offered</th><th>Days Out</th><th>Status</th><th>Last Contact</th></tr></thead>
+        <tbody>
+          <tr onclick="openCandidate('R. Iyer')"><td><strong>R. Iyer</strong></td><td>NLS-JR-2026-0142</td><td>Senior Java Engineer</td><td>₹28 LPA</td><td>3d</td><td><span class="badge green">Verbal Yes</span></td><td>Today</td></tr>
+          <tr onclick="openCandidate('S. Krishna')"><td><strong>S. Krishna</strong></td><td>NLS-JR-2026-0148</td><td>Data Engineer</td><td>₹24 LPA</td><td>7d</td><td><span class="badge amber">Negotiating</span></td><td>2d ago</td></tr>
+          <tr onclick="openCandidate('M. Bhatia')"><td><strong>M. Bhatia</strong></td><td>NLS-JR-2026-0156</td><td>UX Designer</td><td>₹19 LPA</td><td>9d</td><td><span class="badge red">Counter Offer</span></td><td>4d ago</td></tr>
+          <tr onclick="openCandidate('D. Naidu')"><td><strong>D. Naidu</strong></td><td>NLS-JR-2026-0158</td><td>DevOps Engineer</td><td>₹26 LPA</td><td>1d</td><td><span class="badge amber">Awaiting</span></td><td>Today</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TAB 5: Hiring Outcomes -->
+    <div class="ta-pane" id="pane-outcome">
+      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="kpi-card amber static-tile"><div class="kpi-label">Time to Hire (overall)</div><div class="kpi-value">42d</div><div class="kpi-sub">Target ≤ 35d · see breakdown below</div></div>
+        <div class="kpi-card red" onclick="openSlipThrough()"><div class="kpi-label">Slip Through Rate <span class="info-i" data-tip="% of new hires who exit within 90 days. Lower is better.">i</span></div><div class="kpi-value">8%</div><div class="kpi-sub">Target ≤ 5% · click for HM breakdown</div></div>
+        <div class="kpi-card green" onclick="openHiresClosed()"><div class="kpi-label">Hires Closed (MTD)</div><div class="kpi-value">5</div><div class="kpi-sub">Target 6 · click for HM breakdown</div></div>
+      </div>
+
+      <div class="seg-tabs">
+        <span class="seg-tab amber active" onclick="ttSwitch('junior', this)">Junior · 28d</span>
+        <span class="seg-tab amber" onclick="ttSwitch('mid', this)">Mid-level · 42d</span>
+        <span class="seg-tab red" onclick="ttSwitch('senior', this)">Senior · 68d</span>
+      </div>
+      <div class="card-box" style="padding:0;overflow:hidden;">
+        <div id="tt-junior" class="tt-pane">
+          <table class="ta-tbl"><thead><tr><th>Role</th><th>Target</th><th>Actual avg</th><th>Hires this month</th><th>Status</th></tr></thead><tbody>
+            <tr><td>Junior Java Engineer</td><td>≤ 25d</td><td>26d</td><td>4</td><td><span class="badge amber">Watch</span></td></tr>
+            <tr><td>Junior QA</td><td>≤ 25d</td><td>30d</td><td>3</td><td><span class="badge amber">Watch</span></td></tr>
+            <tr><td>Junior React Dev</td><td>≤ 25d</td><td>28d</td><td>2</td><td><span class="badge amber">Watch</span></td></tr>
+          </tbody></table>
+        </div>
+        <div id="tt-mid" class="tt-pane" style="display:none;">
+          <table class="ta-tbl"><thead><tr><th>Role</th><th>Target</th><th>Actual avg</th><th>Hires this month</th><th>Status</th></tr></thead><tbody>
+            <tr><td>Mid Java Engineer</td><td>≤ 35d</td><td>42d</td><td>5</td><td><span class="badge amber">Slow</span></td></tr>
+            <tr><td>Mid QA Engineer</td><td>≤ 35d</td><td>38d</td><td>3</td><td><span class="badge amber">Slow</span></td></tr>
+            <tr><td>Mid Mobile Dev</td><td>≤ 35d</td><td>46d</td><td>2</td><td><span class="badge red">Slow</span></td></tr>
+          </tbody></table>
+        </div>
+        <div id="tt-senior" class="tt-pane" style="display:none;">
+          <table class="ta-tbl"><thead><tr><th>Role</th><th>Target</th><th>Actual avg</th><th>Hires this month</th><th>Status</th></tr></thead><tbody>
+            <tr><td>Senior Java Engineer</td><td>≤ 50d</td><td>68d</td><td>3</td><td><span class="badge red">Slow</span></td></tr>
+            <tr><td>Senior QA Lead</td><td>≤ 50d</td><td>54d</td><td>2</td><td><span class="badge amber">Slow</span></td></tr>
+            <tr><td>Senior DevOps</td><td>≤ 50d</td><td>72d</td><td>1</td><td><span class="badge red">Slow</span></td></tr>
+          </tbody></table>
+        </div>
+      </div></div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    function showTab(t, el) {
+      document.querySelectorAll('.ta-tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.ta-pane').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('pane-' + t).classList.add('active');
+    }
+    function toggleSidebar() { var sb=document.querySelector('.sidebar'); if(sb) sb.classList.toggle('collapsed'); document.body.classList.toggle('sidebar-collapsed'); }
+  </script>
+
+
+
+
+<script>
+// === TA realistic flyouts ===
+const TA_KPI_FLYOUTS = {
+  'Open JRs': {
+    sub: '42 open · 12 critical', body: `<div class="g-stat-row"><div class="g-stat"><div class="g-stat-label">Critical</div><div class="g-stat-val red">12</div></div><div class="g-stat"><div class="g-stat-label">Normal</div><div class="g-stat-val">18</div></div><div class="g-stat"><div class="g-stat-label">Future-dated</div><div class="g-stat-val">12</div></div></div>
+    <div class="g-section-title">Top open JRs · Days open · Activity</div>
+    <table class="g-tbl"><thead><tr><th>JR ID</th><th>Role</th><th>HM</th><th>Days Open</th><th>CVs Sourced</th><th>Interviews</th></tr></thead><tbody>
+    <tr><td>NLS-JR-2026-0142</td><td>Senior Java Eng</td><td>John Doe</td><td>9d</td><td>24</td><td>5</td></tr>
+    <tr><td>NLS-JR-2026-0156</td><td>UX Designer</td><td>Karthik R.</td><td>14d</td><td>18</td><td>3</td></tr>
+    <tr><td>NLS-JR-2026-0148</td><td>Data Engineer</td><td>John Doe</td><td>22d</td><td>12</td><td>4</td></tr>
+    <tr><td>NLS-JR-2026-0162</td><td>QA Lead</td><td>Sarah Patel</td><td>8d</td><td>22</td><td>6</td></tr>
+    <tr><td>NLS-JR-2026-0151</td><td>Product Manager</td><td>Vikram S.</td><td>18d</td><td>16</td><td>2</td></tr>
+    </tbody></table>` },
+  'JR Approval TAT': {
+    sub: '5.8 days avg · target ≤ 3d',
+    body: `<div class="g-section-title">JRs stuck in approval · click row for details</div>
+    <table class="g-tbl"><thead><tr><th>JR ID</th><th>Role</th><th>Hiring Manager</th><th>Stuck for</th><th>Reason</th></tr></thead><tbody>
+    <tr><td>NLS-JR-2026-0142</td><td>Senior Java Eng</td><td>John Doe</td><td><span class="g-tag red">9d</span></td><td>Awaiting headcount approval</td></tr>
+    <tr><td>NLS-JR-2026-0162</td><td>QA Lead</td><td>Sarah Patel</td><td><span class="g-tag amber">8d</span></td><td>Budget realignment</td></tr>
+    <tr><td>NLS-JR-2026-0148</td><td>Data Engineer</td><td>John Doe</td><td><span class="g-tag amber">5d</span></td><td>Skill mix discussion</td></tr>
+    </tbody></table>` },
+  'Active Pipeline': {
+    sub: '186 candidates · across all stages',
+    body: `<div class="g-section-title">Pipeline by stage</div>
+    <table class="g-tbl"><thead><tr><th>Stage</th><th>Candidates</th><th>Avg days</th></tr></thead><tbody>
+    <tr><td>Sourced</td><td>52</td><td>3d</td></tr>
+    <tr><td>Phone screen</td><td>38</td><td>5d</td></tr>
+    <tr><td>Tech round</td><td>42</td><td>8d</td></tr>
+    <tr><td>Hiring manager</td><td>28</td><td>6d</td></tr>
+    <tr><td>Final/Offer</td><td>26</td><td>4d</td></tr>
+    </tbody></table>` },
+  'Hiring Velocity': {
+    sub: '11 hires/week · last 4 weeks',
+    body: `<div class="g-section-title">Last 4 weeks · by role</div>
+    <table class="g-tbl"><thead><tr><th>Week</th><th>Hires</th><th>Top role</th><th>Source mix</th></tr></thead><tbody>
+    <tr><td>This week</td><td>11</td><td>Java Eng (4)</td><td>Inbound 6 · Referral 3 · Outbound 2</td></tr>
+    <tr><td>Last week</td><td>13</td><td>QA (5)</td><td>Inbound 8 · Referral 4 · Outbound 1</td></tr>
+    <tr><td>2 weeks ago</td><td>9</td><td>DevOps (3)</td><td>Inbound 5 · Referral 2 · Outbound 2</td></tr>
+    <tr><td>3 weeks ago</td><td>11</td><td>UX (3)</td><td>Inbound 7 · Referral 3 · Outbound 1</td></tr>
+    </tbody></table>` },
+  'Applications Received (MTD)': { sub:'1,248 apps · ↑18% MoM', body:`<div class="g-section-title">By source</div><table class="g-tbl"><thead><tr><th>Source</th><th>Apps</th><th>Conv to screen</th></tr></thead><tbody><tr><td>Job boards</td><td>624 (50%)</td><td>32%</td></tr><tr><td>Referral</td><td>312 (25%)</td><td>56%</td></tr><tr><td>LinkedIn</td><td>186 (15%)</td><td>42%</td></tr><tr><td>Career site</td><td>126 (10%)</td><td>48%</td></tr></tbody></table>` },
+  'Screening-to-Schedule Rate': { sub:'22% · target ≥ 30%', body:'<div class="g-section-title">By recruiter</div><table class="g-tbl"><thead><tr><th>Recruiter</th><th>Screened</th><th>Scheduled</th><th>%</th></tr></thead><tbody><tr><td>Priya M.</td><td>84</td><td>22</td><td>26%</td></tr><tr><td>Rakesh G.</td><td>76</td><td>14</td><td>18%</td></tr><tr><td>Neha B.</td><td>92</td><td>26</td><td>28%</td></tr></tbody></table>' },
+  'Avg Call Quality Score': { sub:'7.4/10 · 8 recruiters', body:'<div class="g-section-title">By recruiter</div><table class="g-tbl"><thead><tr><th>Recruiter</th><th>Calls 30d</th><th>Avg Score</th></tr></thead><tbody><tr><td>Priya M.</td><td>42</td><td>8.2</td></tr><tr><td>Rakesh G.</td><td>38</td><td>7.4</td></tr><tr><td>Neha B.</td><td>46</td><td>6.8</td></tr></tbody></table>' },
+  'Sourcing Spend ROI': { sub:'$455 cost per hire · target ≤ $300', body:'<div class="g-section-title">By channel</div><table class="g-tbl"><thead><tr><th>Channel</th><th>Spend (MTD)</th><th>Hires</th><th>Cost/hire</th></tr></thead><tbody><tr><td>Job boards</td><td>$3,200</td><td>8</td><td>$400</td></tr><tr><td>LinkedIn</td><td>$2,800</td><td>4</td><td>$700</td></tr><tr><td>Events</td><td>$1,400</td><td>2</td><td>$700</td></tr></tbody></table>' },
+  'Avg Days per Stage': { sub:'4.2d avg · target ≤ 3d', body:'<div class="g-section-title">By stage</div><table class="g-tbl"><thead><tr><th>Stage</th><th>Avg days</th></tr></thead><tbody><tr><td>Phone screen</td><td>3.2d</td></tr><tr><td>Tech round</td><td>5.4d</td></tr><tr><td>Hiring mgr</td><td>4.8d</td></tr><tr><td>Final</td><td>3.6d</td></tr></tbody></table>' },
+  'Stuck Candidates': { sub:'14 stuck > 7d · click row for details', body:'<div class="g-section-title">Stuck candidate list</div><table class="g-tbl"><thead><tr><th>Candidate</th><th>Role</th><th>Stage</th><th>Days stuck</th></tr></thead><tbody><tr><td>R. Iyer</td><td>Sr Java</td><td>HM round</td><td>12d</td></tr><tr><td>S. Krishna</td><td>Data Eng</td><td>Tech round</td><td>9d</td></tr><tr><td>M. Bhatia</td><td>UX</td><td>Final</td><td>8d</td></tr></tbody></table>' },
+  'Tech Round Pass Rate': { sub:'62% · last 30d', body:'<p>62 of 100 tech rounds passed last 30 days. By role: Java 70% · QA 58% · DevOps 64%.</p>' },
+  'Cultural Fit Pass': { sub:'81% · last 30d', body:'<p>Cultural fit assessed in HM round.</p>' },
+  'Offer Acceptance Rate': { sub:'78% · target ≥ 70%', body:'<div class="g-section-title">By BU</div><table class="g-tbl"><thead><tr><th>BU</th><th>Offers</th><th>Accepted</th><th>%</th></tr></thead><tbody><tr><td>HLS</td><td>14</td><td>12</td><td>86%</td></tr><tr><td>NHS</td><td>8</td><td>6</td><td>75%</td></tr><tr><td>Common</td><td>6</td><td>4</td><td>67%</td></tr></tbody></table>' },
+  'Offers Pending': { sub:'14 offers out · avg 5d', body:'<div class="g-section-title">Offers Outstanding</div><table class="g-tbl"><thead><tr><th>Candidate</th><th>Role</th><th>Offered</th><th>Days out</th><th>Status</th></tr></thead><tbody><tr><td>R. Iyer</td><td>Sr Java Eng</td><td>$33,600</td><td>3d</td><td>Verbal Yes</td></tr><tr><td>S. Krishna</td><td>Data Eng</td><td>$28,800</td><td>7d</td><td>Negotiating</td></tr><tr><td>M. Bhatia</td><td>UX Designer</td><td>$22,800</td><td>9d</td><td>Counter Offer</td></tr></tbody></table>' },
+  'Budget vs Offer (Saving)': { sub:'$2,880 avg saving · MTD', body:'<p>Average saving per closed hire = approved band − offered amount.</p>' },
+  'Offer-to-Join TAT': { sub:'38d · target ≤ 30d', body:'<p>Days from offer accept to first day. Drivers: notice period 30d standard.</p>' },
+  'Time to Hire (overall)': { sub:'42d avg · target ≤ 35d', body:'<p>Time from JR open to candidate first day. Varies by seniority — Junior 28d / Mid 42d / Senior 68d.</p>' },
+  'Slip Through Rate': { sub:'8% · target ≤ 5%', body:'<div class="g-section-title">90-day exits this quarter</div><table class="g-tbl"><thead><tr><th>Name</th><th>Role</th><th>Offer Date</th><th>Rejection Date</th><th>Reason</th></tr></thead><tbody><tr><td>A. Sen</td><td>Java Eng</td><td>Feb 5</td><td>Feb 14 (offer)</td><td>Counter-offer accepted</td></tr><tr><td>B. Khan</td><td>QA</td><td>Mar 1</td><td>Mar 12 (offer)</td><td>Comp gap</td></tr><tr><td>C. Verma</td><td>DevOps</td><td>Mar 18</td><td>Mar 24 (joined, exited Apr 22)</td><td>Cultural fit · 90d slip</td></tr><tr><td>D. Ramesh</td><td>Mobile</td><td>Apr 2</td><td>Apr 8 (offer)</td><td>Travel reason</td></tr></tbody></table>' },
+  '90-day Retention': { sub:'92% · last cohort', body:'<p>Of last quarter cohort (24 hires), 22 still with company at 90 days.</p>' },
+  'Hires Closed (MTD)': { sub:'28 closed · target 30', body:'<div class="g-section-title">By BU</div><table class="g-tbl"><thead><tr><th>BU</th><th>Hires</th></tr></thead><tbody><tr><td>HLS</td><td>12</td></tr><tr><td>NHS</td><td>8</td></tr><tr><td>Common</td><td>8</td></tr></tbody></table>' }
+};
+
+(function() {
+  // KPI cards
+  document.querySelectorAll('.kpi-card').forEach(card => {
+    if (card.classList.contains('static-tile')) return;  // skip non-clickable
+    const lbl = card.querySelector('.kpi-label')?.textContent.trim();
+    const val = card.querySelector('.kpi-value')?.textContent.trim();
+    if (!lbl) return;
+    // Clean trailing 'i' (info icon mark)
+    const cleanLbl = lbl.replace(/i$/, '').trim();
+    const data = TA_KPI_FLYOUTS[cleanLbl];
+    card.style.cursor = 'pointer';
+    card.onclick = () => {
+      if (data) openFlyout({ title: cleanLbl, sub: val + ' · ' + data.sub, body: data.body });
+      else openFlyout({ title: cleanLbl, sub: val, body: '<p>Detail view for this KPI.</p>' });
+    };
+  });
+
+  // Table rows in TA — open candidate/JR detail
+  document.querySelectorAll('.ta-tbl tbody tr').forEach(row => {
+    if (row.onclick) return;
+    row.style.cursor = 'pointer';
+    const first = row.querySelector('td')?.textContent.trim();
+    row.onclick = () => openCandidate(first || 'Record');
+  });
+  // Funnel rows
+  document.querySelectorAll('.funnel-row').forEach(row => {
+    if (row.onclick) return;
+    const stage = row.querySelector('.funnel-stage')?.textContent.trim();
+    const count = row.querySelector('.funnel-count')?.textContent.trim();
+    row.style.cursor = 'pointer';
+    row.onclick = () => openFlyout({
+      title: 'Funnel: ' + stage, sub: count + ' candidates',
+      body: `<div class="g-section-title">Top candidates at this stage</div>
+      <table class="g-tbl"><thead><tr><th>Candidate</th><th>Role</th><th>Days at stage</th><th>Status</th></tr></thead><tbody>
+      <tr><td>R. Iyer</td><td>Sr Java Eng</td><td>3d</td><td><span class="g-tag green">Active</span></td></tr>
+      <tr><td>S. Krishna</td><td>Data Eng</td><td>7d</td><td><span class="g-tag amber">Slow</span></td></tr>
+      <tr><td>M. Bhatia</td><td>UX Designer</td><td>9d</td><td><span class="g-tag red">Stuck</span></td></tr>
+      <tr><td>D. Naidu</td><td>DevOps</td><td>2d</td><td><span class="g-tag green">Active</span></td></tr>
+      </tbody></table>`
+    });
+  });
+  // Gauge cards
+  document.querySelectorAll('.gauge-card').forEach(g => {
+    if (g.onclick) return;
+    g.style.cursor = 'pointer';
+    const name = g.querySelector('.gauge-name')?.textContent.trim();
+    const val = g.querySelector('.gauge-val')?.textContent.trim();
+    g.onclick = () => openFlyout({title: name, sub: val + ' · time-to-hire by band',
+      body: `<div class="g-section-title">Roles in this band</div>
+      <table class="g-tbl"><thead><tr><th>Role</th><th>Avg days</th><th>Status</th></tr></thead><tbody>
+      <tr><td>Senior Java</td><td>68d</td><td><span class="g-tag red">Slow</span></td></tr>
+      <tr><td>Senior QA</td><td>54d</td><td><span class="g-tag amber">Watch</span></td></tr>
+      <tr><td>Senior DevOps</td><td>72d</td><td><span class="g-tag red">Slow</span></td></tr>
+      </tbody></table>`});
+  });
+})();
+</script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    });
+  </script>
+
+<script>
+window.openPipelineStage = function(stage, count) {
+  openFlyout({title:'Pipeline Stage: ' + stage, sub: count + ' candidates',
+    body: `<div class="g-section-title">Top candidates</div>
+    <table class="g-tbl"><thead><tr><th>Candidate</th><th>Role</th><th>Days</th><th>Status</th></tr></thead><tbody>
+    ${Array.from({length: 10}, (_, i) => `<tr><td>Candidate ${i+1}</td><td>Role ${i % 5 + 1}</td><td>${Math.floor(Math.random()*14)+1}d</td><td><span class="g-tag ${i<3?'red':(i<7?'amber':'green')}">${i<3?'Stuck':(i<7?'Slow':'Active')}</span></td></tr>`).join('')}
+    </tbody></table>`});
+};
+window.openCandidate = function(name) {
+  openFlyoutPinned({title: name + ' · Candidate Detail', sub: 'Full pipeline trace',
+    pinned: `<div class="fly-insight"><strong>Status:</strong> Stuck at Hiring Manager round 14d. Action: nudge HM by EOD.</div>`,
+    body: `<div class="g-section-title">Activity timeline</div>
+    <div class="sdlc-track">
+      <div class="sdlc-step"><div class="sdlc-spine"><div class="sdlc-dot done"></div><div class="sdlc-line"></div></div>
+        <div class="sdlc-content"><div class="sdlc-row"><div class="sdlc-text"><div class="sdlc-stage-name">Sourced</div><div class="sdlc-dates">Apr 8 · Day 0</div></div><div class="sdlc-salient">Source: Referral</div></div></div></div>
+      <div class="sdlc-step"><div class="sdlc-spine"><div class="sdlc-dot done"></div><div class="sdlc-line"></div></div>
+        <div class="sdlc-content"><div class="sdlc-row"><div class="sdlc-text"><div class="sdlc-stage-name">Phone Screen</div><div class="sdlc-dates">Apr 9 · Day 1</div></div><div class="sdlc-salient">Pass · scheduled tech round</div></div></div></div>
+      <div class="sdlc-step"><div class="sdlc-spine"><div class="sdlc-dot done"></div><div class="sdlc-line"></div></div>
+        <div class="sdlc-content"><div class="sdlc-row"><div class="sdlc-text"><div class="sdlc-stage-name">Tech Round</div><div class="sdlc-dates">Apr 12 · Day 4</div></div><div class="sdlc-salient">Pass · score 8.4/10</div></div></div></div>
+      <div class="sdlc-step"><div class="sdlc-spine"><div class="sdlc-dot late"></div><div class="sdlc-line"></div></div>
+        <div class="sdlc-content"><div class="sdlc-row"><div class="sdlc-text"><div class="sdlc-stage-name">Hiring Manager</div><div class="sdlc-dates">Apr 21 · Day 13 · stuck</div></div></div><div class="sdlc-note late-note">14d at this stage · HM not available · action: nudge HM</div></div></div>
+      <div class="sdlc-step"><div class="sdlc-spine"><div class="sdlc-dot todo"></div></div>
+        <div class="sdlc-content"><div class="sdlc-row"><div class="sdlc-text"><div class="sdlc-stage-name">Final / Offer</div><div class="sdlc-dates">Pending</div></div></div></div></div>
+    </div>`});
+};
+</script>
+
+<script>
+// Time-to-Hire tab switcher (seg-tabs)
+function ttSwitch(t, el) {
+  if (el && el.parentElement) {
+    el.parentElement.querySelectorAll('.seg-tab').forEach(function(x){ x.classList.remove('active'); });
+    el.classList.add('active');
+  }
+  ['junior','mid','senior'].forEach(function(n){
+    const p = document.getElementById('tt-' + n);
+    if (p) p.style.display = (n === t) ? 'block' : 'none';
+  });
+}
+
+// Offer Acceptance Rate — by Hiring Manager
+window.openOfferAcceptance = function() {
+  openFlyoutPinned({title:'Offer Acceptance Rate · 78%', sub:'By Hiring Manager · MTD',
+    pinned:`<div class="fly-insight"><strong>Top accept rate:</strong> John Doe · 89% (8 of 9 offers accepted). Watch: Vikram S. at 50% (1 of 2).</div>
+    <div id="oarChart" style="height:240px;"></div>`,
+    body:`<div class="g-section-title">Hiring Manager · offers extended vs accepted</div>
+    <table class="g-tbl"><thead><tr><th>Hiring Manager</th><th>BU</th><th>Offers</th><th>Accepted</th><th>Declined</th><th>Pending</th><th>Accept Rate</th></tr></thead><tbody>
+    <tr><td>John Doe</td><td>HLS</td><td>9</td><td>8</td><td>1</td><td>0</td><td><span class="g-tag green">89%</span></td></tr>
+    <tr><td>Sarah Patel</td><td>NHS</td><td>6</td><td>5</td><td>0</td><td>1</td><td><span class="g-tag green">83%</span></td></tr>
+    <tr><td>Karthik R.</td><td>NHS</td><td>5</td><td>4</td><td>1</td><td>0</td><td><span class="g-tag green">80%</span></td></tr>
+    <tr><td>Anita Mehta</td><td>HLS-2</td><td>4</td><td>3</td><td>0</td><td>1</td><td><span class="g-tag green">75%</span></td></tr>
+    <tr><td>Vikram S.</td><td>Sales</td><td>2</td><td>1</td><td>1</td><td>0</td><td><span class="g-tag amber">50%</span></td></tr>
+    <tr><td>Sunita Rao</td><td>Finance</td><td>1</td><td>1</td><td>0</td><td>0</td><td><span class="g-tag green">100%</span></td></tr>
+    <tr><td>Rajesh K.</td><td>Common</td><td>1</td><td>0</td><td>1</td><td>0</td><td><span class="g-tag red">0%</span></td></tr>
+    </tbody></table>`});
+  setTimeout(()=>{ const el=document.getElementById('oarChart'); if(!el) return;
+    echarts.init(el).setOption({grid:{left:90,right:30,top:10,bottom:30}, tooltip:{trigger:'axis'},
+      xAxis:{type:'value',name:'%',max:100},
+      yAxis:{type:'category',data:['Rajesh K.','Vikram S.','Anita Mehta','Karthik R.','Sarah Patel','John Doe','Sunita Rao']},
+      series:[{type:'bar',data:[0,50,75,80,83,89,100],itemStyle:{color:function(p){return p.value<60?'#DC2626':(p.value<75?'#F59E0B':'#16A34A');}},label:{show:true,position:'right',fontWeight:'bold',formatter:'{c}%'}}]
+    });
+  }, 80);
+};
+
+// Slip Through Rate — by Hiring Manager (% new hires exiting within 90 days)
+window.openSlipThrough = function() {
+  openFlyoutPinned({title:'Slip Through Rate · 8%', sub:'By Hiring Manager · 12-month rolling',
+    pinned:`<div class="fly-insight"><strong>Watch:</strong> Karthik R. at 17% (3 of 18 hires exited <90 days). Driver: 2 comp-related, 1 role mismatch.</div>
+    <div id="stChart" style="height:240px;"></div>`,
+    body:`<div class="g-section-title">Hiring Manager · 90-day slip-through</div>
+    <table class="g-tbl"><thead><tr><th>Hiring Manager</th><th>BU</th><th>Hires (12m)</th><th>Slipped (&lt;90d)</th><th>Slip Rate</th></tr></thead><tbody>
+    <tr><td>John Doe</td><td>HLS</td><td>32</td><td>2</td><td><span class="g-tag green">6%</span></td></tr>
+    <tr><td>Sarah Patel</td><td>NHS</td><td>24</td><td>1</td><td><span class="g-tag green">4%</span></td></tr>
+    <tr><td>Karthik R.</td><td>NHS</td><td>18</td><td>3</td><td><span class="g-tag red">17%</span></td></tr>
+    <tr><td>Anita Mehta</td><td>HLS-2</td><td>20</td><td>1</td><td><span class="g-tag green">5%</span></td></tr>
+    <tr><td>Vikram S.</td><td>Sales</td><td>8</td><td>1</td><td><span class="g-tag amber">13%</span></td></tr>
+    <tr><td>Sunita Rao</td><td>Finance</td><td>4</td><td>0</td><td><span class="g-tag green">0%</span></td></tr>
+    <tr><td>Rajesh K.</td><td>Common</td><td>6</td><td>0</td><td><span class="g-tag green">0%</span></td></tr>
+    </tbody></table>
+    <div class="g-section-title">Recent slip-throughs</div>
+    <table class="g-tbl"><thead><tr><th>Name</th><th>Role</th><th>Hire Date</th><th>Exit Date</th><th>Days</th><th>Reason</th></tr></thead><tbody>
+    <tr><td>D. Verma</td><td>Senior Java</td><td>Feb 10</td><td>Apr 22</td><td>71d</td><td>Comp · counter offer</td></tr>
+    <tr><td>K. Pillai</td><td>UX Designer</td><td>Mar 4</td><td>Apr 28</td><td>55d</td><td>Role mismatch</td></tr>
+    <tr><td>L. Khan</td><td>Data Eng</td><td>Jan 28</td><td>Apr 14</td><td>76d</td><td>Comp gap</td></tr>
+    </tbody></table>`});
+  setTimeout(()=>{ const el=document.getElementById('stChart'); if(!el) return;
+    echarts.init(el).setOption({grid:{left:90,right:30,top:10,bottom:30}, tooltip:{trigger:'axis'},
+      xAxis:{type:'value',name:'%',max:20},
+      yAxis:{type:'category',data:['Sunita Rao','Rajesh K.','Sarah Patel','Anita Mehta','John Doe','Vikram S.','Karthik R.']},
+      series:[{type:'bar',data:[0,0,4,5,6,13,17],itemStyle:{color:function(p){return p.value>10?'#DC2626':(p.value>5?'#F59E0B':'#16A34A');}},label:{show:true,position:'right',fontWeight:'bold',formatter:'{c}%'}}]
+    });
+  }, 80);
+};
+
+// Offer-to-Join TAT — trend + list
+window.openOfferToJoin = function() {
+  openFlyoutPinned({title:'Offer-to-Join TAT · 38d', sub:'Last 2 months',
+    pinned:`<div class="fly-insight"><strong>Trend:</strong> Apr 42d → May 38d. Improving but above target ≤ 30d.</div>
+    <div id="otjChart" style="height:160px;"></div>`,
+    body:`<div class="g-section-title">Candidates contributing to TAT</div>
+    <table class="g-tbl"><thead><tr><th>Candidate</th><th>Role</th><th>Offer Date</th><th>Join Date</th><th>TAT</th></tr></thead><tbody>
+    <tr><td>L. Krishnan</td><td>Senior Java</td><td>Mar 22</td><td>Apr 22</td><td><span class="g-tag amber">31d</span></td></tr>
+    <tr><td>M. Joshi</td><td>QA Engineer</td><td>Mar 28</td><td>Apr 28</td><td><span class="g-tag amber">31d</span></td></tr>
+    <tr><td>N. Pillai</td><td>DevOps</td><td>Apr 4</td><td>May 4</td><td><span class="g-tag amber">30d</span></td></tr>
+    <tr><td>O. Banerjee</td><td>UX Designer</td><td>Mar 14</td><td>Apr 24</td><td><span class="g-tag red">41d</span></td></tr>
+    <tr><td>P. Reddy</td><td>Senior Java</td><td>Mar 10</td><td>Apr 30</td><td><span class="g-tag red">51d</span></td></tr>
+    </tbody></table>`});
+  setTimeout(()=>{ const el=document.getElementById('otjChart'); if(!el) return;
+    echarts.init(el).setOption({grid:{left:40,right:20,top:10,bottom:30}, tooltip:{trigger:'axis'},
+      xAxis:{type:'category',data:['Feb','Mar','Apr','May']},
+      yAxis:{type:'value',name:'days'},
+      series:[{type:'line',data:[44,42,42,38],lineStyle:{color:'#FF9933',width:3},symbol:'circle',areaStyle:{color:'rgba(255,153,51,0.15)'}}]
+    });
+  }, 80);
+};
+
+// Budget vs Offer Saving — by Hiring Manager
+window.openBudgetSaving = function() {
+  openFlyoutPinned({title:'Budget vs Offer · $2,880 avg saving', sub:'By Hiring Manager · MTD',
+    pinned:`<div class="fly-insight"><strong>Trend:</strong> Steady positive saving · Apr +$3,200 · May +$2,880. Driver: better referrals + tighter band adherence.</div>
+    <div id="bvoChart" style="height:160px;"></div>`,
+    body:`<div class="g-section-title">Per-candidate budget vs offer</div>
+    <table class="g-tbl"><thead><tr><th>Candidate</th><th>Role</th><th>Budget</th><th>Offered</th><th>Saving</th></tr></thead><tbody>
+    <tr><td>L. Krishnan</td><td>Senior Java</td><td>$36,000</td><td>$33,600</td><td><span class="g-tag green">+$2,400</span></td></tr>
+    <tr><td>M. Joshi</td><td>QA Engineer</td><td>$24,000</td><td>$22,800</td><td><span class="g-tag green">+$1,200</span></td></tr>
+    <tr><td>N. Pillai</td><td>DevOps</td><td>$30,000</td><td>$31,200</td><td><span class="g-tag red">-$1,200</span></td></tr>
+    <tr><td>O. Banerjee</td><td>UX Designer</td><td>$26,000</td><td>$22,800</td><td><span class="g-tag green">+$3,200</span></td></tr>
+    <tr><td>P. Reddy</td><td>Senior Java</td><td>$36,000</td><td>$31,200</td><td><span class="g-tag green">+$4,800</span></td></tr>
+    <tr><td>R. Iyer</td><td>Senior Java</td><td>$36,000</td><td>$33,600</td><td><span class="g-tag green">+$2,400</span></td></tr>
+    </tbody></table>`});
+  setTimeout(()=>{ const el=document.getElementById('bvoChart'); if(!el) return;
+    echarts.init(el).setOption({grid:{left:50,right:20,top:10,bottom:30}, tooltip:{trigger:'axis'},
+      xAxis:{type:'category',data:['Feb','Mar','Apr','May']},
+      yAxis:{type:'value',name:'$',axisLabel:{formatter:'{value}'}},
+      series:[{type:'bar',data:[1800,2400,3200,2880],itemStyle:{color:function(p){return p.value>=0?'#16A34A':'#DC2626';}}}]
+    });
+  }, 80);
+};
+
+// Hires Closed by hiring manager — horizontal bars
+window.openHiresClosed = function() {
+  openFlyoutPinned({title:'Hires Closed (MTD) · 28', sub:'By Hiring Manager',
+    pinned:`<div class="fly-insight"><strong>Top closer:</strong> John Doe (HLS) · 9 hires. Watch: PMO at 0 hires this month.</div>
+    <div id="hcMgrChart" style="height:240px;"></div>`,
+    body:`<div class="g-section-title">Hiring Manager · contribution</div>
+    <table class="g-tbl"><thead><tr><th>Hiring Manager</th><th>BU</th><th>Hires</th><th>Open JRs</th></tr></thead><tbody>
+    <tr><td>John Doe</td><td>HLS</td><td>9</td><td>4</td></tr>
+    <tr><td>Sarah Patel</td><td>NHS</td><td>6</td><td>3</td></tr>
+    <tr><td>Karthik R.</td><td>NHS</td><td>5</td><td>2</td></tr>
+    <tr><td>Anita Mehta</td><td>HLS-2</td><td>4</td><td>2</td></tr>
+    <tr><td>Vikram S.</td><td>Sales/NHS</td><td>2</td><td>1</td></tr>
+    <tr><td>Sunita Rao</td><td>Finance</td><td>1</td><td>0</td></tr>
+    <tr><td>Rajesh K.</td><td>Common</td><td>1</td><td>0</td></tr>
+    </tbody></table>`});
+  setTimeout(()=>{ const el=document.getElementById('hcMgrChart'); if(!el) return;
+    echarts.init(el).setOption({grid:{left:90,right:30,top:10,bottom:30}, tooltip:{trigger:'axis'},
+      xAxis:{type:'value',name:'hires'},
+      yAxis:{type:'category',data:['Rajesh K.','Sunita Rao','Vikram S.','Anita Mehta','Karthik R.','Sarah Patel','John Doe']},
+      series:[{type:'bar',data:[1,1,2,4,5,6,9],itemStyle:{color:'#FF9933'},label:{show:true,position:'right',fontWeight:'bold'}}]
+    });
+  }, 80);
+};
+</script>
+
+<script>
+const JR_FUNNEL_DATA = {
+  "NLS-JR-2026-0142": {
+    role:"Senior Java Engineer", bu:"HLS", hm:"John Doe", stage:"Pending Approval", daysOpen:9,
+    funnel:[{s:"CV Sourced",n:24},{s:"Screening",n:12},{s:"L1 Interview",n:5},{s:"L2 Interview",n:0},{s:"Offer",n:0}],
+    notes:"JR raised Apr 22. Approval delayed — hm on leave until May 10. 24 CVs sourced via Naukri; 12 advanced to screening. Urgency: project kickoff May 18."
+  },
+  "NLS-JR-2026-0156": {
+    role:"UX Designer", bu:"NHS", hm:"Karthik R.", stage:"Sourcing", daysOpen:14,
+    funnel:[{s:"CV Sourced",n:18},{s:"Screening",n:8},{s:"L1 Interview",n:3},{s:"L2 Interview",n:0},{s:"Offer",n:0}],
+    notes:"Portfolio review added as gate. 3 candidates in L1. 2 rejected for portfolio quality. Karthik reviewing shortlist May 16."
+  },
+  "NLS-JR-2026-0148": {
+    role:"Data Engineer", bu:"HLS", hm:"John Doe", stage:"Interview", daysOpen:22,
+    funnel:[{s:"CV Sourced",n:12},{s:"Screening",n:8},{s:"L1 Interview",n:4},{s:"L2 Interview",n:2},{s:"Offer",n:0}],
+    notes:"3 candidates stuck post-L1 — awaiting HM slots. 2 in L2. 1 strong candidate at risk of competing offer. Priya to follow up on HM availability."
+  },
+  "NLS-JR-2026-0162": {
+    role:"QA Lead", bu:"NHS", hm:"Sarah Patel", stage:"Pending Approval", daysOpen:8,
+    funnel:[{s:"CV Sourced",n:22},{s:"Screening",n:10},{s:"L1 Interview",n:6},{s:"L2 Interview",n:0},{s:"Offer",n:0}],
+    notes:"JR raised May 2. Approval stuck in L2 approval chain — BU Head approval pending. 22 CVs pre-sourced in anticipation. Escalation raised May 13."
+  },
+  "NLS-JR-2026-0151": {
+    role:"Product Manager", bu:"NHS", hm:"Vikram S.", stage:"Sourcing", daysOpen:18,
+    funnel:[{s:"CV Sourced",n:16},{s:"Screening",n:9},{s:"L1 Interview",n:2},{s:"L2 Interview",n:0},{s:"Offer",n:0}],
+    notes:"Niche role — healthcare product management. Only 2 suitable candidates from 16 CVs. LinkedIn outreach activated. HM wants candidate by Jun 1."
+  },
+  "NLS-JR-2026-0128": {
+    role:"DevOps Engineer", bu:"HLS", hm:"John Doe", stage:"Offer", daysOpen:32,
+    funnel:[{s:"CV Sourced",n:9},{s:"Screening",n:6},{s:"L1 Interview",n:4},{s:"L2 Interview",n:2},{s:"Offer",n:1}],
+    notes:"Offer extended May 11 — ₹18.5L CTC. Candidate currently deliberating. Competing offer from a product company. Counter-offer call scheduled May 16."
+  }
+};
+
+window.openJRFunnel = function(jrId) {
+  const d = JR_FUNNEL_DATA[jrId];
+  if (!d) return;
+  const maxN = Math.max(...d.funnel.map(f=>f.n), 1);
+  const funnelHtml = d.funnel.map((f,i) => {
+    const pct = Math.round(f.n / maxN * 100);
+    const color = i===0?'var(--blue)':i===d.funnel.length-1?'var(--green)':'var(--orange)';
+    return `<div class="funnel-row" style="cursor:default;">
+      <div class="funnel-stage">${f.s}</div>
+      <div class="funnel-bar"><div class="funnel-bar-fill" style="width:${pct}%;background:${color};"></div></div>
+      <div class="funnel-count">${f.n}</div>
+    </div>`;
+  }).join('');
+  openFlyout({
+    title: jrId + ' · ' + d.role,
+    sub: d.bu + ' · HM: ' + d.hm + ' · ' + d.daysOpen + 'd open · ' + d.stage,
+    body: `<div class="g-section-title">Funnel</div>${funnelHtml}
+      <div class="g-section-title">Notes</div>
+      <p style="font-size:12px;line-height:1.6;color:var(--text);">${d.notes}</p>`
+  });
+};
+
+function toggleNotif() { document.getElementById('notifPanel').classList.toggle('open'); }
+function toggleHelp() {
+  document.getElementById('helpPanel').classList.toggle('open');
+  document.getElementById('helpOverlay').classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+  const p = document.getElementById('notifPanel');
+  if (!e.target.closest('.alert-bell') && !p.contains(e.target)) p.classList.remove('open');
+});
+</script>
+<script src="shared.js"></script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Delivery Drill — Nalashaa Business Monitoring</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .timeline-item { display: flex; gap: 12px; margin-bottom: 12px; }
+    .timeline-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; }
+    .timeline-dot.green { background: var(--green); }
+    .timeline-dot.amber { background: var(--amber); }
+    .timeline-dot.red { background: var(--red); }
+    .timeline-content { flex: 1; }
+    .compact-table { font-size: 11px; }
+    .compact-table td, .compact-table th { padding: 6px 8px; }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div class="logo">NALASHAA</div>
+    <div class="top-nav-right">
+      <div class="alert-bell">
+        🔔
+        <div class="badge">3</div>
+      </div>
+      <div class="avatar">AM</div>
+    </div>
+  </div>
+
+    <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html" class="active"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+
+    <!-- Nalashaa branding -->
+    <div class="sidebar-brand">
+      <img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo">
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="breadcrumb">
+      <a href="org-pulse.html">Org Pulse</a>
+      <span class="sep">/</span>
+      <a href="delivery.html">Delivery</a>
+      <span class="sep">/</span>
+      <span>Project Alpha</span>
+    </div>
+    <div class="page-title">Project Alpha — Milestone Timeline</div>
+    <div class="page-subtitle">Status: On Track | 8/10 milestones completed</div>
+
+    <!-- Milestone Timeline -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Project Milestones (Chronological)</div>
+      </div>
+      <div style="margin: 12px 0;">
+        <div class="timeline-item">
+          <div class="timeline-dot green"></div>
+          <div class="timeline-content">
+            <div style="font-weight: 600; font-size: 12px;">Requirements Finalisation</div>
+            <div style="font-size: 10px; color: var(--text-muted);">Due: 10 Jan | Completed: 10 Jan</div>
+            <div style="font-size: 11px; color: var(--green); margin-top: 2px;">✓ On time</div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot green"></div>
+          <div class="timeline-content">
+            <div style="font-weight: 600; font-size: 12px;">Architecture & Design</div>
+            <div style="font-size: 10px; color: var(--text-muted);">Due: 25 Jan | Completed: 24 Jan</div>
+            <div style="font-size: 11px; color: var(--green); margin-top: 2px;">✓ 1 day early</div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot green"></div>
+          <div class="timeline-content">
+            <div style="font-weight: 600; font-size: 12px;">Core Development Sprint 1</div>
+            <div style="font-size: 10px; color: var(--text-muted);">Due: 14 Feb | Completed: 14 Feb</div>
+            <div style="font-size: 11px; color: var(--green); margin-top: 2px;">✓ On time</div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot green"></div>
+          <div class="timeline-content">
+            <div style="font-weight: 600; font-size: 12px;">Core Development Sprint 2</div>
+            <div style="font-size: 10px; color: var(--text-muted);">Due: 28 Feb | Completed: 28 Feb</div>
+            <div style="font-size: 11px; color: var(--green); margin-top: 2px;">✓ On time</div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot amber"></div>
+          <div class="timeline-content">
+            <div style="font-weight: 600; font-size: 12px;">Integration Phase</div>
+            <div style="font-size: 10px; color: var(--text-muted);">Due: 15 Mar | In Progress</div>
+            <div style="font-size: 11px; color: var(--amber); margin-top: 2px;">⚠ 3 days behind (will catch up by 29 Mar)</div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot green"></div>
+          <div class="timeline-content">
+            <div style="font-weight: 600; font-size: 12px;">System Integration Testing</div>
+            <div style="font-size: 10px; color: var(--text-muted);">Due: 22 Mar | Completed: 22 Mar</div>
+            <div style="font-size: 11px; color: var(--green); margin-top: 2px;">✓ On time</div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot green"></div>
+          <div class="timeline-content">
+            <div style="font-weight: 600; font-size: 12px;">UAT Preparation</div>
+            <div style="font-size: 10px; color: var(--text-muted);">Due: 26 Mar | Completed: 26 Mar</div>
+            <div style="font-size: 11px; color: var(--green); margin-top: 2px;">✓ On time</div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot green"></div>
+          <div class="timeline-content">
+            <div style="font-weight: 600; font-size: 12px;">Phase 1 UAT Execution</div>
+            <div style="font-size: 10px; color: var(--text-muted);">Due: 28 Mar | Starting 28 Mar</div>
+            <div style="font-size: 11px; color: var(--green); margin-top: 2px;">→ Scheduled on time</div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: #CBD5E1;"></div>
+          <div class="timeline-content">
+            <div style="font-weight: 600; font-size: 12px;">Defect Resolution</div>
+            <div style="font-size: 10px; color: var(--text-muted);">Due: 05 Apr | Pending</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Not yet started</div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: #CBD5E1;"></div>
+          <div class="timeline-content">
+            <div style="font-weight: 600; font-size: 12px;">Go-Live</div>
+            <div style="font-size: 10px; color: var(--text-muted);">Due: 15 Apr | Pending</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Not yet started</div>
+          </div>
+        </div>
+      </div>
+      <div class="data-freshness">
+        <div class="dot"></div>
+        <span>Data as of 27 Mar 2026, 07:45 IST • PMS</span>
+      </div>
+    </div>
+
+    <!-- Escalation History -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Escalation History</div>
+      </div>
+      <div style="overflow-x: auto; margin: 12px 0;">
+        <table class="compact-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Issue</th>
+              <th>Owner</th>
+              <th>Status</th>
+              <th>Resolution</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>15 Feb</td>
+              <td>Server capacity shortage</td>
+              <td>Rohit Gupta</td>
+              <td><span class="badge badge-green">Resolved</span></td>
+              <td>Provisioned additional servers</td>
+            </tr>
+            <tr>
+              <td>28 Feb</td>
+              <td>API integration delay</td>
+              <td>Neha Sharma</td>
+              <td><span class="badge badge-green">Resolved</span></td>
+              <td>Third-party vendor support provided</td>
+            </tr>
+            <tr>
+              <td>08 Mar</td>
+              <td>Team resource unavailability</td>
+              <td>Rajesh Nair</td>
+              <td><span class="badge badge-green">Resolved</span></td>
+              <td>Contract resources added</td>
+            </tr>
+            <tr>
+              <td>18 Mar</td>
+              <td>Database performance</td>
+              <td>Arun Verma</td>
+              <td><span class="badge badge-amber">In Progress</span></td>
+              <td>Optimization plan in execution</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="data-freshness">
+        <div class="dot"></div>
+        <span>Data as of 27 Mar 2026, 07:45 IST • PMS</span>
+      </div>
+    </div>
+
+    <!-- Back Button -->
+    <div style="margin-top: 14px;">
+      <a href="delivery.html" class="btn btn-secondary">← Back to Delivery</a>
+    </div>
+  </div>
+  <!-- GLOBAL FOOTER -->
+  <div class="global-footer">Nalashaa &copy; 2026 &nbsp;&middot;&nbsp; All rights reserved</div>
+
+  <script src="shared.js"></script>
+</body>
+</html>

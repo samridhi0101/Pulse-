@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="blue">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Management — Pulse · Nalashaa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <style>
+    /* ── Tabs — exact dm-home.html standard ─────────────────────────────── */
+    .tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 16px; }
+    .tab { padding: 11px 16px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-muted); border-bottom: 3px solid transparent; margin-bottom: -2px; display: flex; align-items: center; gap: 6px; }
+    .tab.active { color: var(--navy); border-bottom-color: var(--orange); }
+    [data-mode="dark"] .tab.active { color: #fff; }
+    .tab .badge { font-size: 9px; padding: 1px 6px; border-radius: 4px; font-weight: 700; }
+    .tab .badge.red { background: #FEE2E2; color: #991B1B; }
+    .tab .badge.amber { background: #FEF3C7; color: #92400E; }
+    .pane { display: none; } .pane.active { display: block; }
+
+    /* ── Section title (matches dm-home.html) ───────────────────────────── */
+    .stitle { font-size: 13px; font-weight: 700; color: var(--navy); margin: 14px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    [data-mode="dark"] .stitle { color: #fff; }
+
+    /* ── AM card grid (3 columns) ────────────────────────────────────────── */
+    .am-list-h { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 4px; }
+    .am-card-h { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: all 0.18s; border-left: 4px solid transparent; text-decoration: none; color: inherit; }
+    .am-card-h.green  { border-left-color: var(--green); }
+    .am-card-h.amber  { border-left-color: var(--amber); }
+    .am-card-h.red    { border-left-color: var(--red); }
+    .am-card-h:hover  { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,32,96,0.10); }
+    .am-card-h.am-active { box-shadow: 0 0 0 2px var(--orange), 0 4px 14px rgba(255,153,51,0.20); }
+    .am-card-h .head  { display: flex; align-items: center; gap: 10px; }
+    .am-card-h .av    { width: 40px; height: 40px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0; }
+    .am-card-h .nm    { font-size: 14px; font-weight: 700; color: var(--navy); }
+    [data-mode="dark"] .am-card-h .nm { color: #fff; }
+    .am-card-h .un    { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .am-card-h .accts { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+    .am-card-h .accts strong { font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 700; margin-right: 6px; display: block; margin-bottom: 2px; color: var(--text-muted); }
+    .caps-h { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pill-h { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 12px; background: var(--bg); border: 1px solid var(--border); font-size: 11px; font-weight: 700; }
+    .pill-h.green { color: var(--green); border-color: rgba(22,163,74,0.25); background: rgba(22,163,74,0.06); }
+    .pill-h.amber { color: var(--amber); border-color: rgba(245,158,11,0.25); background: rgba(245,158,11,0.06); }
+    .pill-h.red   { color: var(--red);   border-color: rgba(220,38,38,0.25);  background: rgba(220,38,38,0.06); }
+    .pill-h.navy  { color: var(--navy);  border-color: rgba(0,32,96,0.18); }
+    [data-mode="dark"] .pill-h.navy { color: #fff; }
+
+    /* ── Mining swimlane rows (matches dm-home.html) ─────────────────────── */
+    .swim-row { padding: 9px 12px; border-radius: 8px; margin-bottom: 6px; font-size: 12px; cursor: pointer; border-left: 3px solid var(--border); transition: all 0.15s; background: var(--bg); }
+    .swim-row:hover { transform: translateX(2px); }
+    .swim-row.late  { border-left-color: var(--red); }
+    .swim-row.risk  { border-left-color: var(--amber); }
+    .swim-row.track { border-left-color: var(--green); }
+    .swim-row.done  { border-left-color: #CBD5E1; opacity: 0.75; }
+    .swim-row strong { font-size: 12px; }
+
+    /* ── Escalations table ─────────────────────────────────────────────── */
+    .esc-tbl { width: 100%; font-size: 12px; border-collapse: collapse; }
+    .esc-tbl th { padding: 9px 10px; background: var(--navy); color: #fff; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 700; text-align: left; }
+    .esc-tbl td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text); cursor: pointer; }
+    .esc-tbl tr:hover td { background: var(--bg); }
+    .esc-tbl .next-action-cell { font-size: 11px; color: var(--text-muted); max-width: 220px; }
+    .esc-tbl .escalation-desc { font-size: 12px; max-width: 240px; line-height: 1.4; }
+
+    /* ── Financials billing rows (matches dm-home.html exactly) ─────────── */
+    .billing-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .billing-row:hover { background: var(--bg); border-radius: 6px; padding-left: 4px; }
+    .billing-acct { width: 140px; font-weight: 700; font-size: 12px; flex-shrink: 0; }
+    .billing-am   { width: 68px; font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+    .billing-bar-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; position: relative; overflow: hidden; }
+    .billing-bar-fill { height: 100%; border-radius: 4px; }
+    .billing-bar-fill.green { background: var(--green); }
+    .billing-bar-fill.amber { background: var(--amber); }
+    .billing-bar-fill.red   { background: var(--red); }
+    .billing-amount { width: 80px; text-align: right; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+    .billing-fcst   { width: 90px; text-align: right; font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+
+    /* ── Forecast table (matches dm-home.html .tbl exactly) ─────────────── */
+    .tbl { width: 100%; font-size: 12px; border-collapse: collapse; }
+    .tbl th { padding: 9px 10px; background: var(--navy); color: #fff; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 700; text-align: left; }
+    .tbl th.r { text-align: right; }
+    .tbl td { padding: 9px 10px; border-bottom: 1px solid var(--border); }
+    .tbl td.r { text-align: right; }
+    .tbl tr:hover td { background: var(--bg); cursor: pointer; }
+    .fc-up   { color: #16A34A; font-weight: 700; }
+    .fc-down { color: #DC2626; font-weight: 700; }
+    .fc-flat { color: var(--text-muted); font-weight: 600; }
+
+    /* ── Persona toggle ─────────────────────────────────────────────────── */
+    .persona-toggle { display: inline-flex; background: var(--border); border-radius: 20px; padding: 2px; }
+    .persona-btn { padding: 5px 14px; border: none; border-radius: 18px; font-size: 11px; font-weight: 700; cursor: pointer; background: transparent; color: var(--text-muted); font-family: inherit; transition: all 0.15s; }
+    .persona-btn.active { background: var(--navy); color: #fff; }
+
+    /* ── Add action item mini-form (in-flyout) ───────────────────────────── */
+    .inline-ai-form { background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-top: 14px; }
+    [data-mode="dark"] .inline-ai-form { background: #1E293B; }
+    .inline-ai-form-title { font-size: 11px; font-weight: 700; color: var(--navy); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    [data-mode="dark"] .inline-ai-form-title { color: #fff; }
+    .inline-ai-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .inline-ai-row input, .inline-ai-row select { font-size: 11px; border: 1px solid var(--border); border-radius: 5px; padding: 5px 8px; background: var(--card); color: var(--text); font-family: inherit; }
+    .inline-ai-row input[type=text] { flex: 1; min-width: 160px; }
+
+    /* ── Card box wrapper ────────────────────────────────────────────────── */
+    .card-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    .card-box > table, .card-box > .tbl { border-radius: 0; }
+
+    /* ── P360 grid — tiles: copied exactly from dm-home.html local style ── */
+    .p360-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .p360-tile { background: var(--card); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.15s; }
+    .p360-tile:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+
+    /* ── kgrid summary tiles ────────────────────────────────────────────── */
+    .kgrid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px; }
+    .kc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; border-left: 4px solid transparent; cursor: pointer; transition: all 0.15s; }
+    .kc:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+    .kc.green { border-left-color: var(--green); } .kc.amber { border-left-color: var(--amber); } .kc.red { border-left-color: var(--red); }
+    .klbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; }
+    .kval { font-size: 22px; font-weight: 800; color: var(--navy); }
+    [data-mode="dark"] .kval { color: #fff; }
+    .ksub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <!-- TOP NAV -->
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:0;">
+      <button class="hamburger-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <div class="pulse-logo">
+        <span class="pulse-icon"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="2" width="25" height="17" rx="2.5" stroke="#FF9933" stroke-width="1.5"/><line x1="14" y1="19" x2="14" y2="23.5" stroke="#FF9933" stroke-width="1.5"/><line x1="9" y1="23.5" x2="19" y2="23.5" stroke="#FF9933" stroke-width="1.8" stroke-linecap="round"/><polyline points="4,10.5 7,10.5 8.5,6.5 10,14.5 11.5,10.5 13,10.5 14,8 15,13 16.5,10.5 18,10.5 24,10.5" stroke="#FF9933" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg></span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <button class="theme-btn" onclick="toggleThemePicker()" title="Theme"><i class="bi bi-palette2"></i></button>
+      <button class="tickets-btn" onclick="toggleTickets()" title="Feature Tickets"><i class="bi bi-ticket"></i></button>
+      <button class="help-btn" onclick="toggleHelp()" title="Help">?</button>
+      <div class="alert-bell" onclick="toggleNotif()"><i class="bi bi-bell-fill" style="font-size:16px;"></i><div class="badge">3</div></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <!-- THEME PICKER -->
+  <div class="theme-picker" id="themePicker">
+    <div class="theme-picker-title">Colour Theme</div>
+    <div class="theme-swatches">
+      <div class="theme-swatch blue-swatch active" data-theme="blue" onclick="setTheme('blue')" title="Blue"></div>
+      <div class="theme-swatch teal-swatch" data-theme="teal" onclick="setTheme('teal')" title="Teal"></div>
+      <div class="theme-swatch violet-swatch" data-theme="violet" onclick="setTheme('violet')" title="Violet"></div>
+    </div>
+    <div class="theme-mode-row">
+      <span class="theme-mode-label">Mode: <span class="mode-label">Light</span></span>
+      <button class="theme-toggle" id="modeToggle" onclick="toggleDarkMode()"></button>
+    </div>
+  </div>
+
+  <!-- HELP OVERLAY + PANEL -->
+  <div class="help-overlay" id="helpOverlay" onclick="toggleHelp()"></div>
+  <div class="help-panel" id="helpPanel">
+    <div class="help-panel-header"><span class="help-panel-title">Help &amp; Guide</span><span style="cursor:pointer;opacity:0.6;font-size:20px;" onclick="toggleHelp()">✕</span></div>
+    <div class="help-panel-body">
+      <div class="help-toc-section">
+        <div class="help-toc-title">Account Management</div>
+        <div class="help-toc-item"><span class="help-toc-item-icon"><i class="bi bi-people-fill"></i></span><div><div class="help-toc-item-title">AM Cards</div><div class="help-toc-item-desc">Each card shows an Account Manager's portfolio health. Click to drill into their accounts.</div></div></div>
+        <div class="help-toc-item"><span class="help-toc-item-icon"><i class="bi bi-diagram-3"></i></span><div><div class="help-toc-item-title">Mining Threads</div><div class="help-toc-item-desc">Expansion and renewal deliverables across accounts. Click any row for detail.</div></div></div>
+        <div class="help-toc-item"><span class="help-toc-item-icon"><i class="bi bi-exclamation-triangle-fill"></i></span><div><div class="help-toc-item-title">Escalations</div><div class="help-toc-item-desc">AM-owned escalations. AMs are primary owners. DMs derive escalation status from here.</div></div></div>
+        <div class="help-toc-item"><span class="help-toc-item-icon"><i class="bi bi-cash-stack"></i></span><div><div class="help-toc-item-title">Financials</div><div class="help-toc-item-desc">Portfolio forecast by account. Green = growing, Red = declining. Filter by AM persona.</div></div></div>
+        <div class="help-toc-item"><span class="help-toc-item-icon"><i class="bi bi-bullseye"></i></span><div><div class="help-toc-item-title">P360</div><div class="help-toc-item-desc">Account health score across 6 dimensions. Score ≥ 8 = Green · 6–8 = Amber · &lt;6 = Red.</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATION PANEL -->
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-header"><span>Notifications</span><div style="display:flex;align-items:center;gap:8px;"><button class="notif-pin-btn" id="notifPinBtn" onclick="pinNotif()"><i class="bi bi-pin-angle"></i></button><span style="opacity:0.5;cursor:pointer;" onclick="toggleNotif()">✕</span></div></div>
+    <div class="notif-body">
+      <div class="notif-item"><div class="notif-type" style="color:var(--red);">Escalation</div><div class="notif-text">MedTech Corp Quality escalation overdue — AM action required</div><div class="notif-time">2 hours ago</div></div>
+      <div class="notif-item"><div class="notif-type" style="color:var(--amber);">Mining</div><div class="notif-text">BioSync Labs Expansion Proposal — 3 days to deadline</div><div class="notif-time">Today</div></div>
+      <div class="notif-item"><div class="notif-type" style="color:var(--amber);">Revenue</div><div class="notif-text">BioGen Labs M+1 forecast below prior month</div><div class="notif-time">Yesterday</div></div>
+    </div>
+  </div>
+
+  <!-- TICKETS PANEL -->
+  <div class="tickets-overlay" id="ticketsOverlay" onclick="closeTickets()"></div>
+  <div class="tickets-panel" id="ticketsPanel">
+    <div class="tickets-panel-header"><div><div style="font-size:13px;font-weight:700;">Feature Tickets</div><div style="font-size:11px;opacity:0.65;margin-top:2px;">Open requests &amp; change log</div></div><button class="flyout-close" onclick="closeTickets()">✕</button></div>
+    <div class="tickets-panel-body">
+      <table style="width:100%;font-size:11px;"><thead><tr><th style="text-align:left;">Ticket</th><th>Priority</th><th>Status</th></tr></thead><tbody>
+        <tr><td><a href="feature-tickets.html" style="color:var(--blue);">BMD-415 — AM portfolio export</a></td><td><span class="badge badge-amber">High</span></td><td><span class="badge badge-muted">Open</span></td></tr>
+      </tbody></table>
+      <div style="margin-top:14px;"><a href="feature-tickets.html" class="btn btn-secondary" style="font-size:11px;">View all tickets →</a></div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html" class="active"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+    <div class="sidebar-brand"><img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo"></div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main" style="padding:18px 28px;">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="org-pulse.html">Org Pulse</a><span class="sep">/</span>
+      <span>Account Management</span>
+    </div>
+
+    <div class="dept-meta-above"><i class="bi bi-clock"></i> Data as of 2026-05-05 09:14 · Source: BMD native + Tally Finance</div>
+
+    <!-- Banner -->
+    <div class="dept-banner">
+      <div class="dept-banner-top">
+        <div class="dept-banner-icon"><i class="bi bi-briefcase-fill"></i></div>
+        <div class="dept-banner-titleblock">
+          <div class="dept-banner-title">Account Management <span class="info-i" data-tip-title="Account Management" data-tip="AM-level view of account portfolio health, mining threads, escalations, and financial forecast.">i</span></div>
+          <div class="dept-banner-sub">3 Account Managers · 11 active accounts · ₹18.4Cr portfolio</div>
+        </div>
+        <div class="dept-banner-stats">
+          <div class="dept-banner-stat"><div class="dept-banner-stat-val red">3</div><div class="dept-banner-stat-lbl">Open Escs</div></div>
+          <div class="dept-banner-pipe"></div>
+          <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">2</div><div class="dept-banner-stat-lbl">Overdue</div></div>
+          <div class="dept-banner-pipe"></div>
+          <div class="dept-banner-stat"><div class="dept-banner-stat-val green">5</div><div class="dept-banner-stat-lbl">Mining Active</div></div>
+          <div class="dept-banner-pipe"></div>
+          <div class="dept-banner-stat"><div class="dept-banner-stat-val">$11.0M</div><div class="dept-banner-stat-lbl">YTD Revenue</div></div>
+          <div class="dept-banner-pipe"></div>
+          <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">7.3</div><div class="dept-banner-stat-lbl">Avg P360</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tabs ────────────────────────────────────────────────────────── -->
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('overview', this)"><i class="bi bi-grid-fill"></i> Overview</div>
+      <div class="tab" onclick="showTab('fin', this)"><i class="bi bi-cash-stack"></i> Financials <span class="badge amber">3 declining</span></div>
+      <div class="tab" onclick="showTab('p360', this)"><i class="bi bi-bullseye"></i> P360 <span class="badge red">2 watch</span></div>
+    </div>
+
+    <!-- ══ TAB 1: OVERVIEW ══════════════════════════════════════════════════ -->
+    <div class="pane active" id="pane-overview">
+
+      <!-- AM Cards -->
+      <div class="page-section-title" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin:0 0 10px;display:flex;align-items:center;justify-content:space-between;">
+        <span>Account Managers</span>
+        <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;">Click a card for full portfolio view</span>
+      </div>
+      <div class="am-list-h">
+        <div class="am-card-h amber" data-am="Sarah M." onclick="filterByAM('Sarah M.', this)">
+          <div class="head">
+            <div class="av" style="background:#FF9933;">SM</div>
+            <div style="flex:1;min-width:0;">
+              <div class="nm">Sarah M.</div>
+              <div class="un" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                <span>HLS · 4 accounts</span>
+                <span style="color:#CBD5E1;font-size:13px;line-height:1;">|</span>
+                <span style="font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">MedTech Corp · HealthFirst US · BioSync Labs · Renewal Care</span>
+              </div>
+            </div>
+          </div>
+          <div class="caps-h"><span class="pill-h amber"><i class="bi bi-diagram-3"></i> 3 Mining</span><span class="pill-h red"><i class="bi bi-exclamation-triangle-fill"></i> 2 Esc</span><span class="pill-h amber"><i class="bi bi-bullseye"></i> 7.2 P360</span><span class="pill-h navy"><i class="bi bi-cash-stack"></i> $4.9M</span></div>
+        </div>
+        <div class="am-card-h green" data-am="Priya K." onclick="filterByAM('Priya K.', this)">
+          <div class="head">
+            <div class="av" style="background:#16A34A;">PK</div>
+            <div style="flex:1;min-width:0;">
+              <div class="nm">Priya K.</div>
+              <div class="un" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                <span>NHS · 4 accounts</span>
+                <span style="color:#CBD5E1;font-size:13px;line-height:1;">|</span>
+                <span style="font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">WellnessOne · NeuroLab · CardioTech · OptiCare</span>
+              </div>
+            </div>
+          </div>
+          <div class="caps-h"><span class="pill-h green"><i class="bi bi-diagram-3"></i> 2 Mining</span><span class="pill-h green"><i class="bi bi-exclamation-triangle-fill"></i> 0 Esc</span><span class="pill-h green"><i class="bi bi-bullseye"></i> 8.1 P360</span><span class="pill-h navy"><i class="bi bi-cash-stack"></i> $3.8M</span></div>
+        </div>
+        <div class="am-card-h red" data-am="Ravi S." onclick="filterByAM('Ravi S.', this)">
+          <div class="head">
+            <div class="av" style="background:#DC2626;">RS</div>
+            <div style="flex:1;min-width:0;">
+              <div class="nm">Ravi S.</div>
+              <div class="un" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                <span>Common · 3 accounts</span>
+                <span style="color:#CBD5E1;font-size:13px;line-height:1;">|</span>
+                <span style="font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">BioGen Labs · OrthoFix · DermaPlus</span>
+              </div>
+            </div>
+          </div>
+          <div class="caps-h"><span class="pill-h amber"><i class="bi bi-diagram-3"></i> 1 Mining</span><span class="pill-h red"><i class="bi bi-exclamation-triangle-fill"></i> 1 Esc</span><span class="pill-h red"><i class="bi bi-bullseye"></i> 6.5 P360</span><span class="pill-h navy"><i class="bi bi-cash-stack"></i> $2.3M</span></div>
+        </div>
+      </div>
+
+      <!-- Mining Threads -->
+      <div class="stitle">
+        <span><i class="bi bi-diagram-3" style="color:var(--orange);margin-right:6px;"></i>Mining Threads · All AMs</span>
+        <span style="font-size:11px;font-weight:600;"><span style="color:var(--green);">● On Track 3</span> &nbsp;·&nbsp; <span style="color:var(--amber);">● At Risk 1</span> &nbsp;·&nbsp; <span style="color:var(--red);">● Late 1</span> &nbsp;·&nbsp; <a href="mining.html" style="font-size:10px;color:var(--blue);font-weight:600;text-decoration:none;">Full view →</a></span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.5px;padding-bottom:8px;border-bottom:2px solid #D1FAE5;margin-bottom:10px;">On Track · 3</div>
+          <div class="swim-row track" data-am="Sarah M." onclick="openOldFlyout('mine2')"><strong>MedTech Corp · Module Demo</strong><br><span style="font-size:10px;color:var(--text-muted);">$0.25M · Due Apr 22 · Sarah M.</span></div>
+          <div class="swim-row track" data-am="Sarah M." onclick="openOldFlyout('mine3')"><strong>HealthFirst US · Renewal SOW</strong><br><span style="font-size:10px;color:var(--text-muted);">$0.18M · Due Apr 30 · Sarah M.</span></div>
+          <div class="swim-row track" data-am="Ravi S." onclick="openOldFlyout('mine5')"><strong>BioGen Labs · Upsell Scoping</strong><br><span style="font-size:10px;color:var(--text-muted);">$0.08M · Due May 10 · Ravi S.</span></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:0.5px;padding-bottom:8px;border-bottom:2px solid #FEF3C7;margin-bottom:10px;">At Risk · 1</div>
+          <div class="swim-row risk" data-am="Sarah M." onclick="openOldFlyout('mine4')"><strong>BioSync Labs · Expansion Proposal</strong><br><span style="font-size:10px;color:var(--text-muted);">$0.15M · Due Apr 16 · Sarah M. · Relationship esc open</span></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:0.5px;padding-bottom:8px;border-bottom:2px solid #FEE2E2;margin-bottom:10px;">Late · 1</div>
+          <div class="swim-row late" data-am="Sarah M." onclick="openOldFlyout('mine1')"><strong>MedTech Corp · Expansion Proposal</strong><br><span style="font-size:10px;color:var(--text-muted);">$0.25M · Due Apr 5 · +8d overdue · Sarah M.</span></div>
+        </div>
+      </div>
+
+      <!-- Escalations -->
+      <div class="stitle">
+        <span><i class="bi bi-exclamation-octagon-fill" style="color:var(--red);margin-right:6px;"></i>Account Escalations · AM-Owned Register</span>
+        <a href="escalations.html" style="font-size:10px;color:var(--blue);font-weight:600;text-decoration:none;">Full register →</a>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">AMs are primary owners. DMs derive escalation status from here. Click any row for detail.</div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <table class="esc-tbl">
+          <thead>
+            <tr><th>Account</th><th>Escalation</th><th>Account Manager</th><th>Next Action</th><th>Resolution Date</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr data-am="Sarah M." onclick="openOldFlyout('esc1')">
+              <td><strong>MedTech Corp</strong></td>
+              <td class="escalation-desc">EMR module P1 defect spike (Sprint 14) — 3 critical bugs in production affecting client UAT. Client VP escalated Apr 5.</td>
+              <td>Sarah M.</td>
+              <td class="next-action-cell">Hotfix build Apr 14 · Client UAT re-run Apr 16 · Daily standup active</td>
+              <td style="color:var(--red);font-weight:700;">Apr 20 <span style="font-size:9px;">(Overdue)</span></td>
+              <td><span class="badge badge-red">Overdue</span></td>
+            </tr>
+            <tr data-am="Sarah M." onclick="openOldFlyout('esc2')">
+              <td><strong>HealthFirst US</strong></td>
+              <td class="escalation-desc">2 senior engineers resigned Mar — team at 78% capacity, sprint velocity down 15%. Client delivery timeline at risk.</td>
+              <td>Sarah M.</td>
+              <td class="next-action-cell">Tara JD raised · 1 resource redeployed · AM confirming revised timeline</td>
+              <td style="color:var(--amber);font-weight:700;">Apr 25</td>
+              <td><span class="badge badge-amber">In Progress</span></td>
+            </tr>
+            <tr data-am="Sarah M." onclick="openOldFlyout('esc3')">
+              <td><strong>BioSync Labs</strong></td>
+              <td class="escalation-desc">Client VP raised concern over missed weekly status updates (2 consecutive weeks in March). Relationship at risk.</td>
+              <td>Sarah M.</td>
+              <td class="next-action-cell">Weekly updates resumed Apr 7 · Fortnightly exec sync scheduled</td>
+              <td style="color:var(--text-muted);">Apr 15</td>
+              <td><span class="badge badge-muted">Monitoring</span></td>
+            </tr>
+            <tr data-am="Ravi S." onclick="openOldFlyout('esc4')">
+              <td><strong>BioGen Labs</strong></td>
+              <td class="escalation-desc">Integration Platform project budget constraints may delay renewal. Client finance review pending; revenue risk if unresolved.</td>
+              <td>Ravi S.</td>
+              <td class="next-action-cell">Commercial proposal with adjusted phasing due May 5 · CFO meeting requested</td>
+              <td style="color:var(--amber);font-weight:700;">May 10</td>
+              <td><span class="badge badge-amber">Open</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div><!-- /pane-overview -->
+
+    <!-- ══ TAB 2: FINANCIALS ══════════════════════════════════════════════════ -->
+    <div class="pane" id="pane-fin">
+      <div class="kgrid">
+        <div class="kc green static-tile"><div class="klbl">YTD Revenue</div><div class="kval">$11.0M</div><div class="ksub">96% of plan</div></div>
+        <div class="kc amber static-tile"><div class="klbl">M+1 Forecast</div><div class="kval">$2.10M</div><div class="ksub">Across all AMs</div></div>
+        <div class="kc amber static-tile"><div class="klbl">Declining Accounts</div><div class="kval">3</div><div class="ksub">Renewal Care · BioGen · DermaPlus</div></div>
+        <div class="kc green static-tile"><div class="klbl">Growing Accounts</div><div class="kval">6</div><div class="ksub">M+1 → M+3 trend up</div></div>
+      </div>
+
+      <div class="stitle">
+        <span>YTD Billing per Account + Forward Outlook</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="persona-toggle">
+            <button class="persona-btn active" id="btnAll"   onclick="setPersona('all')">All</button>
+            <button class="persona-btn" id="btnSM"    onclick="setPersona('sarah')">Sarah M.</button>
+            <button class="persona-btn" id="btnPK"    onclick="setPersona('priya')">Priya K.</button>
+            <button class="persona-btn" id="btnRS"    onclick="setPersona('ravi')">Ravi S.</button>
+          </div>
+          <a href="finance.html" style="font-size:10px;color:var(--blue);font-weight:600;text-decoration:none;">Full Finance →</a>
+        </div>
+      </div>
+      <div class="card-box" style="margin-bottom:16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;" id="billingRows"></div>
+      </div>
+
+      <div class="stitle">Portfolio Forecast · YTD + M+1 / M+2 / M+3</div>
+      <div class="card-box" style="padding:0;overflow:hidden;">
+        <table class="tbl">
+          <thead><tr>
+            <th>Account</th><th>AM</th><th>PM</th>
+            <th class="r">YTD Plan</th><th class="r">YTD Actual</th><th class="r">Variance</th>
+            <th class="r">M+1 (F)</th><th class="r">M+2 (F)</th><th class="r">M+3 (F)</th>
+          </tr></thead>
+          <tbody id="fcBody"></tbody>
+        </table>
+      </div>
+    </div><!-- /pane-fin -->
+
+    <!-- ══ TAB 3: P360 ════════════════════════════════════════════════════════ -->
+    <div class="pane" id="pane-p360">
+      <div class="kgrid">
+        <div class="kc amber" onclick="openP360Avg()"><div class="klbl">Portfolio Avg P360</div><div class="kval">7.3</div><div class="ksub">↔ stable vs last month</div></div>
+        <div class="kc red" onclick="openP360Reds()"><div class="klbl">Watch Accounts</div><div class="kval">2</div><div class="ksub">MedTech · DermaPlus</div></div>
+        <div class="kc green" onclick="openP360Best()"><div class="klbl">Best Account</div><div class="kval">8.3</div><div class="ksub">CardioTech</div></div>
+        <div class="kc amber"><div class="klbl">Trend Direction</div><div class="kval">Mixed</div><div class="ksub">4↑ · 3= · 4↓</div></div>
+      </div>
+      <div class="stitle">
+        <span>Per-Account P360 · click any tile for scorecard, action items, observations</span>
+        <span style="font-size:10px;font-weight:400;color:var(--text-muted);">Score ≥ 8.0 = Green · 6.0–7.9 = Amber · &lt;6.0 = Red · Assessed Apr 2026</span>
+      </div>
+      <div class="p360-grid-wrap">
+        <div class="p360-grid">
+
+          <!-- Sarah M. accounts — dims: [Competence, Discipline, Quality, Budget, Visibility] -->
+          <div class="p360-tile red" onclick="openP360('MedTech Corp', 6.5, [6.4, 5.8, 6.5, 7.0, 6.8])">
+            <div class="p360-tile-head"><div class="p360-tile-score red">6.5</div><div class="p360-tile-info"><div class="p360-tile-title">MedTech Corp</div><div class="p360-tile-sub">AM: Sarah M. · HLS</div></div></div>
+            <div class="p360-tile-pills"><span class="p360-pill amber">Discipline 5.8</span><span class="p360-pill amber">Quality 6.5</span><span class="p360-pill amber">Budget 7.0</span><span class="p360-pill amber">Visibility 6.8</span><span class="p360-pill amber">Competence 6.4</span></div>
+          </div>
+          <div class="p360-tile amber" onclick="openP360('HealthFirst US', 7.8, [7.6, 7.2, 8.4, 8.0, 7.6])">
+            <div class="p360-tile-head"><div class="p360-tile-score amber">7.8</div><div class="p360-tile-info"><div class="p360-tile-title">HealthFirst US</div><div class="p360-tile-sub">AM: Sarah M. · HLS</div></div></div>
+            <div class="p360-tile-pills"><span class="p360-pill amber">Discipline 7.2</span><span class="p360-pill green">Quality 8.4</span><span class="p360-pill green">Budget 8.0</span><span class="p360-pill amber">Visibility 7.6</span><span class="p360-pill amber">Competence 7.6</span></div>
+          </div>
+          <div class="p360-tile amber" onclick="openP360('BioSync Labs', 7.2, [7.2, 6.8, 6.4, 8.0, 7.6])">
+            <div class="p360-tile-head"><div class="p360-tile-score amber">7.2</div><div class="p360-tile-info"><div class="p360-tile-title">BioSync Labs</div><div class="p360-tile-sub">AM: Sarah M. · HLS</div></div></div>
+            <div class="p360-tile-pills"><span class="p360-pill amber">Discipline 6.8</span><span class="p360-pill amber">Quality 6.4</span><span class="p360-pill green">Budget 8.0</span><span class="p360-pill amber">Visibility 7.6</span><span class="p360-pill amber">Competence 7.2</span></div>
+          </div>
+          <div class="p360-tile amber" onclick="openP360('Renewal Care', 7.4, [7.4, 8.2, 7.8, 7.0, 6.6])">
+            <div class="p360-tile-head"><div class="p360-tile-score amber">7.4</div><div class="p360-tile-info"><div class="p360-tile-title">Renewal Care</div><div class="p360-tile-sub">AM: Sarah M. · HLS</div></div></div>
+            <div class="p360-tile-pills"><span class="p360-pill green">Discipline 8.2</span><span class="p360-pill amber">Quality 7.8</span><span class="p360-pill amber">Budget 7.0</span><span class="p360-pill amber">Visibility 6.6</span><span class="p360-pill amber">Competence 7.4</span></div>
+          </div>
+
+          <!-- Priya K. accounts -->
+          <div class="p360-tile green" onclick="openP360('WellnessOne', 8.2, [7.4, 8.5, 8.8, 8.0, 8.4])">
+            <div class="p360-tile-head"><div class="p360-tile-score green">8.2</div><div class="p360-tile-info"><div class="p360-tile-title">WellnessOne</div><div class="p360-tile-sub">AM: Priya K. · NHS</div></div></div>
+            <div class="p360-tile-pills"><span class="p360-pill green">Discipline 8.5</span><span class="p360-pill green">Quality 8.8</span><span class="p360-pill green">Budget 8.0</span><span class="p360-pill green">Visibility 8.4</span><span class="p360-pill amber">Competence 7.4</span></div>
+          </div>
+          <div class="p360-tile green" onclick="openP360('NeuroLab', 8.0, [7.6, 8.2, 8.4, 7.8, 8.0])">
+            <div class="p360-tile-head"><div class="p360-tile-score green">8.0</div><div class="p360-tile-info"><div class="p360-tile-title">NeuroLab</div><div class="p360-tile-sub">AM: Priya K. · NHS</div></div></div>
+            <div class="p360-tile-pills"><span class="p360-pill green">Discipline 8.2</span><span class="p360-pill green">Quality 8.4</span><span class="p360-pill amber">Budget 7.8</span><span class="p360-pill green">Visibility 8.0</span><span class="p360-pill amber">Competence 7.6</span></div>
+          </div>
+          <div class="p360-tile green" onclick="openP360('CardioTech', 8.3, [8.2, 8.6, 8.2, 8.0, 8.5])">
+            <div class="p360-tile-head"><div class="p360-tile-score green">8.3</div><div class="p360-tile-info"><div class="p360-tile-title">CardioTech</div><div class="p360-tile-sub">AM: Priya K. · NHS</div></div></div>
+            <div class="p360-tile-pills"><span class="p360-pill green">Discipline 8.6</span><span class="p360-pill green">Quality 8.2</span><span class="p360-pill green">Budget 8.0</span><span class="p360-pill green">Visibility 8.5</span><span class="p360-pill green">Competence 8.2</span></div>
+          </div>
+          <div class="p360-tile amber" onclick="openP360('OptiCare', 7.8, [7.8, 8.0, 7.6, 7.8, 7.8])">
+            <div class="p360-tile-head"><div class="p360-tile-score amber">7.8</div><div class="p360-tile-info"><div class="p360-tile-title">OptiCare</div><div class="p360-tile-sub">AM: Priya K. · NHS</div></div></div>
+            <div class="p360-tile-pills"><span class="p360-pill green">Discipline 8.0</span><span class="p360-pill amber">Quality 7.6</span><span class="p360-pill amber">Budget 7.8</span><span class="p360-pill amber">Visibility 7.8</span><span class="p360-pill amber">Competence 7.8</span></div>
+          </div>
+
+          <!-- Ravi S. accounts -->
+          <div class="p360-tile amber" onclick="openP360('BioGen Labs', 6.3, [6.4, 6.0, 7.0, 5.8, 6.4])">
+            <div class="p360-tile-head"><div class="p360-tile-score amber">6.3</div><div class="p360-tile-info"><div class="p360-tile-title">BioGen Labs</div><div class="p360-tile-sub">AM: Ravi S. · Common</div></div></div>
+            <div class="p360-tile-pills"><span class="p360-pill amber">Discipline 6.0</span><span class="p360-pill amber">Quality 7.0</span><span class="p360-pill red">Budget 5.8</span><span class="p360-pill amber">Visibility 6.4</span><span class="p360-pill amber">Competence 6.4</span></div>
+          </div>
+          <div class="p360-tile amber" onclick="openP360('OrthoFix', 7.2, [7.2, 8.0, 7.4, 7.0, 6.4])">
+            <div class="p360-tile-head"><div class="p360-tile-score amber">7.2</div><div class="p360-tile-info"><div class="p360-tile-title">OrthoFix</div><div class="p360-tile-sub">AM: Ravi S. · Common</div></div></div>
+            <div class="p360-tile-pills"><span class="p360-pill green">Discipline 8.0</span><span class="p360-pill amber">Quality 7.4</span><span class="p360-pill amber">Budget 7.0</span><span class="p360-pill amber">Visibility 6.4</span><span class="p360-pill amber">Competence 7.2</span></div>
+          </div>
+          <div class="p360-tile red" onclick="openP360('DermaPlus', 6.0, [6.2, 6.4, 5.8, 5.5, 6.2])">
+            <div class="p360-tile-head"><div class="p360-tile-score red">6.0</div><div class="p360-tile-info"><div class="p360-tile-title">DermaPlus</div><div class="p360-tile-sub">AM: Ravi S. · Common</div></div></div>
+            <div class="p360-tile-pills"><span class="p360-pill amber">Discipline 6.4</span><span class="p360-pill red">Quality 5.8</span><span class="p360-pill red">Budget 5.5</span><span class="p360-pill amber">Visibility 6.2</span><span class="p360-pill amber">Competence 6.2</span></div>
+          </div>
+
+        </div>
+        <a href="#" class="p360-full-link" onclick="event.preventDefault();alert('Opens full P360 screen (prototype)');">Full P360 Screen →</a>
+      </div>
+    </div><!-- /pane-p360 -->
+
+  </div><!-- /main -->
+
+  <!-- FLYOUT OVERLAY -->
+  <div id="flyout-overlay" class="flyout-overlay" onclick="closeOldFlyout()"></div>
+
+  <!-- ── Mining Flyouts ────────────────────────────────────────────────── -->
+  <div id="flyout-mine1" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">MedTech Corp — Expansion Proposal</div><div class="flyout-sub">MINE-2026-14-001 · Late 🔴 · +8 days · AM: Sarah M.</div></div>
+      <button class="flyout-close" onclick="closeOldFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section"><div class="flyout-label">Current Status</div><div class="flyout-value">Under client internal review. Client VP reviewing ROI section added on Apr 8. Follow-up scheduled Apr 14. <span style="color:var(--red);font-weight:600;">+8 days overdue.</span></div></div>
+      <div class="flyout-section">
+        <div class="flyout-label">What Got Done</div>
+        <div class="flyout-value" style="font-size:12px;">
+          <div style="padding:4px 0;border-bottom:1px dashed var(--border);">✅ Initial proposal drafted — Apr 4</div>
+          <div style="padding:4px 0;border-bottom:1px dashed var(--border);">✅ ROI section added per client request — Apr 8</div>
+          <div style="padding:4px 0;">✅ Shared with client VP for review — Apr 9</div>
+        </div>
+      </div>
+      <div class="flyout-section"><div class="flyout-label">What's Next</div><div class="flyout-value" style="color:var(--amber);font-weight:600;">Follow-up call with client VP on Apr 14 · Confirm decision by Apr 16 · Escalate to DM if no response</div></div>
+      <div class="flyout-section"><div class="flyout-label">Linked Action Items</div><div style="background:#FEF2F2;border-radius:6px;padding:8px 10px;font-size:11px;"><span class="badge badge-amber" style="margin-right:6px;">Open</span>Complete expansion proposal for MedTech Corp · Sarah M. · Due Apr 16</div></div>
+      <div class="inline-ai-form">
+        <div class="inline-ai-form-title"><i class="bi bi-plus-circle-fill" style="color:var(--orange);"></i> Add Action Item</div>
+        <div class="inline-ai-row">
+          <input type="text" placeholder="Action description…">
+          <select><option>Sarah M. (AM)</option><option>John Doe (D)</option><option>D+AM</option></select>
+          <select><option value="Mining">Category: Mining</option><option>ESC</option><option>PROJ</option></select>
+          <input type="date" value="2026-04-20" style="width:120px;">
+          <button class="btn btn-primary" style="font-size:11px;" onclick="addMiningActionItem('MedTech Corp', this)">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="flyout-mine2" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">MedTech Corp — Module Demo</div><div class="flyout-sub">MINE-2026-15-002 · On Track ✅ · AM: Sarah M.</div></div>
+      <button class="flyout-close" onclick="closeOldFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section"><div class="flyout-label">Current Status</div><div class="flyout-value">Demo environment setup complete. Content preparation in progress. No blockers. Due Apr 22.</div></div>
+      <div class="flyout-section"><div class="flyout-label">What Got Done</div><div class="flyout-value" style="font-size:12px;"><div style="padding:4px 0;border-bottom:1px dashed var(--border);">✅ Demo environment provisioned — Apr 10</div><div style="padding:4px 0;">✅ Use case deck outlined — Apr 12</div></div></div>
+      <div class="flyout-section"><div class="flyout-label">What's Next</div><div class="flyout-value">Complete content slides by Apr 18 · Dry run with DM Apr 20 · Client demo Apr 22</div></div>
+      <div class="inline-ai-form">
+        <div class="inline-ai-form-title"><i class="bi bi-plus-circle-fill" style="color:var(--orange);"></i> Add Action Item</div>
+        <div class="inline-ai-row">
+          <input type="text" placeholder="Action description…">
+          <select><option>Sarah M. (AM)</option><option>John Doe (D)</option><option>D+AM</option></select>
+          <select><option value="Mining">Category: Mining</option><option>ESC</option><option>PROJ</option></select>
+          <input type="date" value="2026-04-22" style="width:120px;">
+          <button class="btn btn-primary" style="font-size:11px;" onclick="addMiningActionItem('MedTech Corp', this)">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="flyout-mine3" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">HealthFirst US — Renewal SOW</div><div class="flyout-sub">MINE-2026-14-003 · On Track ✅ · AM: Sarah M.</div></div>
+      <button class="flyout-close" onclick="closeOldFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section"><div class="flyout-label">Current Status</div><div class="flyout-value">Commercial terms being drafted. D+AM coordination ongoing. Due Apr 30.</div></div>
+      <div class="flyout-section"><div class="flyout-label">What Got Done</div><div class="flyout-value" style="font-size:12px;"><div style="padding:4px 0;border-bottom:1px dashed var(--border);">✅ Renewal intent confirmed with client Apr 5</div><div style="padding:4px 0;">✅ Scope outline shared internally Apr 9</div></div></div>
+      <div class="flyout-section"><div class="flyout-label">What's Next</div><div class="flyout-value">Commercial terms draft by Apr 20 · Legal review Apr 24 · SOW sign-off Apr 30</div></div>
+      <div class="inline-ai-form">
+        <div class="inline-ai-form-title"><i class="bi bi-plus-circle-fill" style="color:var(--orange);"></i> Add Action Item</div>
+        <div class="inline-ai-row">
+          <input type="text" placeholder="Action description…">
+          <select><option>Sarah M. (AM)</option><option>Rajesh K. (D)</option><option>D+AM</option></select>
+          <select><option value="Mining">Category: Mining</option><option>ESC</option><option>PROJ</option></select>
+          <input type="date" value="2026-04-30" style="width:120px;">
+          <button class="btn btn-primary" style="font-size:11px;" onclick="addMiningActionItem('HealthFirst US', this)">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="flyout-mine4" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">BioSync Labs — Expansion Proposal</div><div class="flyout-sub">MINE-2026-14-004 · At Risk ⚠️ · AM: Sarah M.</div></div>
+      <button class="flyout-close" onclick="closeOldFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section"><div class="flyout-label">Current Status</div><div class="flyout-value"><span style="color:var(--amber);font-weight:600;">At Risk.</span> Ready for review but relationship escalation open — may affect client reception. Due Apr 16.</div></div>
+      <div class="flyout-section"><div class="flyout-label">What Got Done</div><div class="flyout-value" style="font-size:12px;"><div style="padding:4px 0;border-bottom:1px dashed var(--border);">✅ Proposal drafted — Apr 8</div><div style="padding:4px 0;">✅ Internal review complete — Apr 11</div></div></div>
+      <div class="flyout-section"><div class="flyout-label">What's Next</div><div class="flyout-value" style="color:var(--amber);font-weight:600;">Resolve relationship escalation before submitting · Client review Apr 15 · Decision by Apr 16</div></div>
+      <div class="inline-ai-form">
+        <div class="inline-ai-form-title"><i class="bi bi-plus-circle-fill" style="color:var(--orange);"></i> Add Action Item</div>
+        <div class="inline-ai-row">
+          <input type="text" placeholder="Action description…">
+          <select><option>Sarah M. (AM)</option><option>John Doe (D)</option><option>D+AM</option></select>
+          <select><option value="Mining">Category: Mining</option><option>ESC</option><option>PROJ</option></select>
+          <input type="date" value="2026-04-16" style="width:120px;">
+          <button class="btn btn-primary" style="font-size:11px;" onclick="addMiningActionItem('BioSync Labs', this)">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="flyout-mine5" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">BioGen Labs — Upsell Scoping</div><div class="flyout-sub">MINE-2026-16-005 · On Track ✅ · AM: Ravi S.</div></div>
+      <button class="flyout-close" onclick="closeOldFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section"><div class="flyout-label">Current Status</div><div class="flyout-value">Scoping document in progress. Client product team aligned. Due May 10.</div></div>
+      <div class="flyout-section"><div class="flyout-label">What Got Done</div><div class="flyout-value" style="font-size:12px;"><div style="padding:4px 0;">✅ Upsell opportunity identified in discovery call — Apr 28</div></div></div>
+      <div class="flyout-section"><div class="flyout-label">What's Next</div><div class="flyout-value">Complete scope document by May 5 · AM to present to client CTO May 8 · Decision May 10</div></div>
+      <div class="inline-ai-form">
+        <div class="inline-ai-form-title"><i class="bi bi-plus-circle-fill" style="color:var(--orange);"></i> Add Action Item</div>
+        <div class="inline-ai-row">
+          <input type="text" placeholder="Action description…">
+          <select><option>Ravi S. (AM)</option><option>D+AM</option></select>
+          <select><option value="Mining">Category: Mining</option><option>ESC</option><option>PROJ</option></select>
+          <input type="date" value="2026-05-10" style="width:120px;">
+          <button class="btn btn-primary" style="font-size:11px;" onclick="addMiningActionItem('BioGen Labs', this)">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Escalation Flyouts ─────────────────────────────────────────────── -->
+  <div id="flyout-esc1" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">MedTech Corp — Quality Escalation</div><div class="flyout-sub">ESC-2026-15-001 · Logged Apr 11 · AM: Sarah M.</div></div>
+      <button class="flyout-close" onclick="closeOldFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section"><div class="flyout-label">Escalation</div><div class="flyout-value">EMR module P1 defect spike (Sprint 14) — 3 critical bugs identified during client UAT on Apr 10. Regression introduced in data-mapping layer. Client VP escalated directly to President on Apr 5.</div></div>
+      <div class="flyout-section"><div class="flyout-label">Account Manager</div><div class="flyout-value" style="font-weight:700;">Sarah M. <span style="background:#FCE7F3;color:#9D174D;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;margin-left:8px;">AM Owner</span></div></div>
+      <div class="flyout-section"><div class="flyout-label">Next Action</div><div class="flyout-value" style="color:var(--amber);font-weight:600;">Hotfix build scheduled Apr 14 · Client UAT re-run Apr 16 · Daily standup with client PM active · Resolution target Apr 20</div></div>
+      <div class="flyout-row" style="margin-top:8px;"><div class="flyout-col"><div class="flyout-label">Resolution Date</div><div class="flyout-value" style="color:var(--red);font-weight:700;">Apr 20 (Overdue)</div></div><div class="flyout-col"><div class="flyout-label">Revenue Risk</div><div class="flyout-value" style="color:var(--red);font-weight:700;">Yes — Apr milestone at risk</div></div></div>
+      <div class="inline-ai-form">
+        <div class="inline-ai-form-title"><i class="bi bi-plus-circle-fill" style="color:var(--orange);"></i> Add Action Item</div>
+        <div class="inline-ai-row">
+          <input type="text" placeholder="Action description…">
+          <select><option>Sarah M. (AM)</option><option>John Doe (D)</option><option>D+AM</option></select>
+          <select><option value="ESC">Category: ESC</option><option>Mining</option><option>PROJ</option></select>
+          <input type="date" value="2026-04-20" style="width:120px;">
+          <button class="btn btn-primary" style="font-size:11px;" onclick="addEscActionItem('MedTech Corp', this)">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="flyout-esc2" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">HealthFirst US — Resourcing Escalation</div><div class="flyout-sub">ESC-2026-15-002 · Logged Apr 8 · AM: Sarah M.</div></div>
+      <button class="flyout-close" onclick="closeOldFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section"><div class="flyout-label">Escalation</div><div class="flyout-value">2 senior engineers resigned in March — team running at 78% capacity. Sprint velocity down 15%. Client delivery timeline impacted.</div></div>
+      <div class="flyout-section"><div class="flyout-label">Account Manager</div><div class="flyout-value" style="font-weight:700;">Sarah M. <span style="background:#EDE9FE;color:#5B21B6;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;margin-left:8px;">D+AM Joint</span></div></div>
+      <div class="flyout-section"><div class="flyout-label">Next Action</div><div class="flyout-value" style="color:var(--amber);font-weight:600;">Tara JD raised (47d open) · 1 internal resource redeployed · AM to confirm revised timeline with client by Apr 20</div></div>
+      <div class="inline-ai-form">
+        <div class="inline-ai-form-title"><i class="bi bi-plus-circle-fill" style="color:var(--orange);"></i> Add Action Item</div>
+        <div class="inline-ai-row">
+          <input type="text" placeholder="Action description…">
+          <select><option>Sarah M. (AM)</option><option>Rajesh K. (D)</option><option>D+AM</option></select>
+          <select><option value="ESC">Category: ESC</option><option>Mining</option><option>PROJ</option></select>
+          <input type="date" value="2026-04-25" style="width:120px;">
+          <button class="btn btn-primary" style="font-size:11px;" onclick="addEscActionItem('HealthFirst US', this)">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="flyout-esc3" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">BioSync Labs — Relationship Escalation</div><div class="flyout-sub">ESC-2026-14-003 · Logged Apr 4 · AM: Sarah M.</div></div>
+      <button class="flyout-close" onclick="closeOldFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section"><div class="flyout-label">Escalation</div><div class="flyout-value">Client VP Engineering raised concern over missed weekly status updates for 2 consecutive weeks in March. Relationship trust impacted.</div></div>
+      <div class="flyout-section"><div class="flyout-label">Account Manager</div><div class="flyout-value" style="font-weight:700;">Sarah M. <span style="background:#FCE7F3;color:#9D174D;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;margin-left:8px;">AM Owner</span></div></div>
+      <div class="flyout-section"><div class="flyout-label">Next Action</div><div class="flyout-value">Weekly updates resumed Apr 7 · Fortnightly exec sync established · Monitor CSAT over next 4 weeks</div></div>
+      <div class="inline-ai-form">
+        <div class="inline-ai-form-title"><i class="bi bi-plus-circle-fill" style="color:var(--orange);"></i> Add Action Item</div>
+        <div class="inline-ai-row">
+          <input type="text" placeholder="Action description…">
+          <select><option>Sarah M. (AM)</option><option>D+AM</option></select>
+          <select><option value="ESC">Category: ESC</option><option>Mining</option></select>
+          <input type="date" value="2026-04-15" style="width:120px;">
+          <button class="btn btn-primary" style="font-size:11px;" onclick="addEscActionItem('BioSync Labs', this)">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="flyout-esc4" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">BioGen Labs — Revenue Risk Escalation</div><div class="flyout-sub">ESC-2026-16-004 · Logged Apr 28 · AM: Ravi S.</div></div>
+      <button class="flyout-close" onclick="closeOldFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section"><div class="flyout-label">Escalation</div><div class="flyout-value">Integration Platform project facing budget constraints from client finance review. Renewal timeline at risk. Revenue of $0.8M at risk.</div></div>
+      <div class="flyout-section"><div class="flyout-label">Account Manager</div><div class="flyout-value" style="font-weight:700;">Ravi S. <span style="background:#FCE7F3;color:#9D174D;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;margin-left:8px;">AM Owner</span></div></div>
+      <div class="flyout-section"><div class="flyout-label">Next Action</div><div class="flyout-value" style="color:var(--amber);font-weight:600;">Commercial proposal with phased delivery option due May 5 · CFO-level meeting requested · Internal pricing review in progress</div></div>
+      <div class="flyout-row" style="margin-top:8px;"><div class="flyout-col"><div class="flyout-label">Revenue at Risk</div><div class="flyout-value" style="color:var(--red);font-weight:700;">$0.8M</div></div><div class="flyout-col"><div class="flyout-label">Status</div><div class="flyout-value"><span class="badge badge-amber">Open</span></div></div></div>
+      <div class="inline-ai-form">
+        <div class="inline-ai-form-title"><i class="bi bi-plus-circle-fill" style="color:var(--orange);"></i> Add Action Item</div>
+        <div class="inline-ai-row">
+          <input type="text" placeholder="Action description…">
+          <select><option>Ravi S. (AM)</option><option>D+AM</option></select>
+          <select><option value="ESC">Category: ESC</option><option>Mining</option><option>PROJ</option></select>
+          <input type="date" value="2026-05-05" style="width:120px;">
+          <button class="btn btn-primary" style="font-size:11px;" onclick="addEscActionItem('BioGen Labs', this)">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bar"><span class="data-freshness"><span class="dot"></span>BMD v2.5 · Data as of May 5, 2026 09:14 IST</span></div>
+  <div class="global-footer">Nalashaa &copy; 2026 &nbsp;&middot;&nbsp; All rights reserved</div>
+
+  <script src="shared.js"></script>
+  <script src="dm-flyouts.js"></script>
+  <script>
+    function toggleSidebar() { var sb=document.querySelector('.sidebar'); if(sb) sb.classList.toggle('collapsed'); document.body.classList.toggle('sidebar-collapsed'); }
+
+    /* Old-style panel flyouts (mining/escalation static panels) — do NOT override shared.js openFlyout/closeFlyout */
+    function openOldFlyout(id) {
+      document.getElementById('flyout-'+id).classList.add('open');
+      document.getElementById('flyout-overlay').classList.add('open');
+    }
+    function closeOldFlyout() {
+      document.querySelectorAll('.flyout').forEach(f => f.classList.remove('open'));
+      var ov = document.getElementById('flyout-overlay');
+      if (ov) ov.classList.remove('open');
+    }
+
+    /* ── Tab switching — exact dm-home.html pattern ──────────────────── */
+    function showTab(t, el) {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.pane').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('pane-' + t).classList.add('active');
+      if (t === 'fin') setTimeout(() => { renderBilling(currentPersona); renderFC(currentPersona); }, 30);
+    }
+
+    /* ── Financials data ─────────────────────────────────────────────── */
+    var currentPersona = 'all';
+    const FC_ALL = [
+      { acct:'MedTech Corp',   am:'Sarah M.', pm:'Vikram S.',  plan:2.38, ytd:2.30, m1:0.46, m2:0.48, m3:0.50, note:'Phase 2 delivery on track · Renewal SOW due Q3 2026' },
+      { acct:'HealthFirst US', am:'Sarah M.', pm:'Anita M.',   plan:2.10, ytd:2.00, m1:0.40, m2:0.41, m3:0.42, note:'Resource gap resolved · Client timeline confirmed' },
+      { acct:'BioSync Labs',   am:'Sarah M.', pm:'Karthik R.', plan:1.40, ytd:1.30, m1:0.28, m2:0.30, m3:0.32, note:'Relationship escalation resolved · Expansion proposal in review' },
+      { acct:'Renewal Care',   am:'Sarah M.', pm:'Suresh P.',  plan:0.95, ytd:0.90, m1:0.18, m2:0.17, m3:0.16, note:'Renewal negotiation in progress · M+2 trending down' },
+      { acct:'WellnessOne',    am:'Priya K.', pm:'Anita M.',   plan:1.08, ytd:1.10, m1:0.22, m2:0.23, m3:0.24, note:'Ahead of plan · Expansion verbal received from client' },
+      { acct:'NeuroLab',       am:'Priya K.', pm:'Vikram S.',  plan:0.92, ytd:0.95, m1:0.20, m2:0.21, m3:0.21, note:'Imaging integration ramping · Steady forward outlook' },
+      { acct:'CardioTech',     am:'Priya K.', pm:'Karthik R.', plan:1.00, ytd:1.05, m1:0.21, m2:0.22, m3:0.23, note:'Healthy growth · Custom dashboard project tracking well' },
+      { acct:'OptiCare',       am:'Priya K.', pm:'Suresh P.',  plan:0.74, ytd:0.70, m1:0.14, m2:0.15, m3:0.16, note:'Slight underrun · License renewal expected to recover M+2' },
+      { acct:'BioGen Labs',    am:'Ravi S.',  pm:'Karthik R.', plan:1.35, ytd:1.20, m1:0.24, m2:0.21, m3:0.19, note:'Budget constraints · Revenue risk if renewal stalls' },
+      { acct:'OrthoFix',       am:'Ravi S.',  pm:'Vikram S.',  plan:0.78, ytd:0.80, m1:0.16, m2:0.17, m3:0.18, note:'Slightly ahead · Add-on SOW pending signature' },
+      { acct:'DermaPlus',      am:'Ravi S.',  pm:'Anita M.',   plan:0.65, ytd:0.60, m1:0.12, m2:0.12, m3:0.11, note:'Declining trend · Client procurement review delaying renewal' },
+    ];
+    const AM_FILTER = { all: null, sarah:'Sarah M.', priya:'Priya K.', ravi:'Ravi S.' };
+
+    function getFiltered(p) {
+      const f = AM_FILTER[p];
+      return f ? FC_ALL.filter(r => r.am === f) : FC_ALL;
+    }
+
+    function ragCls(pct) { return pct >= 1.0 ? 'green' : pct >= 0.90 ? 'amber' : 'red'; }
+
+    function renderBilling(p) {
+      const data = getFiltered(p);
+      const maxYtd = Math.max(...data.map(r => r.ytd));
+      document.getElementById('billingRows').innerHTML = data.map(r => {
+        const pct = r.ytd / r.plan;
+        const cls = ragCls(pct);
+        const barW = Math.min(100, Math.round((r.ytd / maxYtd) * 100));
+        return `<div class="billing-row" onclick="openAMAccountBilling('${r.acct}')">
+          <div class="billing-acct">${r.acct}</div>
+          <div class="billing-am">${r.am}</div>
+          <div class="billing-bar-track"><div class="billing-bar-fill ${cls}" style="width:${barW}%;"></div></div>
+          <div class="billing-amount">$${r.ytd.toFixed(2)}M</div>
+          <div class="billing-fcst">M+1 $${r.m1.toFixed(2)}M</div>
+        </div>`;
+      }).join('');
+    }
+
+    function fmtVariance(actual, plan) {
+      const v = actual - plan;
+      const sign = v >= 0 ? '+' : '-';
+      const cls  = v >= 0 ? 'fc-up' : 'fc-down';
+      return `<span class="${cls}">${sign}$${Math.abs(v).toFixed(2)}M</span>`;
+    }
+
+    function renderFC(p) {
+      const data = getFiltered(p);
+      document.getElementById('fcBody').innerHTML = data.map(r =>
+        `<tr onclick="openFlyout({title:'${r.acct} · Forecast',sub:'${r.note}',body:'<p>${r.note}</p><p style=\\'margin-top:8px;font-size:11px;color:#64748B;\\'>AM: ${r.am} &nbsp;·&nbsp; PM: ${r.pm}</p>'})">
+          <td><strong>${r.acct}</strong></td>
+          <td style="color:var(--text-muted);font-size:11px;">${r.am}</td>
+          <td style="color:var(--text-muted);font-size:11px;">${r.pm}</td>
+          <td class="r">$${r.plan.toFixed(2)}M</td>
+          <td class="r">$${r.ytd.toFixed(2)}M</td>
+          <td class="r">${fmtVariance(r.ytd, r.plan)}</td>
+          <td class="r">$${r.m1.toFixed(2)}M</td>
+          <td class="r">$${r.m2.toFixed(2)}M</td>
+          <td class="r">$${r.m3.toFixed(2)}M</td>
+        </tr>`
+      ).join('');
+    }
+
+    function setPersona(p) {
+      currentPersona = p;
+      ['btnAll','btnSM','btnPK','btnRS'].forEach(id => document.getElementById(id).classList.remove('active'));
+      const map = { all:'btnAll', sarah:'btnSM', priya:'btnPK', ravi:'btnRS' };
+      document.getElementById(map[p]).classList.add('active');
+      renderBilling(p);
+      renderFC(p);
+    }
+
+    /* P360 flyout: handled by dm-flyouts.js (openP360, openP360Avg, openP360Reds, openP360Best, openP360Trend) */
+
+    /* ── AM card filter — click to filter mining + escalations ────────── */
+    var _activeAM = null;
+    function filterByAM(am, cardEl) {
+      const isSame = (_activeAM === am);
+      _activeAM = isSame ? null : am;
+      // Card highlight
+      document.querySelectorAll('.am-card-h').forEach(c => c.classList.remove('am-active'));
+      if (!isSame && cardEl) cardEl.classList.add('am-active');
+      // Mining swim-rows
+      document.querySelectorAll('.swim-row[data-am]').forEach(r => {
+        r.style.display = (!_activeAM || r.dataset.am === _activeAM) ? '' : 'none';
+      });
+      // Escalation table rows
+      document.querySelectorAll('.esc-tbl tbody tr[data-am]').forEach(r => {
+        r.style.display = (!_activeAM || r.dataset.am === _activeAM) ? '' : 'none';
+      });
+    }
+
+    /* ── AM billing flyout — same pattern as dm-flyouts.js openAccountBilling ── */
+    function openAMAccountBilling(acct) {
+      const data = {
+        'MedTech Corp':   { plan:'$2.38M', actual:'$2.30M', varDollar:'-$0.08M', varClass:'amber', m1:'$0.46M', m2:'$0.48M', m3:'$0.50M', risk:'Phase 2 delivery on track · Renewal SOW due Q3', months:[
+          ['Dec','$0.45M','$0.44M','-$0.01M','amber'],['Jan','$0.48M','$0.47M','-$0.01M','amber'],['Feb','$0.48M','$0.47M','-$0.01M','amber'],['Mar','$0.49M','$0.47M','-$0.02M','amber'],['Apr','$0.48M','$0.45M','-$0.03M','amber'],['May (MTD)','$0.48M','$0.16M','—','grey']]},
+        'HealthFirst US': { plan:'$2.10M', actual:'$2.00M', varDollar:'-$0.10M', varClass:'amber', m1:'$0.40M', m2:'$0.41M', m3:'$0.42M', risk:'Resource gap resolved · Timeline confirmed', months:[
+          ['Dec','$0.40M','$0.38M','-$0.02M','amber'],['Jan','$0.42M','$0.40M','-$0.02M','amber'],['Feb','$0.42M','$0.40M','-$0.02M','amber'],['Mar','$0.43M','$0.42M','-$0.01M','amber'],['Apr','$0.43M','$0.40M','-$0.03M','amber'],['May (MTD)','$0.40M','$0.13M','—','grey']]},
+        'BioSync Labs':   { plan:'$1.40M', actual:'$1.30M', varDollar:'-$0.10M', varClass:'amber', m1:'$0.28M', m2:'$0.30M', m3:'$0.32M', risk:'Relationship esc resolved · Expansion in review', months:[
+          ['Dec','$0.27M','$0.26M','-$0.01M','amber'],['Jan','$0.28M','$0.26M','-$0.02M','amber'],['Feb','$0.28M','$0.26M','-$0.02M','amber'],['Mar','$0.28M','$0.26M','-$0.02M','amber'],['Apr','$0.29M','$0.26M','-$0.03M','red'],['May (MTD)','$0.28M','$0.09M','—','grey']]},
+        'Renewal Care':   { plan:'$0.95M', actual:'$0.90M', varDollar:'-$0.05M', varClass:'amber', m1:'$0.18M', m2:'$0.17M', m3:'$0.16M', risk:'Renewal negotiation · M+2 trending down', months:[
+          ['Dec','$0.18M','$0.17M','-$0.01M','amber'],['Jan','$0.19M','$0.18M','-$0.01M','amber'],['Feb','$0.19M','$0.18M','-$0.01M','amber'],['Mar','$0.20M','$0.19M','-$0.01M','amber'],['Apr','$0.19M','$0.18M','-$0.01M','amber'],['May (MTD)','$0.19M','$0.06M','—','grey']]},
+        'WellnessOne':    { plan:'$1.08M', actual:'$1.10M', varDollar:'+$0.02M', varClass:'green', m1:'$0.22M', m2:'$0.23M', m3:'$0.24M', risk:'Ahead of plan · Expansion verbal received', months:[
+          ['Dec','$0.21M','$0.22M','+$0.01M','green'],['Jan','$0.22M','$0.22M','+$0.00M','green'],['Feb','$0.21M','$0.22M','+$0.01M','green'],['Mar','$0.22M','$0.22M','+$0.00M','green'],['Apr','$0.22M','$0.22M','+$0.00M','green'],['May (MTD)','$0.22M','$0.07M','—','grey']]},
+        'NeuroLab':       { plan:'$0.92M', actual:'$0.95M', varDollar:'+$0.03M', varClass:'green', m1:'$0.20M', m2:'$0.21M', m3:'$0.21M', risk:'Imaging integration ramping · Steady outlook', months:[
+          ['Dec','$0.18M','$0.19M','+$0.01M','green'],['Jan','$0.18M','$0.19M','+$0.01M','green'],['Feb','$0.18M','$0.19M','+$0.01M','green'],['Mar','$0.19M','$0.19M','+$0.00M','green'],['Apr','$0.19M','$0.19M','+$0.00M','green'],['May (MTD)','$0.18M','$0.06M','—','grey']]},
+        'CardioTech':     { plan:'$1.00M', actual:'$1.05M', varDollar:'+$0.05M', varClass:'green', m1:'$0.21M', m2:'$0.22M', m3:'$0.23M', risk:'Healthy growth · Dashboard project on track', months:[
+          ['Dec','$0.19M','$0.21M','+$0.02M','green'],['Jan','$0.20M','$0.21M','+$0.01M','green'],['Feb','$0.20M','$0.21M','+$0.01M','green'],['Mar','$0.20M','$0.21M','+$0.01M','green'],['Apr','$0.21M','$0.21M','+$0.00M','green'],['May (MTD)','$0.21M','$0.07M','—','grey']]},
+        'OptiCare':       { plan:'$0.74M', actual:'$0.70M', varDollar:'-$0.04M', varClass:'amber', m1:'$0.14M', m2:'$0.15M', m3:'$0.16M', risk:'Slight underrun · License renewal to recover M+2', months:[
+          ['Dec','$0.14M','$0.13M','-$0.01M','amber'],['Jan','$0.15M','$0.14M','-$0.01M','amber'],['Feb','$0.15M','$0.14M','-$0.01M','amber'],['Mar','$0.15M','$0.15M','+$0.00M','green'],['Apr','$0.15M','$0.14M','-$0.01M','amber'],['May (MTD)','$0.14M','$0.05M','—','grey']]},
+        'BioGen Labs':    { plan:'$1.35M', actual:'$1.20M', varDollar:'-$0.15M', varClass:'red', m1:'$0.24M', m2:'$0.21M', m3:'$0.19M', risk:'Budget constraints · Revenue risk if renewal stalls', months:[
+          ['Dec','$0.26M','$0.25M','-$0.01M','amber'],['Jan','$0.27M','$0.25M','-$0.02M','amber'],['Feb','$0.27M','$0.24M','-$0.03M','red'],['Mar','$0.28M','$0.23M','-$0.05M','red'],['Apr','$0.27M','$0.23M','-$0.04M','red'],['May (MTD)','$0.26M','$0.08M','—','grey']]},
+        'OrthoFix':       { plan:'$0.78M', actual:'$0.80M', varDollar:'+$0.02M', varClass:'green', m1:'$0.16M', m2:'$0.17M', m3:'$0.18M', risk:'Slightly ahead · Add-on SOW pending signature', months:[
+          ['Dec','$0.15M','$0.16M','+$0.01M','green'],['Jan','$0.15M','$0.16M','+$0.01M','green'],['Feb','$0.16M','$0.16M','+$0.00M','green'],['Mar','$0.16M','$0.16M','+$0.00M','green'],['Apr','$0.16M','$0.16M','+$0.00M','green'],['May (MTD)','$0.15M','$0.05M','—','grey']]},
+        'DermaPlus':      { plan:'$0.65M', actual:'$0.60M', varDollar:'-$0.05M', varClass:'red', m1:'$0.12M', m2:'$0.12M', m3:'$0.11M', risk:'Declining · Procurement review delaying renewal', months:[
+          ['Dec','$0.13M','$0.12M','-$0.01M','amber'],['Jan','$0.13M','$0.12M','-$0.01M','amber'],['Feb','$0.13M','$0.12M','-$0.01M','amber'],['Mar','$0.13M','$0.12M','-$0.01M','amber'],['Apr','$0.13M','$0.12M','-$0.01M','amber'],['May (MTD)','$0.12M','$0.04M','—','grey']]}
+      };
+      const d = data[acct] || {};
+      if (!d.plan) return;
+      openFlyoutPinned({
+        title: acct + ' · Billing',
+        sub: 'YTD + 3-month forward outlook',
+        pinned: `<div class="fly-alert ${d.varClass==='red'?'red':(d.varClass==='amber'?'amber':'green')}">${d.risk}</div>
+        <div class="g-stat-row" style="margin-bottom:6px;">
+          <div class="g-stat"><div class="g-stat-label">YTD Plan</div><div class="g-stat-val">${d.plan}</div></div>
+          <div class="g-stat"><div class="g-stat-label">YTD Actual</div><div class="g-stat-val">${d.actual}</div></div>
+          <div class="g-stat"><div class="g-stat-label">Variance</div><div class="g-stat-val ${d.varClass}">${d.varDollar}</div></div>
+        </div>
+        <div class="combined-tile" style="margin-bottom:14px;">
+          <div class="combined-tile-cell"><div class="combined-tile-lbl">M+1</div><div class="combined-tile-val">${d.m1}</div></div>
+          <div class="combined-tile-cell"><div class="combined-tile-lbl">M+2</div><div class="combined-tile-val">${d.m2}</div></div>
+          <div class="combined-tile-cell"><div class="combined-tile-lbl">M+3</div><div class="combined-tile-val">${d.m3}</div></div>
+        </div>`,
+        body: `<table class="g-tbl"><thead><tr><th>Month</th><th>Target</th><th>Actual</th><th>Variance</th></tr></thead><tbody>
+        ${d.months.map(m => `<tr><td>${m[0]}</td><td>${m[1]}</td><td>${m[2]}</td><td><span style="color:${m[4]==='red'?'#DC2626':(m[4]==='amber'?'#F59E0B':(m[4]==='green'?'#16A34A':'#94A3B8'))};font-weight:700;">${m[3]}</span></td></tr>`).join('')}
+        </tbody></table>`
+      });
+    }
+
+    function addMiningActionItem(account, btn) {
+      const form = btn.closest('.inline-ai-form');
+      const desc = form.querySelector('input[type=text]').value.trim();
+      if (!desc) { form.querySelector('input[type=text]').style.borderColor='var(--red)'; return; }
+      btn.textContent = '✓ Saved'; btn.style.background = 'var(--green)';
+      setTimeout(() => { closeOldFlyout(); }, 800);
+    }
+    /* ── Init financials on page load (for when user lands on fin tab directly) */
+    renderBilling('all');
+    renderFC('all');
+
+    function addEscActionItem(account, btn) {
+      const form = btn.closest('.inline-ai-form');
+      const desc = form.querySelector('input[type=text]').value.trim();
+      if (!desc) { form.querySelector('input[type=text]').style.borderColor='var(--red)'; return; }
+      btn.textContent = '✓ Saved'; btn.style.background = 'var(--green)';
+      setTimeout(() => { closeOldFlyout(); }, 800);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P360 Performance — John Doe · HLS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    /* ── P360 page styles ─────────────────────────────────── */
+    .p360-list-area { transition: margin-right 0.3s ease; }
+    .p360-list-area.flyout-active { margin-right: 510px; }
+
+    .p360-banner { display: grid; grid-template-columns: repeat(4,1fr); gap:10px; margin-bottom:14px; }
+    .p360-banner-item { background:var(--card); border-radius:8px; padding:12px 14px; border:1px solid var(--border); }
+    .p360-banner-label { font-size:10px; text-transform:uppercase; letter-spacing:0.3px; color:var(--text-muted); font-weight:600; margin-bottom:4px; }
+    .p360-banner-val { font-size:20px; font-weight:700; color:var(--navy); }
+    .p360-banner-val.red { color:var(--red); }
+    .p360-banner-val.amber { color:var(--amber); }
+    .p360-banner-val.green { color:var(--green); }
+
+    .tabs { display:flex; gap:2px; margin-bottom:14px; background:var(--bg); border-radius:8px; padding:3px; width:fit-content; }
+    .tab { padding:6px 16px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; color:var(--text-muted); }
+    .tab.active { background:#fff; color:var(--navy); box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+
+    /* ── P360 flyout updated: pin button + dim tabs ────────── */
+    .p360-flyout-pin-btn {
+      background: none; border: 1px solid rgba(255,255,255,0.3); border-radius: 4px;
+      color: rgba(255,255,255,0.7); font-size: 13px; cursor: pointer; padding: 3px 7px; line-height:1;
+    }
+    .p360-flyout-pin-btn:hover, .p360-flyout-pin-btn.pinned { background:rgba(255,255,255,0.18); color:#fff; }
+
+    /* Dim chips as tabs (clickable, highlight on active) */
+    .p360-score-chips { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+    .p360-chip {
+      flex: 1 1 80px; text-align:center; border-radius:8px; padding:8px 10px;
+      cursor: pointer; transition: box-shadow 0.15s, opacity 0.15s;
+      user-select: none;
+    }
+    .p360-chip:hover { opacity: 0.85; }
+    .p360-chip.dim-selected { box-shadow: 0 0 0 2px var(--blue); }
+    .p360-chip.red   { background:#fee2e2; }
+    .p360-chip.amber { background:#fef3c7; }
+    .p360-chip.green { background:#d1fae5; }
+    .p360-chip-label { font-size:10px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; }
+    .p360-chip-val   { font-size:18px; font-weight:800; color:var(--navy); }
+
+    /* Dim detail section — shown below chips on chip click */
+    .dim-detail-area {
+      background: #eff6ff; border-left: 3px solid var(--blue); border-radius:6px;
+      padding: 10px 12px; font-size:11px; color: var(--navy); margin-bottom:14px;
+      display: none; line-height: 1.6;
+    }
+    .dim-detail-area.open { display: block; }
+    .dim-detail-title { font-weight: 700; margin-bottom:4px; font-size:12px; }
+  </style>
+</head>
+<body>
+  <!-- TOP NAV -->
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="hamburger-btn" onclick="toggleSidebar()" title="Toggle menu">
+        <i class="bi bi-list"></i>
+      </button>
+      <div class="pulse-logo">
+        <span class="pulse-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="3" width="20" height="14" rx="2" stroke="#3B82F6" stroke-width="1.6" fill="none"/>
+            <rect x="0" y="16" width="22" height="2.5" rx="1" fill="#3B82F6" opacity="0.25"/>
+            <rect x="8" y="18.5" width="6" height="1.5" rx="0.75" fill="#3B82F6"/>
+            <polyline points="2,11 5,11 7,6 9,15 11,8 13,13 15,11 20,11" stroke="#3B82F6" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <div class="data-freshness" style="color:#94A3B8;"><div class="dot"></div>Refreshed 07:00 today</div>
+      <!-- Theme Picker -->
+      <div style="position:relative;">
+        <button class="theme-btn" onclick="toggleThemePicker()" title="Theme">
+          <i class="bi bi-palette"></i>
+        </button>
+        <div class="theme-picker" id="themePicker">
+          <div class="theme-picker-title">Colour Theme</div>
+          <div class="theme-swatches">
+            <div class="theme-swatch blue active" data-theme="blue" onclick="setTheme('blue')" title="Blue"></div>
+            <div class="theme-swatch teal" data-theme="teal" onclick="setTheme('teal')" title="Teal"></div>
+            <div class="theme-swatch violet" data-theme="violet" onclick="setTheme('violet')" title="Violet"></div>
+          </div>
+          <div class="theme-divider"></div>
+          <div class="theme-mode-row">
+            <span class="mode-label">Light</span>
+            <div class="theme-toggle" id="modeToggle" onclick="toggleDarkMode()"><div class="theme-toggle-knob"></div></div>
+          </div>
+        </div>
+      </div>
+      <!-- Feature Tickets -->
+      <button class="tickets-btn" onclick="toggleTickets()" title="Feature Tickets">
+        <i class="bi bi-ticket-perforated"></i>
+        <div class="badge">5</div>
+      </button>
+      <button class="help-btn" onclick="toggleHelp()" title="Help">?</button>
+      <div class="alert-bell" onclick="toggleNotif()">
+        <i class="bi bi-bell-fill"></i>
+        <div class="badge">4</div>
+      </div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <!-- TICKETS PANEL -->
+  <div class="tickets-overlay" id="ticketsOverlay" onclick="closeTickets()"></div>
+  <div class="tickets-panel" id="ticketsPanel">
+    <div class="tickets-panel-header">
+      <span class="tickets-panel-title"><i class="bi bi-ticket-perforated"></i> Feature Tickets</span>
+      <span onclick="closeTickets()" style="cursor:pointer;opacity:0.5;font-size:18px;">✕</span>
+    </div>
+    <div class="tickets-panel-body">
+      <div class="ticket-item urgent"><div class="ticket-id">BMD-042</div><div class="ticket-desc">P360 chart overlapping lines in narrow viewport</div><div class="ticket-tag urgent">Urgent</div></div>
+      <div class="ticket-item medium"><div class="ticket-id">BMD-037</div><div class="ticket-desc">Action items linked to project in P360</div><div class="ticket-tag medium">Medium</div></div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS PANEL -->
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-header">
+      <span>Notifications</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button class="notif-pin-btn" id="notifPinBtn" onclick="pinNotif()" title="Pin panel">
+          <i class="bi bi-pin-angle"></i>
+        </button>
+        <span style="opacity:0.5;cursor:pointer;font-size:18px;" onclick="toggleNotif()">✕</span>
+      </div>
+    </div>
+    <div class="notif-item"><div class="notif-type" style="color:var(--red);">P360</div><div class="notif-text">P360 data incomplete — BioSync Labs / Integration</div><div class="notif-time">5 days ago</div></div>
+  </div>
+
+  <!-- HELP PANEL -->
+  <div class="help-overlay" id="helpOverlay" onclick="toggleHelp()"></div>
+  <div class="help-panel" id="helpPanel">
+    <div class="help-panel-header">
+      <div class="help-panel-title">Help &amp; Guidance</div>
+      <button class="flyout-close" onclick="toggleHelp()">✕</button>
+    </div>
+    <div class="help-panel-body">
+      <div class="help-toc-section">
+        <div class="help-toc-title">P360 Overview</div>
+        <div class="help-toc-item">
+          <div class="help-toc-item-icon">⭐</div>
+          <div>
+            <div class="help-toc-item-title">Scorecard</div>
+            <div class="help-toc-item-desc">5-dimension health score. Click any dimension chip to see guidance and drill-down.</div>
+          </div>
+        </div>
+        <div class="help-toc-item">
+          <div class="help-toc-item-icon">📈</div>
+          <div>
+            <div class="help-toc-item-title">Trends</div>
+            <div class="help-toc-item-desc">4-month trend line per dimension. Y-axis 0–10, one grid per integer.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+    <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html" class="active"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+
+    <!-- Nalashaa branding -->
+    <div class="sidebar-brand">
+      <img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo">
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="breadcrumb">
+      <a href="dm-home.html">Engineering Dashboard</a><span class="sep">/</span>
+      <a href="dm-home.html">DM Home</a><span class="sep">/</span>
+      <span>P360 Performance</span>
+    </div>
+    <div class="page-title">P360 Performance</div>
+    <div class="page-subtitle">Project health scores across 5 dimensions. Click a project row to open the detail flyout.</div>
+
+    <!-- Banner -->
+    <div class="p360-banner">
+      <div class="p360-banner-item"><div class="p360-banner-label">Unit Avg Score</div><div class="p360-banner-val red">6.8</div></div>
+      <div class="p360-banner-item"><div class="p360-banner-label">Below Threshold (&lt;6.0)</div><div class="p360-banner-val red">1 project</div></div>
+      <div class="p360-banner-item"><div class="p360-banner-label">Weakest Dimension</div><div class="p360-banner-val amber">Discipline</div></div>
+      <div class="p360-banner-item"><div class="p360-banner-label">Data Flags</div><div class="p360-banner-val amber">1 incomplete</div></div>
+    </div>
+
+    <!-- Project filter tabs -->
+    <div class="tabs">
+      <div class="tab active" onclick="this.parentNode.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">All Projects</div>
+      <div class="tab" onclick="this.parentNode.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">John Doe</div>
+    </div>
+
+    <!-- P360 Project Rows — wrapped for flyout reflow -->
+    <div class="p360-list-area" id="p360ListArea">
+      <div class="p360-row red" onclick="openP360Flyout('p1')">
+        <div class="p360-score-big red">5.8</div>
+        <div class="p360-row-info">
+          <div class="p360-row-title">MedTech Corp — EMR Module</div>
+          <div class="p360-row-sub">DM: Rajesh K. · PM: Kavya S. · Account: MedTech Corp</div>
+          <div class="p360-mini-dims">
+            <div class="p360-mini-dim red"><span>Discipline 4.2</span></div>
+            <div class="p360-mini-dim red"><span>Quality 5.5</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p360-row amber" onclick="openP360Flyout('p2')">
+        <div class="p360-score-big amber">7.8</div>
+        <div class="p360-row-info">
+          <div class="p360-row-title">MedTech Corp — Claims Processing</div>
+          <div class="p360-row-sub">DM: Rajesh K. · PM: Ravi T. · Account: MedTech Corp</div>
+          <div class="p360-mini-dims">
+            <div class="p360-mini-dim amber"><span>Budget 7.5</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p360-row green" onclick="openP360Flyout('p3')">
+        <div class="p360-score-big green">8.4</div>
+        <div class="p360-row-info">
+          <div class="p360-row-title">HealthFirst US — Patient Portal</div>
+          <div class="p360-row-sub">DM: Rajesh K. · PM: Deepa M. · Account: HealthFirst US</div>
+          <div class="p360-mini-dims">
+            <div class="p360-mini-dim green"><span>All Dimensions Green</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p360-row amber" onclick="openP360Flyout('p4')">
+        <div class="p360-score-big amber">7.1</div>
+        <div class="p360-row-info">
+          <div class="p360-row-title">BioSync Labs — Integration Platform</div>
+          <div class="p360-row-sub">DM: Rajesh K. · PM: Arun K. · Account: BioSync Labs</div>
+          <div class="p360-mini-dims">
+            <div class="p360-mini-dim amber"><span>Discipline 6.0</span></div>
+            <div class="p360-mini-dim amber"><span>Visibility 7.7 ⚠</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Item Form -->
+      <div class="ai-form" style="margin-top:14px;">
+        <div class="ai-form-title">+ Add Action Item — P360</div>
+        <div class="ai-form-row">
+          <input type="text" placeholder="Action description…" style="flex:3;">
+          <select><option>Owner: John Doe</option><option>Owner: PM</option><option>Owner: D+AM</option></select>
+          <select><option>DM</option><option>AM</option><option>DM+AM</option></select>
+          <input type="date" value="2026-04-20" style="flex:0.8;">
+          <button class="btn btn-primary" style="flex-shrink:0;" onclick="alert('Action item saved')">Save</button>
+        </div>
+      </div>
+    </div><!-- /p360-list-area -->
+  </div>
+
+  <!-- P360 RIGHT FLYOUT PANEL -->
+  <div class="flyout-overlay" id="p360flyoutOverlay" onclick="closeP360Flyout()"></div>
+  <div class="p360-flyout" id="p360flyout">
+    <div class="p360-flyout-header">
+      <div id="p360-header-info" style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="p360-project-name">Project Name</div>
+        <div style="font-size:11px;opacity:0.7;" id="p360-project-score">Score: 7.5 · Account: ABC Corp</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <button class="p360-flyout-pin-btn" id="p360PinBtn" onclick="pinP360Flyout()" title="Pin panel">
+          <i class="bi bi-pin-angle"></i>
+        </button>
+        <button class="flyout-close" onclick="closeP360Flyout()">✕</button>
+      </div>
+    </div>
+    <div class="p360-flyout-body">
+      <!-- TABS -->
+      <div class="p360-flyout-tabs">
+        <div class="p360-flyout-tab active" id="tab-scorecard" onclick="switchP360Tab('scorecard',this)">Scorecard</div>
+        <div class="p360-flyout-tab" id="tab-actions" onclick="switchP360Tab('actions',this)">Action Items</div>
+      </div>
+
+      <!-- SCORECARD TAB -->
+      <div class="p360-flyout-tabpanel active" id="p360-scorecard-tab">
+
+        <!-- Score Chips (clickable, highlight on select) -->
+        <div class="p360-score-chips" id="p360-score-chips">
+          <!-- populated by JS -->
+        </div>
+
+        <!-- Dimension detail area (below chips) -->
+        <div class="dim-detail-area" id="dimDetailArea">
+          <div class="dim-detail-title" id="dimDetailTitle"></div>
+          <div id="dimDetailBody"></div>
+        </div>
+
+        <!-- Time Range Selector -->
+        <div style="margin-bottom:10px;">
+          <div class="time-range">
+            <button class="time-range-btn active" onclick="setTimeRange('1m',this)">MON</button>
+            <button class="time-range-btn" onclick="setTimeRange('3m',this)">3M</button>
+            <button class="time-range-btn" onclick="setTimeRange('6m',this)">6M</button>
+          </div>
+        </div>
+
+        <!-- Chart (full Y-axis 0–10, one gridline per integer) -->
+        <div class="p360-chart-wrap">
+          <svg id="p360chart" width="100%" height="190" viewBox="0 0 460 190">
+            <!-- Y-axis line -->
+            <line x1="38" y1="10" x2="38" y2="162" stroke="#cbd5e1" stroke-width="1"/>
+            <!-- X-axis line -->
+            <line x1="38" y1="162" x2="452" y2="162" stroke="#cbd5e1" stroke-width="1"/>
+            <!-- Grid lines at each integer 1–9 (y = 162 - val*15.2) -->
+            <line x1="34" y1="147" x2="452" y2="147" stroke="#f1f5f9" stroke-width="1"/> <!-- 1 -->
+            <line x1="34" y1="132" x2="452" y2="132" stroke="#f1f5f9" stroke-width="1"/> <!-- 2 -->
+            <line x1="34" y1="117" x2="452" y2="117" stroke="#f1f5f9" stroke-width="1"/> <!-- 3 -->
+            <line x1="34" y1="101" x2="452" y2="101" stroke="#e2e8f0" stroke-width="1"/> <!-- 4 -->
+            <line x1="34" y1="86"  x2="452" y2="86"  stroke="#e2e8f0" stroke-width="1"/> <!-- 5 -->
+            <line x1="34" y1="71"  x2="452" y2="71"  stroke="#e2e8f0" stroke-width="1"/> <!-- 6 -->
+            <line x1="34" y1="56"  x2="452" y2="56"  stroke="#cbd5e1" stroke-width="1"/> <!-- 7 -->
+            <line x1="34" y1="40"  x2="452" y2="40"  stroke="#cbd5e1" stroke-width="1"/> <!-- 8 -->
+            <line x1="34" y1="25"  x2="452" y2="25"  stroke="#cbd5e1" stroke-width="1"/> <!-- 9 -->
+            <!-- Y labels -->
+            <text x="32" y="15"  font-size="9" fill="#94a3b8" text-anchor="end">10</text>
+            <text x="32" y="29"  font-size="9" fill="#94a3b8" text-anchor="end">9</text>
+            <text x="32" y="44"  font-size="9" fill="#94a3b8" text-anchor="end">8</text>
+            <text x="32" y="59"  font-size="9" fill="#94a3b8" text-anchor="end">7</text>
+            <text x="32" y="74"  font-size="9" fill="#94a3b8" text-anchor="end">6</text>
+            <text x="32" y="89"  font-size="9" fill="#94a3b8" text-anchor="end">5</text>
+            <text x="32" y="104" font-size="9" fill="#94a3b8" text-anchor="end">4</text>
+            <text x="32" y="119" font-size="9" fill="#94a3b8" text-anchor="end">3</text>
+            <text x="32" y="165" font-size="9" fill="#94a3b8" text-anchor="end">0</text>
+            <!-- X labels -->
+            <text x="100" y="177" font-size="9" fill="#94a3b8" text-anchor="middle">Jan</text>
+            <text x="200" y="177" font-size="9" fill="#94a3b8" text-anchor="middle">Feb</text>
+            <text x="300" y="177" font-size="9" fill="#94a3b8" text-anchor="middle">Mar</text>
+            <text x="400" y="177" font-size="9" fill="#94a3b8" text-anchor="middle">Apr</text>
+            <!-- Lines per dimension, well-spread on Y-axis -->
+            <!-- Formula: y = 162 - score * 15.2 -->
+            <!-- Discipline: 4.0, 4.5, 3.8, 4.2 → y: 101, 93, 104, 98 -->
+            <polyline id="line-Discipline" points="100,101 200,93 300,104 400,98"
+              fill="none" stroke="#dc2626" stroke-width="2" stroke-linejoin="round"/>
+            <!-- Quality: 5.5, 5.8, 5.2, 5.5 → y: 78, 74, 83, 78 -->
+            <polyline id="line-Quality" points="100,78 200,74 300,83 400,78"
+              fill="none" stroke="#f59e0b" stroke-width="2" stroke-linejoin="round"/>
+            <!-- Competence: 7.0, 7.5, 7.2, 7.0 → y: 56, 48, 52, 56 -->
+            <polyline id="line-Competence" points="100,56 200,48 300,52 400,56"
+              fill="none" stroke="#16a34a" stroke-width="2" stroke-linejoin="round"/>
+            <!-- Budget: 6.5, 6.2, 6.0, 6.0 → y: 63, 68, 71, 71 -->
+            <polyline id="line-Budget" points="100,63 200,68 300,71 400,71"
+              fill="none" stroke="#0284c7" stroke-width="2" stroke-linejoin="round"/>
+            <!-- Visibility: 6.5, 6.4, 6.2, 6.3 → y: 63, 65, 68, 66 -->
+            <polyline id="line-Visibility" points="100,63 200,65 300,68 400,66"
+              fill="none" stroke="#9333ea" stroke-width="2" stroke-linejoin="round"/>
+            <!-- Data point dots -->
+            <circle cx="100" cy="101" r="3" fill="#dc2626"/>
+            <circle cx="200" cy="93"  r="3" fill="#dc2626"/>
+            <circle cx="300" cy="104" r="3" fill="#dc2626"/>
+            <circle cx="400" cy="98"  r="3" fill="#dc2626"/>
+            <circle cx="100" cy="78"  r="3" fill="#f59e0b"/>
+            <circle cx="200" cy="74"  r="3" fill="#f59e0b"/>
+            <circle cx="300" cy="83"  r="3" fill="#f59e0b"/>
+            <circle cx="400" cy="78"  r="3" fill="#f59e0b"/>
+            <circle cx="100" cy="56"  r="3" fill="#16a34a"/>
+            <circle cx="200" cy="48"  r="3" fill="#16a34a"/>
+            <circle cx="300" cy="52"  r="3" fill="#16a34a"/>
+            <circle cx="400" cy="56"  r="3" fill="#16a34a"/>
+            <circle cx="100" cy="63"  r="3" fill="#0284c7"/>
+            <circle cx="200" cy="68"  r="3" fill="#0284c7"/>
+            <circle cx="300" cy="71"  r="3" fill="#0284c7"/>
+            <circle cx="400" cy="71"  r="3" fill="#0284c7"/>
+            <circle cx="100" cy="63"  r="3" fill="#9333ea"/>
+            <circle cx="200" cy="65"  r="3" fill="#9333ea"/>
+            <circle cx="300" cy="68"  r="3" fill="#9333ea"/>
+            <circle cx="400" cy="66"  r="3" fill="#9333ea"/>
+          </svg>
+          <div class="p360-chart-legend">
+            <div class="p360-legend-item"><div class="p360-legend-dot" style="background:#dc2626;"></div>Discipline</div>
+            <div class="p360-legend-item"><div class="p360-legend-dot" style="background:#f59e0b;"></div>Quality</div>
+            <div class="p360-legend-item"><div class="p360-legend-dot" style="background:#16a34a;"></div>Competence</div>
+            <div class="p360-legend-item"><div class="p360-legend-dot" style="background:#0284c7;"></div>Budget</div>
+            <div class="p360-legend-item"><div class="p360-legend-dot" style="background:#9333ea;"></div>Visibility</div>
+          </div>
+        </div>
+      </div><!-- /scorecard tab -->
+
+      <!-- ACTION ITEMS TAB -->
+      <div class="p360-flyout-tabpanel" id="p360-actions-tab">
+        <table style="width:100%;font-size:11px;border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th style="text-align:left;font-size:10px;text-transform:uppercase;color:var(--text-muted);font-weight:700;padding:0 8px 8px 0;border-bottom:1px solid var(--border);">Description</th>
+              <th style="text-align:center;font-size:10px;text-transform:uppercase;color:var(--text-muted);font-weight:700;padding:0 8px 8px;border-bottom:1px solid var(--border);">Owner</th>
+              <th style="text-align:center;font-size:10px;text-transform:uppercase;color:var(--text-muted);font-weight:700;padding:0 0 8px;border-bottom:1px solid var(--border);">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:8px 8px 8px 0;border-bottom:1px solid var(--border);">Improve Discipline score for EMR module</td>
+              <td style="text-align:center;padding:8px;border-bottom:1px solid var(--border);">Rajesh K.</td>
+              <td style="text-align:center;padding:8px 0;border-bottom:1px solid var(--border);"><span class="badge badge-amber">In Progress</span></td>
+            </tr>
+            <tr>
+              <td style="padding:8px 8px 8px 0;border-bottom:1px solid var(--border);">QA review for Quality defects</td>
+              <td style="text-align:center;padding:8px;border-bottom:1px solid var(--border);">Kavya S.</td>
+              <td style="text-align:center;padding:8px 0;border-bottom:1px solid var(--border);"><span class="badge badge-red">Overdue</span></td>
+            </tr>
+            <tr>
+              <td style="padding:8px 8px 8px 0;">Budget forecasting alignment review</td>
+              <td style="text-align:center;padding:8px;">Finance (AM)</td>
+              <td style="text-align:center;padding:8px 0;"><span class="badge badge-muted">Open</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;">
+          <button class="btn btn-primary" style="font-size:11px;padding:5px 14px;" onclick="alert('Add action item')">+ Add Action Item</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GLOBAL FOOTER -->
+  <div class="global-footer">Nalashaa &copy; 2026 &nbsp;·&nbsp; All rights reserved</div>
+
+  <script src="shared.js"></script>
+  <script>
+    /* ── P360 data ──────────────────────────────────────────── */
+    var p360Data = {
+      p1: { name:'MedTech Corp — EMR Module', score:'5.8', account:'MedTech Corp',
+        dims:{ Discipline:{val:4.2,color:'red'}, Quality:{val:5.5,color:'red'}, Competence:{val:7.0,color:'green'}, Budget:{val:6.0,color:'amber'}, Visibility:{val:6.3,color:'amber'} }},
+      p2: { name:'MedTech Corp — Claims Processing', score:'7.8', account:'MedTech Corp',
+        dims:{ Discipline:{val:7.2,color:'green'}, Quality:{val:7.8,color:'green'}, Competence:{val:8.0,color:'green'}, Budget:{val:7.5,color:'amber'}, Visibility:{val:8.4,color:'green'} }},
+      p3: { name:'HealthFirst US — Patient Portal', score:'8.4', account:'HealthFirst US',
+        dims:{ Discipline:{val:8.3,color:'green'}, Quality:{val:8.4,color:'green'}, Competence:{val:9.0,color:'green'}, Budget:{val:7.8,color:'green'}, Visibility:{val:8.5,color:'green'} }},
+      p4: { name:'BioSync Labs — Integration Platform', score:'7.1', account:'BioSync Labs',
+        dims:{ Discipline:{val:6.0,color:'amber'}, Quality:{val:7.0,color:'green'}, Competence:{val:7.5,color:'green'}, Budget:{val:7.2,color:'green'}, Visibility:{val:7.7,color:'amber'} }}
+    };
+
+    /* Dimension guidance text */
+    var dimGuidance = {
+      Discipline: 'Sprint velocity, ceremony adherence, story completion rate. Below 6.0 requires immediate action plan with PM.',
+      Quality:    'Defect density, SLA breaches, regression rate. Below 6.0 triggers mandatory QA review within 5 business days.',
+      Competence: 'Team skill coverage, learning progress, POC completions. Green = no gaps identified in current sprint.',
+      Budget:     'Burn rate vs plan, variance ±10% = Amber, ±20% = Red. Finance sign-off required for variances &gt;15%.',
+      Visibility: 'Stakeholder update cadence, escalation lag, client NPS proxy. Relates to account mining potential.'
+    };
+
+    var currentProject = null;
+    var selectedDim = null;
+
+    function openP360Flyout(id) {
+      currentProject = id;
+      var data = p360Data[id];
+      document.getElementById('p360-project-name').textContent = data.name;
+      document.getElementById('p360-project-score').textContent = 'Score: ' + data.score + ' · ' + data.account;
+      updateScoreChips(data.dims);
+      // Close dim detail
+      document.getElementById('dimDetailArea').classList.remove('open');
+      selectedDim = null;
+      // Switch to scorecard tab
+      switchP360Tab('scorecard', document.getElementById('tab-scorecard'));
+      // Open flyout
+      document.getElementById('p360flyout').classList.add('open');
+      document.getElementById('p360flyoutOverlay').classList.add('open');
+      // Reflow list area (unless pinned)
+      if (!window._p360Pinned) {
+        document.getElementById('p360ListArea').classList.add('flyout-active');
+      }
+    }
+
+    function closeP360Flyout() {
+      if (window._p360Pinned) return; // pinned: don't close
+      document.getElementById('p360flyout').classList.remove('open');
+      document.getElementById('p360flyoutOverlay').classList.remove('open');
+      document.getElementById('p360ListArea').classList.remove('flyout-active');
+      currentProject = null;
+    }
+
+    function updateScoreChips(dims) {
+      var html = '';
+      for (var dim in dims) {
+        var d = dims[dim];
+        html += '<div class="p360-chip ' + d.color + '" onclick="selectDim(\'' + dim + '\')">' +
+                '<div class="p360-chip-label">' + dim + '</div>' +
+                '<div class="p360-chip-val">' + d.val + '</div>' +
+                '</div>';
+      }
+      document.getElementById('p360-score-chips').innerHTML = html;
+    }
+
+    function selectDim(dim) {
+      // Toggle: if already selected, deselect
+      var area = document.getElementById('dimDetailArea');
+      if (selectedDim === dim) {
+        selectedDim = null;
+        area.classList.remove('open');
+        document.querySelectorAll('.p360-chip').forEach(function(c) { c.classList.remove('dim-selected'); });
+        return;
+      }
+      selectedDim = dim;
+      // Highlight chip
+      document.querySelectorAll('.p360-chip').forEach(function(c) {
+        c.classList.toggle('dim-selected', c.querySelector('.p360-chip-label').textContent === dim);
+      });
+      // Populate detail
+      document.getElementById('dimDetailTitle').textContent = dim + ' — Dimension Guide';
+      document.getElementById('dimDetailBody').innerHTML = dimGuidance[dim] || 'No guidance available.';
+      area.classList.add('open');
+    }
+
+    function switchP360Tab(tab, el) {
+      document.querySelectorAll('.p360-flyout-tab').forEach(function(t) { t.classList.remove('active'); });
+      document.querySelectorAll('.p360-flyout-tabpanel').forEach(function(p) { p.classList.remove('active'); });
+      if (el) el.classList.add('active');
+      else document.getElementById('tab-' + tab).classList.add('active');
+      document.getElementById('p360-' + tab + '-tab').classList.add('active');
+    }
+
+    function setTimeRange(range, el) {
+      document.querySelectorAll('.time-range-btn').forEach(function(b) { b.classList.remove('active'); });
+      if (el) el.classList.add('active');
+    }
+
+    function toggleHelp() {
+      document.getElementById('helpPanel').classList.toggle('open');
+      document.getElementById('helpOverlay').classList.toggle('open');
+    }
+  </script>
+</body>
+</html>

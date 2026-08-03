@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="blue">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alerts — Pulse · Nalashaa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .alert-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 8px; border-left: 4px solid transparent; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 14px; }
+    .alert-card:hover { transform: translateX(2px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+    .alert-card.red { border-left-color: var(--red); }
+    .alert-card.amber { border-left-color: var(--amber); }
+    .alert-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .alert-icon.red { background: rgba(220,38,38,0.12); color: var(--red); font-size: 16px; }
+    .alert-icon.amber { background: rgba(245,158,11,0.12); color: var(--amber); font-size: 16px; }
+    .alert-mid { flex: 1; min-width: 0; }
+    .alert-title { font-size: 13px; font-weight: 700; color: var(--navy); }
+    [data-mode="dark"] .alert-title { color: #fff; }
+    .alert-desc { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+    .alert-meta { display: flex; gap: 14px; font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+    .alert-link { color: var(--blue); text-decoration: none; font-weight: 600; font-size: 11px; flex-shrink: 0; }
+    .alert-link:hover { color: var(--orange); }
+    .filter-row { display: flex; gap: 8px; margin-bottom: 14px; align-items: center; }
+    .filter-pill { padding: 5px 12px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; font-size: 11px; cursor: pointer; font-weight: 600; color: var(--text-muted); }
+    .filter-pill.active { background: var(--orange); color: #fff; border-color: var(--orange); }
+    .data-fresh { font-size: 10px; color: var(--text-muted); margin-bottom: 10px; }
+    .alert-card.alert-selected { box-shadow: 0 0 0 3px var(--orange); background: rgba(255,153,51,0.06); animation: alertPulse 0.6s ease; }
+    @keyframes alertPulse { 0%{transform:scale(1)} 30%{transform:scale(1.01)} 100%{transform:scale(1)} }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:0;">
+      <button class="hamburger-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <div class="pulse-logo">
+        <span class="pulse-icon"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="2" width="25" height="17" rx="2.5" stroke="#FF9933" stroke-width="1.5"/><line x1="14" y1="19" x2="14" y2="23.5" stroke="#FF9933" stroke-width="1.5"/><line x1="9" y1="23.5" x2="19" y2="23.5" stroke="#FF9933" stroke-width="1.8" stroke-linecap="round"/><polyline points="4,10.5 7,10.5 8.5,6.5 10,14.5 11.5,10.5 13,10.5 14,8 15,13 16.5,10.5 18,10.5 24,10.5" stroke="#FF9933" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg></span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <button class="help-btn">?</button>
+      <div class="alert-bell"><i class="bi bi-bell-fill" style="font-size:16px;"></i><div class="badge">12</div></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html" class="active"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+    <div class="sidebar-brand"><img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo"></div>
+  </div>
+
+  <div class="main" style="padding:18px 28px;">
+    <div class="page-title">Alerts <span class="info-i" data-tip-title="Alerts" data-tip="Active threshold breaches across all departments. Filter by severity or department.">i</span></div>
+    <div class="page-sub" style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">12 active · 4 critical · 8 high</div>
+    <div class="data-fresh"><i class="bi bi-clock"></i> Data as of 2026-05-05 09:14 · auto-refresh every 5 min</div>
+
+    <div class="filter-row">
+      <span style="font-size:11px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;">Filter:</span>
+      <div class="filter-pill active" onclick="filterAlerts('all', this)">All (12)</div>
+      <div class="filter-pill" onclick="filterAlerts('red', this)">Critical (4)</div>
+      <div class="filter-pill" onclick="filterAlerts('amber', this)">High (8)</div>
+      <span style="margin:0 6px;color:var(--text-muted);">·</span>
+      <div class="filter-pill" onclick="filterAlerts('eng', this)">Engineering</div>
+      <div class="filter-pill" onclick="filterAlerts('sales', this)">Sales</div>
+      <div class="filter-pill" onclick="filterAlerts('hr', this)">HR</div>
+      <div class="filter-pill" onclick="filterAlerts('finance', this)">Finance</div>
+      <div class="filter-pill" onclick="filterAlerts('pmo', this)">PMO</div>
+    </div>
+
+    <div id="alertList">
+      <div class="alert-card red" id="alert-ar-overdue" data-sev="red" data-dept="finance"><div class="alert-icon red"><i class="bi bi-exclamation-octagon-fill"></i></div><div class="alert-mid"><div class="alert-title">90+ Days AR Overdue</div><div class="alert-desc">Finance · $0.5M outstanding · MedTech invoice INV-2026-0142 ($0.34M, 102 days)</div></div><div class="alert-meta"><span><strong>Threshold:</strong> $0.2M</span><span><strong>Since:</strong> Jan 22, 10:30</span></div><a href="finance.html" class="alert-link">View →</a></div>
+
+      <div class="alert-card red" id="alert-biogen-scope" data-sev="red" data-dept="eng"><div class="alert-icon red"><i class="bi bi-exclamation-octagon-fill"></i></div><div class="alert-mid"><div class="alert-title">BioGen Phase 2 Scope Conflict</div><div class="alert-desc">Engineering · CIO turnover · 9 days unupdated · escalation overdue</div></div><div class="alert-meta"><span><strong>Severity:</strong> Critical</span><span><strong>Since:</strong> Apr 26, 14:15</span></div><a href="dm-home.html?dm=john" class="alert-link">View →</a></div>
+
+      <div class="alert-card red" id="alert-medtech-uat" data-sev="red" data-dept="eng"><div class="alert-icon red"><i class="bi bi-exclamation-octagon-fill"></i></div><div class="alert-mid"><div class="alert-title">MedTech UAT Window Slipped</div><div class="alert-desc">Engineering · UAT delay 2 weeks · Client VP escalated · 14 days unupdated</div></div><div class="alert-meta"><span><strong>Severity:</strong> Critical</span><span><strong>Since:</strong> Apr 22, 09:30</span></div><a href="dm-home.html?dm=john" class="alert-link">View →</a></div>
+
+      <div class="alert-card red" id="alert-bc-coverage" data-sev="red" data-dept="sales"><div class="alert-icon red"><i class="bi bi-exclamation-octagon-fill"></i></div><div class="alert-mid"><div class="alert-title">Battle Card Coverage Below Target</div><div class="alert-desc">Sales · 68% ready vs target ≥ 90% · 9 missing cards for upcoming meetings</div></div><div class="alert-meta"><span><strong>Threshold:</strong> 90%</span><span><strong>Since:</strong> Apr 30, 07:00</span></div><a href="sales.html" class="alert-link">View →</a></div>
+
+      <div class="alert-card amber" id="alert-attrition" data-sev="amber" data-dept="hr"><div class="alert-icon amber"><i class="bi bi-exclamation-triangle-fill"></i></div><div class="alert-mid"><div class="alert-title">Attrition Above Target</div><div class="alert-desc">HR · 18.4% rolling 12m · target ≤ 18% · driver: 4 high-risk in next 30d</div></div><div class="alert-meta"><span><strong>Threshold:</strong> 18%</span><span><strong>Since:</strong> Apr 18, 08:45</span></div><a href="hr.html" class="alert-link">View →</a></div>
+
+      <div class="alert-card amber" id="alert-1on1" data-sev="amber" data-dept="hr"><div class="alert-icon amber"><i class="bi bi-exclamation-triangle-fill"></i></div><div class="alert-mid"><div class="alert-title">1-on-1 Adherence Below Target</div><div class="alert-desc">HR · 78% vs target ≥ 85% · 5 managers with adherence &lt; 70%</div></div><div class="alert-meta"><span><strong>Threshold:</strong> 85%</span><span><strong>Since:</strong> Apr 25, 12:00</span></div><a href="hr.html" class="alert-link">View →</a></div>
+
+      <div class="alert-card amber" id="alert-ta-stuck" data-sev="amber" data-dept="ta"><div class="alert-icon amber"><i class="bi bi-exclamation-triangle-fill"></i></div><div class="alert-mid"><div class="alert-title">14 Stuck Candidates in Pipeline</div><div class="alert-desc">TA · No movement &gt; 7d · top: R. Iyer at HM round 14d</div></div><div class="alert-meta"><span><strong>Severity:</strong> High</span><span><strong>Since:</strong> May 1, 10:15</span></div><a href="ta.html" class="alert-link">View →</a></div>
+
+      <div class="alert-card amber" id="alert-pmo-atrisk" data-sev="amber" data-dept="pmo"><div class="alert-icon amber"><i class="bi bi-exclamation-triangle-fill"></i></div><div class="alert-mid"><div class="alert-title">5 At-Risk Accounts in Portfolio</div><div class="alert-desc">PMO · 5 of 23 accounts P360 &lt; 6.0 · MedTech · HealthFirst · BioGen · PharmCare · WellnessOne</div></div><div class="alert-meta"><span><strong>Threshold:</strong> 6.0</span><span><strong>Since:</strong> May 2, 09:00</span></div><a href="pmo.html" class="alert-link">View →</a></div>
+
+      <div class="alert-card amber" id="alert-csat" data-sev="amber" data-dept="pmo"><div class="alert-icon amber"><i class="bi bi-exclamation-triangle-fill"></i></div><div class="alert-mid"><div class="alert-title">8 CSAT Surveys Overdue</div><div class="alert-desc">PMO · CSAT not collected &gt; 30 days for 8 accounts · top: MedTech (62 days)</div></div><div class="alert-meta"><span><strong>Threshold:</strong> 30 days</span><span><strong>Since:</strong> Apr 28, 11:30</span></div><a href="pmo.html" class="alert-link">View →</a></div>
+
+      <div class="alert-card amber" id="alert-opex" data-sev="amber" data-dept="finance"><div class="alert-icon amber"><i class="bi bi-exclamation-triangle-fill"></i></div><div class="alert-mid"><div class="alert-title">OpEx Above Budget</div><div class="alert-desc">Finance · $15.4M YTD vs $15.1M budget (102%) · driver: Headcount cost +$0.4M</div></div><div class="alert-meta"><span><strong>Threshold:</strong> 100%</span><span><strong>Since:</strong> Apr 30, 16:00</span></div><a href="finance.html" class="alert-link">View →</a></div>
+
+      <div class="alert-card amber" id="alert-blockers" data-sev="amber" data-dept="eng"><div class="alert-icon amber"><i class="bi bi-exclamation-triangle-fill"></i></div><div class="alert-mid"><div class="alert-title">12 Active Blockers Across Sprints</div><div class="alert-desc">Engineering · 3 P1 · 6 P2 · 3 P3 · BioGen has 5 blockers</div></div><div class="alert-meta"><span><strong>Severity:</strong> High</span><span><strong>Since:</strong> May 3, 08:00</span></div><a href="dm-home.html?dm=john" class="alert-link">View →</a></div>
+
+      <div class="alert-card amber" id="alert-deals-aging" data-sev="amber" data-dept="sales"><div class="alert-icon amber"><i class="bi bi-exclamation-triangle-fill"></i></div><div class="alert-mid"><div class="alert-title">14 Deals Aging Beyond 60 Days</div><div class="alert-desc">Sales · $0.77M at risk · BioGen Phase 2 (42d), PharmCare Analytics (35d)</div></div><div class="alert-meta"><span><strong>Threshold:</strong> 60 days</span><span><strong>Since:</strong> Apr 26, 13:30</span></div><a href="sales.html" class="alert-link">View →</a></div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    function toggleSidebar() { var sb=document.querySelector('.sidebar'); if(sb) sb.classList.toggle('collapsed'); document.body.classList.toggle('sidebar-collapsed'); }
+    dow.addEventListener('load', function() {
+    var hash = window.location.hash.replace('#','');
+    if (!hash) return;
+    var card = document.getElementById(hash);
+    if (!card) return;
+    card.classList.add('alert-selected');
+    setTimeout(function() { card.scrollIntoView({ behavior:'smooth', block:'center' }); }, 150);
+  });
+  </script>
+</body>
+</html>

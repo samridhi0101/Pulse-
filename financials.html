@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Financials — Pulse · Nalashaa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .proj-banner { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+    .proj-banner-item { background: var(--card); border-radius: 8px; padding: 12px 14px; border: 1px solid var(--border); }
+    .proj-banner-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; }
+    .proj-banner-val { font-size: 18px; font-weight: 700; color: var(--navy); }
+    .proj-banner-val.red { color: var(--red); }
+    .proj-banner-val.amber { color: var(--amber); }
+    .proj-banner-val.green { color: var(--green); }
+    .conf-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+    .conf-high { background: #DCFCE7; color: #166534; }
+    .conf-med { background: #FEF3C7; color: #92400E; }
+    .conf-risk { background: #FEE2E2; color: #991B1B; }
+    .surplus { color: var(--green); font-weight: 700; }
+    .deficit { color: var(--red); font-weight: 700; }
+    .row-expand { cursor: pointer; }
+    .row-expand:hover td { background: #EFF6FF; }
+    .expand-row { display: none; background: #F8FAFC; }
+    .expand-row.open { display: table-row; }
+    .expand-cell { padding: 12px 16px !important; font-size: 12px; }
+    .field-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .field-item label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 4px; }
+    .field-item p { font-size: 12px; color: var(--text); line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <!-- TOP NAV -->
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="hamburger-btn" onclick="toggleSidebar()" title="Toggle menu">
+        <i class="bi bi-list"></i>
+      </button>
+      <div class="pulse-logo">
+      <span class="pulse-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="1" y="3" width="20" height="14" rx="2" stroke="#3B82F6" stroke-width="1.6" fill="none"/><rect x="0" y="16" width="22" height="2.5" rx="1" fill="#3B82F6" opacity="0.25"/><rect x="8" y="18.5" width="6" height="1.5" rx="0.75" fill="#3B82F6"/><polyline points="2,11 5,11 7,6 9,15 11,8 13,13 15,11 20,11" stroke="#3B82F6" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="pulse-wordmark">Pulse</span>
+    </div>
+    </div>
+    <div class="top-nav-right">
+      <!-- Theme Picker -->
+      <div style="position:relative;">
+        <button class="theme-btn" onclick="toggleThemePicker()" title="Theme">
+          <i class="bi bi-palette"></i>
+        </button>
+        <div class="theme-picker" id="themePicker">
+          <div class="theme-picker-title">Colour Theme</div>
+          <div class="theme-swatches">
+            <div class="theme-swatch blue active" data-theme="blue" onclick="setTheme('blue')" title="Blue"></div>
+            <div class="theme-swatch teal" data-theme="teal" onclick="setTheme('teal')" title="Teal"></div>
+            <div class="theme-swatch violet" data-theme="violet" onclick="setTheme('violet')" title="Violet"></div>
+          </div>
+          <div class="theme-divider"></div>
+          <div class="theme-mode-row">
+            <span class="mode-label">Light</span>
+            <div class="theme-toggle" id="modeToggle" onclick="toggleDarkMode()"><div class="theme-toggle-knob"></div></div>
+          </div>
+        </div>
+      </div>
+      <button class="tickets-btn" onclick="toggleTickets()" title="Feature Tickets">
+        <i class="bi bi-ticket-perforated"></i>
+        <div class="badge">5</div>
+      </button>
+      <button class="help-btn" onclick="toggleHelp()" title="Help">?</button>
+      <div class="alert-bell" onclick="toggleNotif()"><i class="bi bi-bell-fill"></i><div class="badge">4</div></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <!-- HELP -->
+  <div class="help-overlay" id="helpOverlay" onclick="toggleHelp()"></div>
+  <div class="help-panel" id="helpPanel">
+    <div class="help-panel-header"><span class="help-panel-title">Help &amp; Guide</span><span style="cursor:pointer;opacity:0.6;font-size:20px;" onclick="toggleHelp()">✕</span></div>
+    <div class="help-panel-body">
+      <div class="help-toc-section">
+        <div class="help-toc-title">Navigation</div>
+        <div class="help-toc-item"><span class="help-toc-item-icon">🏠</span><div><div class="help-toc-item-title">Org Pulse</div><div class="help-toc-item-desc">Return to the org-wide health overview from any screen.</div></div></div>
+        <div class="help-toc-item"><span class="help-toc-item-icon">↩</span><div><div class="help-toc-item-title">Breadcrumbs</div><div class="help-toc-item-desc">Blue breadcrumb links at the top navigate back up the hierarchy.</div></div></div>
+        <div class="help-toc-item"><span class="help-toc-item-icon">↗</span><div><div class="help-toc-item-title">Flyout Panels</div><div class="help-toc-item-desc">Click rows or cards to open detail flyouts. Press ✕ or the overlay to close.</div></div></div>
+      </div>
+      <div class="help-toc-section">
+        <div class="help-toc-title">RAG Status</div>
+        <div class="help-toc-item"><span class="help-toc-item-icon">🔴</span><div><div class="help-toc-item-title">Red — Critical</div><div class="help-toc-item-desc">KPI breach requiring immediate action.</div></div></div>
+        <div class="help-toc-item"><span class="help-toc-item-icon">🟡</span><div><div class="help-toc-item-title">Amber — At Risk</div><div class="help-toc-item-desc">KPI approaching threshold. Monitor closely.</div></div></div>
+        <div class="help-toc-item"><span class="help-toc-item-icon">🟢</span><div><div class="help-toc-item-title">Green — On Track</div><div class="help-toc-item-desc">All KPIs healthy.</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TICKETS PANEL -->
+  <div class="tickets-overlay" id="ticketsOverlay" onclick="closeTickets()"></div>
+  <div class="tickets-panel" id="ticketsPanel">
+    <div class="tickets-panel-header">
+      <span class="tickets-panel-title"><i class="bi bi-ticket-perforated"></i> Feature Tickets</span>
+      <span onclick="closeTickets()" style="cursor:pointer;opacity:0.5;font-size:18px;">✕</span>
+    </div>
+    <div class="tickets-panel-body">
+      <div class="ticket-item medium"><div class="ticket-id">BMD-039</div><div class="ticket-desc">Export current view to PDF report</div><div class="ticket-tag medium">Medium</div></div>
+      <div class="ticket-item low"><div class="ticket-id">BMD-033</div><div class="ticket-desc">Scheduled daily brief delivery via email</div><div class="ticket-tag low">Low</div></div>
+    </div>
+  </div>
+
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-header">
+      <span>Notifications</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button class="notif-pin-btn" id="notifPinBtn" onclick="pinNotif()" title="Pin panel"><i class="bi bi-pin-angle"></i></button>
+        <span style="opacity:0.5;cursor:pointer;font-size:18px;" onclick="toggleNotif()">✕</span>
+      </div>
+    </div>
+    <div class="notif-item"><div class="notif-type" style="color:var(--red);">Escalation</div><div class="notif-text">New escalation opened — MedTech Corp (Quality)</div><div class="notif-time">2 hours ago</div></div>
+    <div class="notif-item"><div class="notif-type" style="color:var(--red);">Action Item Overdue</div><div class="notif-text">Action item overdue — Commercial response for BioSync</div><div class="notif-time">Yesterday</div></div>
+    <div class="notif-item"><div class="notif-type" style="color:var(--amber);">Attrition</div><div class="notif-text">Attrition: 1 resignation — HLS Unit</div><div class="notif-time">3 days ago</div></div>
+  </div>
+
+  <!-- SIDEBAR -->
+    <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html" class="active"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+
+    <!-- Nalashaa branding -->
+    <div class="sidebar-brand">
+      <img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo">
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="breadcrumb">
+      <a href="dm-home.html">Meta-Dashboard</a><span class="sep">/</span>
+      <a href="dm-home.html">John Doe</a><span class="sep">/</span>
+      <span>Financials</span>
+    </div>
+    <div class="page-title">Section 1 — Projections</div>
+    <div class="page-subtitle">Forward billing plan across all accounts. Source: PMO SharePoint (S1). Overnight refresh.</div>
+
+    <!-- Summary Banner -->
+    <div class="proj-banner">
+      <div class="proj-banner-item"><div class="proj-banner-label">Total M1 Forecast</div><div class="proj-banner-val red">₹57L</div></div>
+      <div class="proj-banner-item"><div class="proj-banner-label">Total M1 Target</div><div class="proj-banner-val">₹65L</div></div>
+      <div class="proj-banner-item"><div class="proj-banner-label">M1 Surplus / Deficit</div><div class="proj-banner-val red">−₹8L</div></div>
+      <div class="proj-banner-item"><div class="proj-banner-label">Accounts at Risk</div><div class="proj-banner-val red">2 of 4</div></div>
+    </div>
+
+    <!-- Billing Table -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Account Billing — Actuals &amp; Forecast (₹ Lakhs)</div>
+        <div class="data-freshness"><div class="dot"></div>PMO SharePoint · Apr 13 07:00</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Account</th>
+            <th>Jan (Act)</th><th>Feb (Act)</th><th>Mar (Act)</th>
+            <th>Target/mo</th>
+            <th>M1 Apr</th><th>M2 May</th><th>M3 Jun</th>
+            <th>Surplus/Deficit</th>
+            <th>Confidence</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- MedTech Corp — Red -->
+          <tr class="row-expand" onclick="toggleRow('mt')">
+            <td><span class="rag-dot red"></span><strong>MedTech Corp</strong></td>
+            <td>₹38L</td><td>₹41L</td><td>₹39L</td>
+            <td>₹42L</td>
+            <td style="color:var(--red);font-weight:700;">₹36L</td>
+            <td style="color:var(--green);">₹43L</td>
+            <td style="color:var(--green);">₹44L</td>
+            <td class="deficit">−₹6L</td>
+            <td><span class="conf-badge conf-risk">At Risk</span></td>
+          </tr>
+          <tr id="expand-mt" class="expand-row">
+            <td class="expand-cell" colspan="10">
+              <div class="field-group">
+                <div class="field-item"><label>Key Assumptions</label><p>Sprint 15 delivery on track; EMR module sign-off expected Apr 18. Billing gate tied to UAT completion.</p></div>
+                <div class="field-item"><label>Actions Initiated</label><p>UAT accelerated to Apr 16. DM in daily sync with client PM. Quality escalation already raised.</p></div>
+                <div class="field-item"><label>Risks Requiring Escalation</label><p>Client may defer Apr milestone if P1 bug not cleared — needs President awareness.</p></div>
+              </div>
+            </td>
+          </tr>
+
+          <!-- HealthFirst US — Green -->
+          <tr class="row-expand" onclick="toggleRow('hf')">
+            <td><span class="rag-dot green"></span>HealthFirst US</td>
+            <td>₹28L</td><td>₹27L</td><td>₹29L</td>
+            <td>₹28L</td>
+            <td style="color:var(--green);">₹29L</td>
+            <td style="color:var(--green);">₹30L</td>
+            <td style="color:var(--green);">₹30L</td>
+            <td class="surplus">+₹1L</td>
+            <td><span class="conf-badge conf-high">High</span></td>
+          </tr>
+          <tr id="expand-hf" class="expand-row">
+            <td class="expand-cell" colspan="10">
+              <div class="field-group">
+                <div class="field-item"><label>Key Assumptions</label><p>Portal Phase 2 deliverables on track. No client-side blockers.</p></div>
+                <div class="field-item"><label>Actions Initiated</label><p>Sprint 11 velocity healthy. Resource continuity post-exit managed via internal redeployment.</p></div>
+                <div class="field-item"><label>Risks Requiring Escalation</label><p>2 senior exits create mid-term risk; resourcing action item in progress.</p></div>
+              </div>
+            </td>
+          </tr>
+
+          <!-- BioSync Labs — Red -->
+          <tr class="row-expand" onclick="toggleRow('bs')">
+            <td><span class="rag-dot red"></span><strong>BioSync Labs</strong></td>
+            <td>₹15L</td><td>₹14L</td><td>₹13L</td>
+            <td>₹15L</td>
+            <td style="color:var(--red);font-weight:700;">₹13L</td>
+            <td style="color:var(--amber);">₹14L</td>
+            <td style="color:var(--green);">₹15L</td>
+            <td class="deficit">−₹2L</td>
+            <td><span class="conf-badge conf-risk">At Risk</span></td>
+          </tr>
+          <tr id="expand-bs" class="expand-row">
+            <td class="expand-cell" colspan="10">
+              <div class="field-group">
+                <div class="field-item"><label>Key Assumptions</label><p>Integration module deliverable slip pushing Apr billing. Recovery planned via accelerated testing.</p></div>
+                <div class="field-item"><label>Actions Initiated</label><p>AM engaged on client comm improvement. Mining proposal being fast-tracked.</p></div>
+                <div class="field-item"><label>Risks Requiring Escalation</label><p>Relationship risk if comm issues unresolved — AM escalation open. D+AM action item overdue.</p></div>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Renewal Care — Green -->
+          <tr class="row-expand" onclick="toggleRow('rc')">
+            <td><span class="rag-dot green"></span>Renewal Care</td>
+            <td>₹8L</td><td>₹9L</td><td>₹8L</td>
+            <td>₹8L</td>
+            <td style="color:var(--green);">₹8L</td>
+            <td style="color:var(--green);">₹9L</td>
+            <td style="color:var(--green);">₹9L</td>
+            <td class="surplus">+₹0L</td>
+            <td><span class="conf-badge conf-high">High</span></td>
+          </tr>
+          <tr id="expand-rc" class="expand-row">
+            <td class="expand-cell" colspan="10">
+              <div class="field-group">
+                <div class="field-item"><label>Key Assumptions</label><p>Feature estimation delivered (mining done). Steady-state engagement, no blockers.</p></div>
+                <div class="field-item"><label>Actions Initiated</label><p>Renewal SOW discussion initiated — mining thread active.</p></div>
+                <div class="field-item"><label>Risks Requiring Escalation</label><p>None this week.</p></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Inline Action Item Form -->
+    <div class="ai-form">
+      <div class="ai-form-title">+ Add Action Item — PROJ</div>
+      <div class="ai-form-row">
+        <input type="text" placeholder="Action description (e.g. Protect MedTech Apr billing…)" style="flex:3;">
+        <select><option>Owner: John Doe</option><option>Owner: AM</option><option>Owner: D+AM</option></select>
+        <select><option>D</option><option>AM</option><option>D+AM</option></select>
+        <input type="date" value="2026-04-20" style="flex:0.8;">
+        <button class="btn btn-primary" style="flex-shrink:0;" onclick="alert('Action item saved (prototype)')">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bar"><span class="data-freshness"><span class="dot"></span>BMD v1.0 · Data as of Apr 13, 2026 07:00 IST</span></div>
+
+  <script>
+    function toggleRow(id) {
+      const row = document.getElementById('expand-' + id);
+      row.classList.toggle('open');
+    }
+    function toggleNotif() { document.getElementById('notifPanel').classList.toggle('open'); }
+    function toggleHelp() {
+      document.getElementById('helpPanel').classList.toggle('open');
+      document.getElementById('helpOverlay').classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+      const p = document.getElementById('notifPanel');
+      if (!e.target.closest('.alert-bell') && !p.contains(e.target)) p.classList.remove('open');
+    });
+  </script>
+  <!-- GLOBAL FOOTER -->
+  <div class="global-footer">Nalashaa &copy; 2026 &nbsp;&middot;&nbsp; All rights reserved</div>
+
+  <script src="shared.js"></script>
+</body>
+</html>

@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="blue">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HR — Pulse · Nalashaa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <style>
+    .tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 18px; flex-wrap: wrap; }
+    .tab { padding: 10px 14px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-muted); border-bottom: 3px solid transparent; margin-bottom: -2px; }
+    .tab.active { color: var(--navy); border-bottom-color: var(--orange); }
+    [data-mode="dark"] .tab.active { color: #fff; }
+    .pane { display: none; } .pane.active { display: block; }
+    .kgrid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px; }
+    .kgrid-2 { grid-template-columns: repeat(2,1fr); }
+    .kc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; border-left: 4px solid transparent; cursor: pointer; transition: all 0.15s; }
+    .kc.active { border-color: var(--orange); box-shadow: 0 0 0 2px rgba(255,153,51,0.18); }
+    .kc:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+    .kc.green { border-left-color: var(--green); } .kc.amber { border-left-color: var(--amber); } .kc.red { border-left-color: var(--red); }
+    .klbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; }
+    .kval { font-size: 22px; font-weight: 800; color: var(--navy); }
+    [data-mode="dark"] .kval { color: #fff; }
+    .ksub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .stitle { font-size: 13px; font-weight: 700; color: var(--navy); margin: 14px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+    [data-mode="dark"] .stitle { color: #fff; }
+    .card-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    .data-fresh { font-size: 10px; color: var(--text-muted); margin-bottom: 10px; }
+    .tbl { width: 100%; font-size: 12px; border-collapse: collapse; }
+    .tbl th { padding: 8px 10px; background: var(--navy); color: #fff !important; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; text-align: left; }
+    .tbl td { padding: 8px 10px; border-bottom: 1px solid var(--border); cursor: pointer; text-align: left; }
+    .tbl tr:hover td { background: var(--bg); }
+    .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+    .badge.green { background: #D1FAE5; color: #065F46; }
+    .badge.amber { background: #FEF3C7; color: #92400E; }
+    .badge.red { background: #FEE2E2; color: #991B1B; }
+    .badge.grey { background: #F1F5F9; color: #475569; }
+
+    /* Inner tabs (Onboarding/Exits/BGV) */
+    .inner-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+    .inner-tab { padding: 8px 14px; cursor: pointer; font-size: 11px; font-weight: 700; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -1px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .inner-tab.active { color: var(--navy); border-bottom-color: var(--orange); }
+    [data-mode="dark"] .inner-tab.active { color: #fff; }
+    .inner-pane { display: none; } .inner-pane.active { display: block; }
+
+    /* Onboarding/Exit progress bar with markers */
+    .onb-bar-cell { display: flex; align-items: center; gap: 8px; }
+    .onb-bar { flex: 1; height: 10px; background: #F1F5F9; border-radius: 5px; position: relative; overflow: visible; min-width: 220px; }
+    .onb-bar-fill { height: 100%; background: linear-gradient(90deg, #16A34A, #4ADE80); border-radius: 5px; }
+    .onb-marker { position: absolute; top: -4px; width: 18px; height: 18px; border-radius: 50%; border: 2px solid #fff; transform: translateX(-9px); box-shadow: 0 1px 3px rgba(0,0,0,0.22); cursor: help; transition: transform 0.12s; }
+    .onb-marker:hover { transform: translateX(-9px) scale(1.25); z-index: 5; }
+    .onb-marker.done { background: #16A34A; } .onb-marker.active { background: #FF9933; } .onb-marker.late { background: #DC2626; } .onb-marker.todo { background: #CBD5E1; }
+    .onb-pct { font-size: 11px; font-weight: 700; color: var(--text); min-width: 36px; text-align: right; }
+    /* Onboarding + Exits table — fixed layout so progress column gets the room */
+    .tbl-onb { table-layout: fixed; }
+    .tbl-onb th, .tbl-onb td { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tbl-onb .col-progress { width: 36%; white-space: normal; }
+    .tbl-onb .col-name { width: 11%; }
+    .tbl-onb .col-tiny { width: 7%; }
+    .tbl-onb .col-small { width: 9%; }
+    .tbl-onb .col-mid { width: 12%; }
+
+    /* Engagement bars (planned vs completed) */
+    .eng-row { display: grid; grid-template-columns: 160px 1fr 80px 60px; gap: 12px; align-items: center; padding: 8px 10px; cursor: pointer; border-bottom: 1px solid var(--border); }
+    .eng-row:hover { background: var(--bg); }
+    .eng-row .nm { font-weight: 700; font-size: 12px; color: var(--navy); }
+    [data-mode="dark"] .eng-row .nm { color: #fff; }
+    .eng-bar { height: 16px; background: #F1F5F9; border-radius: 4px; position: relative; overflow: hidden; }
+    .eng-bar-fill { height: 100%; border-radius: 4px; }
+    .eng-bar-fill.green { background: #86EFAC; } .eng-bar-fill.amber { background: #FCD34D; } .eng-bar-fill.red { background: #FCA5A5; }
+    .eng-bar-target { position: absolute; top: 0; bottom: 0; width: 2px; background: #475569; }
+    .eng-stat { font-size: 12px; font-weight: 700; text-align: right; }
+    .eng-plus { color: var(--orange); cursor: pointer; font-weight: 700; }
+
+    /* L&D bar (lighter colors, gray remainder) */
+    .ld-row { display: grid; grid-template-columns: 130px 1fr 90px; gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .ld-row:last-child { border-bottom: none; }
+    .ld-row:hover { background: var(--bg); }
+    .ld-row .dept { font-weight: 700; font-size: 12px; }
+    .ld-bar { height: 14px; background: #E2E8F0; border-radius: 3px; overflow: hidden; position: relative; }
+    .ld-fill { height: 100%; border-radius: 3px; display: flex; align-items: center; padding-left: 8px; color: #fff; font-size: 10px; font-weight: 700; }
+    .ld-fill.green-light { background: #86EFAC; }
+    .ld-fill.amber-light { background: #FCD34D; color: #92400E; }
+    .ld-fill.red-light { background: #FCA5A5; color: #7F1D1D; }
+    .ld-pct { text-align: right; font-weight: 800; font-size: 13px; }
+    .ld-pct.green { color: var(--green); } .ld-pct.amber { color: var(--amber); } .ld-pct.red { color: var(--red); }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:0;">
+      <button class="hamburger-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <div class="pulse-logo">
+        <span class="pulse-icon"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="2" width="25" height="17" rx="2.5" stroke="#FF9933" stroke-width="1.5"/><line x1="14" y1="19" x2="14" y2="23.5" stroke="#FF9933" stroke-width="1.5"/><line x1="9" y1="23.5" x2="19" y2="23.5" stroke="#FF9933" stroke-width="1.8" stroke-linecap="round"/><polyline points="4,10.5 7,10.5 8.5,6.5 10,14.5 11.5,10.5 13,10.5 14,8 15,13 16.5,10.5 18,10.5 24,10.5" stroke="#FF9933" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg></span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <button class="help-btn">?</button>
+      <div class="alert-bell"><i class="bi bi-bell-fill" style="font-size:16px;"></i></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html" class="active"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+    <div class="sidebar-brand"><img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo"></div>
+  </div>
+
+  <div class="main" style="padding:18px 28px;">
+    <div class="dept-meta-above"><i class="bi bi-clock"></i> Data as of 2026-05-05 09:14 · Source: Keka HRMS</div>
+    <div class="dept-banner">
+      <div class="dept-banner-top">
+        <div class="dept-banner-titleblock">
+          <div class="dept-banner-title">HR <span class="info-i" data-tip-title="HR" data-tip="Workforce composition, lifecycle, engagement, learning, performance — Owner Anita Mehta.">i</span></div>
+          <div class="dept-banner-sub">Owner: Anita Mehta · Workforce 270</div>
+        </div>
+        <div class="dept-banner-stats">
+          <div class="dept-banner-stat"><div class="dept-banner-stat-val green">270</div><div class="dept-banner-stat-lbl">Total HC</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val green">+6</div><div class="dept-banner-stat-lbl">Net YTD</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">5</div><div class="dept-banner-stat-lbl">At Risk</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">94.2%</div><div class="dept-banner-stat-lbl">Attendance</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">7.6</div><div class="dept-banner-stat-lbl">Engagement</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val red">5</div><div class="dept-banner-stat-lbl">Appraisals Delayed</div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('hc', this)"><i class="bi bi-people-fill"></i> Headcount Overview</div>
+      <div class="tab" onclick="showTab('ox', this)"><i class="bi bi-arrow-left-right"></i> Onboarding &amp; Exits</div>
+      <div class="tab" onclick="showTab('eng', this)"><i class="bi bi-chat-quote-fill"></i> Engagement &amp; Culture</div>
+      <div class="tab" onclick="showTab('ld', this)"><i class="bi bi-mortarboard-fill"></i> L&amp;D</div>
+      <div class="tab" onclick="showTab('pc', this)"><i class="bi bi-graph-up-arrow"></i> Performance &amp; Comp</div>
+      <div class="tab" onclick="showTab('wh', this)"><i class="bi bi-heart-pulse-fill"></i> Workforce Health</div>
+    </div>
+
+    <!-- TAB 1: Headcount — line chart -->
+    <div class="pane active" id="pane-hc">
+      <div class="kgrid">
+        <div class="kc green" onclick="openHRHeadcount()"><div class="klbl">Total Headcount</div><div class="kval">270</div><div class="ksub">↑ 6 net YTD</div></div>
+        <div class="kc amber static-tile"><div class="klbl">Attrition (12m)</div><div class="kval">18.4%</div><div class="ksub">Industry 22%</div></div>
+        <div class="kc" onclick="openHRHiresExits()"><div class="kc-dual">
+          <div class="col"><div class="klbl">Hires (MTD)</div><div class="kval" style="color:var(--green);">28</div><div class="ksub">93% of target</div></div>
+          <div class="pipe"></div>
+          <div class="col"><div class="klbl">Exits (MTD)</div><div class="kval" style="color:var(--red);">22</div><div class="ksub">↑ 12% MoM</div></div>
+        </div></div>
+      </div>
+      <div class="stitle">Headcount + Attrition · 12-month trend</div>
+      <div class="card-box"><div id="hcChart" style="height:280px;"></div></div>
+    </div>
+
+    <!-- TAB 2: Onboarding & Exits — 3 inner tabs -->
+    <div class="pane" id="pane-ox">
+      <div class="kgrid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="kc green" onclick="openHROnboarding()"><div class="klbl">Onboarding Plan %</div><div class="kval">82%</div><div class="ksub">3 lagging steps</div></div>
+        <div class="kc red" onclick="scrollToOnboardingBGV()"><div class="klbl">BGV Pending</div><div class="kval">4</div><div class="ksub">2 over 14 days · see Onboardings</div></div>
+        <div class="kc red" onclick="openSLABreaches()"><div class="klbl">SLA Breaches</div><div class="kval">7</div><div class="ksub">Across 4 stages · 22 joiners</div></div>
+        <div class="kc" onclick="openOnbExitScores()"><div class="kc-dual">
+          <div class="col"><div class="klbl">Onboarding Score</div><div class="kval" style="color:var(--green);">7.9/10</div><div class="ksub">12 completed</div></div>
+          <div class="pipe"></div>
+          <div class="col"><div class="klbl">Exit Score</div><div class="kval" style="color:var(--amber);">6.4/10</div><div class="ksub">Composite</div></div>
+        </div></div>
+        <div class="kc amber" onclick="openHRExits()"><div class="klbl">Exits MTD</div><div class="kval">22</div><div class="ksub">↑ 12% MoM</div></div>
+      </div>
+
+      <div class="card-box" style="padding:14px;">
+        <div class="inner-tabs">
+          <div class="inner-tab active" onclick="showOX('onboard', this)">Onboardings (12)</div>
+          <div class="inner-tab" onclick="showOX('exits', this)">Exits (6)</div>
+        </div>
+
+        <!-- Onboardings sub-tab -->
+        <div class="inner-pane active" id="ox-onboard">
+          <div class="fly-alert red" style="margin-bottom:10px;padding:8px 12px;font-size:11px;"><strong>BGV Action:</strong> 2 joiners awaiting BGV >14 days (D. Patel · 22d, R. Mehta · 18d). Vendor follow-up required.</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Sorted: stuck first → in-progress → completed. Hover circles for stage status. Click row for full timeline.</div>
+          <table class="tbl tbl-onb">
+            <colgroup><col class="col-name"><col class="col-tiny"><col class="col-small"><col class="col-mid"><col class="col-mid"><col class="col-progress"><col class="col-tiny"></colgroup>
+            <thead><tr><th>Joiner</th><th>Day</th><th>Plan</th><th>BGV</th><th>Probation</th><th>Progress</th><th>Score</th></tr></thead>
+            <tbody>
+              <tr onclick="openOnboardingDetail('D. Patel')"><td><strong>D. Patel</strong></td><td>Day 8</td><td><span class="badge red">Not shared</span></td><td><span class="badge red">Delayed · 22d</span></td><td><span class="badge grey">—</span></td><td><div class="onb-bar-cell"><div class="onb-bar"><div class="onb-bar-fill" style="width:20%;"></div><div class="onb-marker done" style="left:10%;" title="Data Captured · Done"></div><div class="onb-marker late" style="left:30%;" title="Onboarding Plan Shared · Late by 1d"></div><div class="onb-marker todo" style="left:50%;" title="HR Induction · Pending"></div><div class="onb-marker late" style="left:70%;" title="BGV · Delayed by 8d (vendor stuck)"></div><div class="onb-marker todo" style="left:90%;" title="KPIs Set · Pending"></div></div><div class="onb-pct">20%</div></div></td><td>—</td></tr>
+              <tr onclick="openOnboardingDetail('B. Kumar')"><td><strong>B. Kumar</strong></td><td>Day 4</td><td><span class="badge amber">Pending</span></td><td><span class="badge amber">In progress · 8d</span></td><td><span class="badge grey">—</span></td><td><div class="onb-bar-cell"><div class="onb-bar"><div class="onb-bar-fill" style="width:40%;background:linear-gradient(90deg,#F59E0B,#FCD34D);"></div><div class="onb-marker done" style="left:10%;" title="Data Captured · Done"></div><div class="onb-marker active" style="left:30%;" title="Onboarding Plan Shared · Pending (Day 4 of 7)"></div><div class="onb-marker todo" style="left:50%;" title="HR Induction · Scheduled May 12"></div><div class="onb-marker active" style="left:70%;" title="BGV · In progress · ETA May 14"></div><div class="onb-marker todo" style="left:90%;" title="KPIs Set · Pending"></div></div><div class="onb-pct">40%</div></div></td><td>—</td></tr>
+              <tr onclick="openOnboardingDetail('R. Mehta')"><td><strong>R. Mehta</strong></td><td>Day 6</td><td><span class="badge amber">Pending</span></td><td><span class="badge red">Delayed · 18d</span></td><td><span class="badge grey">—</span></td><td><div class="onb-bar-cell"><div class="onb-bar"><div class="onb-bar-fill" style="width:30%;background:linear-gradient(90deg,#F59E0B,#FCD34D);"></div><div class="onb-marker done" style="left:10%;" title="Data Captured · Done"></div><div class="onb-marker active" style="left:30%;" title="Onboarding Plan Shared · Pending (Day 6 of 7)"></div><div class="onb-marker todo" style="left:50%;" title="HR Induction · Pending"></div><div class="onb-marker late" style="left:70%;" title="BGV · Delayed by 4d (Education check)"></div><div class="onb-marker todo" style="left:90%;" title="KPIs Set · Pending"></div></div><div class="onb-pct">30%</div></div></td><td>—</td></tr>
+              <tr onclick="openOnboardingDetail('A. Rao')"><td><strong>A. Rao</strong></td><td>Day 10</td><td><span class="badge green">Shared</span></td><td><span class="badge green">Completed</span></td><td><span class="badge amber">Pending review</span></td><td><div class="onb-bar-cell"><div class="onb-bar"><div class="onb-bar-fill" style="width:80%;"></div><div class="onb-marker done" style="left:10%;" title="Data Captured · Done"></div><div class="onb-marker done" style="left:30%;" title="Onboarding Plan Shared · On time"></div><div class="onb-marker done" style="left:50%;" title="HR Induction · Completed"></div><div class="onb-marker done" style="left:70%;" title="BGV · Completed"></div><div class="onb-marker active" style="left:90%;" title="KPIs Set · In draft"></div></div><div class="onb-pct">80%</div></div></td><td>—</td></tr>
+              <tr onclick="openOnboardingDetail('C. Iyer')"><td><strong>C. Iyer</strong></td><td>Day 12</td><td><span class="badge green">Shared</span></td><td><span class="badge green">Completed</span></td><td><span class="badge green">Confirmed</span></td><td><div class="onb-bar-cell"><div class="onb-bar"><div class="onb-bar-fill" style="width:100%;"></div><div class="onb-marker done" style="left:10%;" title="Data Captured · Done"></div><div class="onb-marker done" style="left:30%;" title="Onboarding Plan Shared · On time"></div><div class="onb-marker done" style="left:50%;" title="HR Induction · Completed"></div><div class="onb-marker done" style="left:70%;" title="BGV · Completed"></div><div class="onb-marker done" style="left:90%;" title="KPIs Set · Done"></div></div><div class="onb-pct">100%</div></div></td><td><span class="badge green">8.2/10</span></td></tr>
+              <tr onclick="openOnboardingDetail('L. Krishnan')"><td><strong>L. Krishnan</strong></td><td>Day 14</td><td><span class="badge green">Shared</span></td><td><span class="badge green">Completed</span></td><td><span class="badge green">Confirmed</span></td><td><div class="onb-bar-cell"><div class="onb-bar"><div class="onb-bar-fill" style="width:100%;"></div><div class="onb-marker done" style="left:10%;" title="Data Captured · Done"></div><div class="onb-marker done" style="left:30%;" title="Onboarding Plan Shared · On time"></div><div class="onb-marker done" style="left:50%;" title="HR Induction · Completed"></div><div class="onb-marker done" style="left:70%;" title="BGV · Completed"></div><div class="onb-marker done" style="left:90%;" title="KPIs Set · Done"></div></div><div class="onb-pct">100%</div></div></td><td><span class="badge green">7.8/10</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Exits sub-tab — milestone-circle pattern (mirrors Onboardings) -->
+        <div class="inner-pane" id="ox-exits">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">7 milestones per exit · hover circles for stage status. Click row for full timeline.</div>
+          <table class="tbl tbl-onb">
+            <colgroup><col style="width:11%;"><col style="width:10%;"><col style="width:6%;"><col style="width:8%;"><col style="width:13%;"><col style="width:10%;"><col style="width:10%;"><col style="width:32%;"></colgroup>
+            <thead><tr><th>Exit</th><th>Role</th><th>BU</th><th>Last day</th><th>Reason</th><th>KT Sign-off</th><th>Survey</th><th>Progress</th></tr></thead>
+            <tbody>
+              <tr onclick="openExitDetail('S. Verma')"><td><strong>S. Verma</strong></td><td>Java Eng</td><td>HLS</td><td>Apr 26</td><td>Comp gap</td><td><span class="badge red">Not received</span></td><td><span class="badge red">Not completed</span></td><td><div class="onb-bar-cell"><div class="onb-bar"><div class="onb-bar-fill" style="width:30%;background:linear-gradient(90deg,#DC2626,#F87171);"></div><div class="onb-marker done" style="left:7%;" title="Resignation Submitted · Apr 5"></div><div class="onb-marker done" style="left:21%;" title="KT Plan Defined · Apr 10"></div><div class="onb-marker late" style="left:35%;" title="KT Sign-off · Not received (manager)"></div><div class="onb-marker late" style="left:49%;" title="Exit Interview · Skipped"></div><div class="onb-marker todo" style="left:63%;" title="Exit Survey · Not completed"></div><div class="onb-marker active" style="left:77%;" title="Asset/Access Revoked · IT in progress"></div><div class="onb-marker todo" style="left:91%;" title="Final Settlement (FnF) · Pending"></div></div><div class="onb-pct">30%</div></div></td></tr>
+              <tr onclick="openExitDetail('T. Sen')"><td><strong>T. Sen</strong></td><td>Data Eng</td><td>NHS</td><td>Apr 29</td><td>Personal</td><td><span class="badge amber">In progress</span></td><td><span class="badge green">Completed</span></td><td><div class="onb-bar-cell"><div class="onb-bar"><div class="onb-bar-fill" style="width:65%;background:linear-gradient(90deg,#F59E0B,#FCD34D);"></div><div class="onb-marker done" style="left:7%;" title="Resignation Submitted · Apr 1"></div><div class="onb-marker done" style="left:21%;" title="KT Plan Defined · Apr 4"></div><div class="onb-marker active" style="left:35%;" title="KT Sign-off · In progress (manager review)"></div><div class="onb-marker done" style="left:49%;" title="Exit Interview · Done"></div><div class="onb-marker done" style="left:63%;" title="Exit Survey · Completed"></div><div class="onb-marker active" style="left:77%;" title="Asset/Access Revoked · IT in progress"></div><div class="onb-marker todo" style="left:91%;" title="Final Settlement (FnF) · Pending"></div></div><div class="onb-pct">65%</div></div></td></tr>
+              <tr onclick="openExitDetail('O. Khan')"><td><strong>O. Khan</strong></td><td>Senior React</td><td>HLS</td><td>Apr 18</td><td>Comp · higher offer</td><td><span class="badge green">Received</span></td><td><span class="badge green">Completed</span></td><td><div class="onb-bar-cell"><div class="onb-bar"><div class="onb-bar-fill" style="width:100%;"></div><div class="onb-marker done" style="left:7%;" title="Resignation Submitted · Mar 18"></div><div class="onb-marker done" style="left:21%;" title="KT Plan Defined · Mar 22"></div><div class="onb-marker done" style="left:35%;" title="KT Sign-off · Received Apr 12"></div><div class="onb-marker done" style="left:49%;" title="Exit Interview · Done Apr 15"></div><div class="onb-marker done" style="left:63%;" title="Exit Survey · Completed Apr 16"></div><div class="onb-marker done" style="left:77%;" title="Asset/Access Revoked · Apr 18"></div><div class="onb-marker done" style="left:91%;" title="Final Settlement · Apr 30"></div></div><div class="onb-pct">100%</div></div></td></tr>
+              <tr onclick="openExitDetail('P. Naidu')"><td><strong>P. Naidu</strong></td><td>Platform Eng</td><td>NHS</td><td>Apr 30</td><td>Career growth</td><td><span class="badge green">Received</span></td><td><span class="badge green">Completed</span></td><td><div class="onb-bar-cell"><div class="onb-bar"><div class="onb-bar-fill" style="width:100%;"></div><div class="onb-marker done" style="left:7%;" title="Resignation Submitted · Mar 30"></div><div class="onb-marker done" style="left:21%;" title="KT Plan Defined · Apr 3"></div><div class="onb-marker done" style="left:35%;" title="KT Sign-off · Received Apr 24"></div><div class="onb-marker done" style="left:49%;" title="Exit Interview · Done Apr 27"></div><div class="onb-marker done" style="left:63%;" title="Exit Survey · Completed Apr 28"></div><div class="onb-marker done" style="left:77%;" title="Asset/Access Revoked · Apr 30"></div><div class="onb-marker done" style="left:91%;" title="Final Settlement · May 6"></div></div><div class="onb-pct">100%</div></div></td></tr>
+              <tr onclick="openExitDetail('R. Bhatia')"><td><strong>R. Bhatia</strong></td><td>QA Lead</td><td>HLS</td><td>Apr 22</td><td>Relocation</td><td><span class="badge green">Received</span></td><td><span class="badge amber">Not completed</span></td><td><div class="onb-bar-cell"><div class="onb-bar"><div class="onb-bar-fill" style="width:90%;"></div><div class="onb-marker done" style="left:7%;" title="Resignation Submitted · Mar 22"></div><div class="onb-marker done" style="left:21%;" title="KT Plan Defined · Mar 26"></div><div class="onb-marker done" style="left:35%;" title="KT Sign-off · Received Apr 18"></div><div class="onb-marker done" style="left:49%;" title="Exit Interview · Done Apr 20"></div><div class="onb-marker active" style="left:63%;" title="Exit Survey · Sent · awaiting employee"></div><div class="onb-marker done" style="left:77%;" title="Asset/Access Revoked · Apr 22"></div><div class="onb-marker done" style="left:91%;" title="Final Settlement · Apr 30"></div></div><div class="onb-pct">90%</div></div></td></tr>
+              <tr onclick="openExitDetail('U. Joshi')"><td><strong>U. Joshi</strong></td><td>UX Designer</td><td>NHS</td><td>May 1</td><td>Career growth</td><td><span class="badge green">Received</span></td><td><span class="badge green">Completed</span></td><td><div class="onb-bar-cell"><div class="onb-bar"><div class="onb-bar-fill" style="width:100%;"></div><div class="onb-marker done" style="left:7%;" title="Resignation Submitted · Apr 1"></div><div class="onb-marker done" style="left:21%;" title="KT Plan Defined · Apr 5"></div><div class="onb-marker done" style="left:35%;" title="KT Sign-off · Received Apr 26"></div><div class="onb-marker done" style="left:49%;" title="Exit Interview · Done Apr 28"></div><div class="onb-marker done" style="left:63%;" title="Exit Survey · Completed Apr 29"></div><div class="onb-marker done" style="left:77%;" title="Asset/Access Revoked · May 1"></div><div class="onb-marker done" style="left:91%;" title="Final Settlement · May 7"></div></div><div class="onb-pct">100%</div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Engagement & Culture — only 1-on-1 + Engagement Score -->
+    <div class="pane" id="pane-eng">
+      <div class="kgrid kgrid-2">
+        <div class="kc amber" onclick="openHR1on1()"><div class="klbl">1-on-1 Adherence</div><div class="kval">78%</div><div class="ksub">Target ≥ 85%</div></div>
+        <div class="kc green" onclick="openHREngagement()"><div class="klbl">Engagement Score</div><div class="kval">7.6/10</div><div class="ksub">Q2 · 87% participation</div></div>
+      </div>
+
+      <div class="stitle">1-on-1 Adherence by Manager · Click + or row for employee list</div>
+      <div class="card-box" style="padding:14px;">
+        <div style="display:grid;grid-template-columns:160px 1fr 80px 60px;gap:12px;padding:8px 10px;background:var(--bg);border-radius:6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);margin-bottom:6px;">
+          <div>Manager</div><div>Coverage (Done / Reports)</div><div style="text-align:right;">%</div><div></div>
+        </div>
+        <div class="eng-row" onclick="openMgr1on1('M. Krishnan', 6, 2)"><div class="nm">M. Krishnan</div><div class="eng-bar"><div class="eng-bar-fill red" style="width:33%;"></div><div class="eng-bar-target" style="left:85%;"></div></div><div class="eng-stat">2 / 6</div><div class="eng-plus">+</div></div>
+        <div class="eng-row" onclick="openMgr1on1('P. Banerjee', 5, 2)"><div class="nm">P. Banerjee</div><div class="eng-bar"><div class="eng-bar-fill red" style="width:40%;"></div><div class="eng-bar-target" style="left:85%;"></div></div><div class="eng-stat">2 / 5</div><div class="eng-plus">+</div></div>
+        <div class="eng-row" onclick="openMgr1on1('S. Reddy', 8, 5)"><div class="nm">S. Reddy</div><div class="eng-bar"><div class="eng-bar-fill amber" style="width:63%;"></div><div class="eng-bar-target" style="left:85%;"></div></div><div class="eng-stat">5 / 8</div><div class="eng-plus">+</div></div>
+        <div class="eng-row" onclick="openMgr1on1('V. Joshi', 6, 4)"><div class="nm">V. Joshi</div><div class="eng-bar"><div class="eng-bar-fill amber" style="width:67%;"></div><div class="eng-bar-target" style="left:85%;"></div></div><div class="eng-stat">4 / 6</div><div class="eng-plus">+</div></div>
+        <div class="eng-row" onclick="openMgr1on1('A. Khan', 4, 3)"><div class="nm">A. Khan</div><div class="eng-bar"><div class="eng-bar-fill amber" style="width:75%;"></div><div class="eng-bar-target" style="left:85%;"></div></div><div class="eng-stat">3 / 4</div><div class="eng-plus">+</div></div>
+        <div class="eng-row" onclick="openMgr1on1('John Doe', 8, 7)"><div class="nm">John Doe</div><div class="eng-bar"><div class="eng-bar-fill green" style="width:88%;"></div><div class="eng-bar-target" style="left:85%;"></div></div><div class="eng-stat">7 / 8</div><div class="eng-plus">+</div></div>
+        <div class="eng-row" onclick="openMgr1on1('Sarah Patel', 6, 6)"><div class="nm">Sarah Patel</div><div class="eng-bar"><div class="eng-bar-fill green" style="width:100%;"></div><div class="eng-bar-target" style="left:85%;"></div></div><div class="eng-stat">6 / 6</div><div class="eng-plus">+</div></div>
+        <div class="eng-row" onclick="openMgr1on1('Anita Mehta', 5, 5)"><div class="nm">Anita Mehta</div><div class="eng-bar"><div class="eng-bar-fill green" style="width:100%;"></div><div class="eng-bar-target" style="left:85%;"></div></div><div class="eng-stat">5 / 5</div><div class="eng-plus">+</div></div>
+      </div>
+    </div>
+
+    <!-- TAB 4: L&D — 2 tiles + lighter bars -->
+    <div class="pane" id="pane-ld">
+      <div class="kgrid kgrid-2">
+        <div class="kc amber" onclick="openLDMandatory()"><div class="klbl">Mandatory L&amp;D</div><div class="kval">76%</div><div class="ksub">70 pending</div></div>
+        <div class="kc green" onclick="openLDCompletion()"><div class="klbl">Course Completion (avg)</div><div class="kval">81%</div><div class="ksub">Across all assigned</div></div>
+      </div>
+
+      <div class="stitle">L&amp;D Completion by Department · click bar for employee detail</div>
+      <div class="card-box">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Filled segment = completed · grey remainder = not completed.</div>
+        <div class="ld-row" onclick="openLDDept('Engineering', 145, 113)"><div class="dept">Engineering</div><div class="ld-bar"><div class="ld-fill amber-light" style="width:78%;">78%</div></div><div class="ld-pct amber">113 / 145</div></div>
+        <div class="ld-row" onclick="openLDDept('Sales', 22, 19)"><div class="dept">Sales</div><div class="ld-bar"><div class="ld-fill green-light" style="width:86%;">86%</div></div><div class="ld-pct green">19 / 22</div></div>
+        <div class="ld-row" onclick="openLDDept('HR', 14, 13)"><div class="dept">HR</div><div class="ld-bar"><div class="ld-fill green-light" style="width:93%;">93%</div></div><div class="ld-pct green">13 / 14</div></div>
+        <div class="ld-row" onclick="openLDDept('TA', 12, 8)"><div class="dept">TA</div><div class="ld-bar"><div class="ld-fill red-light" style="width:64%;">64%</div></div><div class="ld-pct red">8 / 12</div></div>
+        <div class="ld-row" onclick="openLDDept('PMO', 10, 9)"><div class="dept">PMO</div><div class="ld-bar"><div class="ld-fill green-light" style="width:89%;">89%</div></div><div class="ld-pct green">9 / 10</div></div>
+        <div class="ld-row" onclick="openLDDept('Finance', 8, 7)"><div class="dept">Finance</div><div class="ld-bar"><div class="ld-fill green-light" style="width:86%;">86%</div></div><div class="ld-pct green">7 / 8</div></div>
+      </div>
+    </div>
+
+    <!-- TAB 5: Performance & Comp — tiles act as tabs for shared table (Appraisals moved to Workforce) -->
+    <div class="pane" id="pane-pc">
+      <div class="kgrid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="kc amber active" id="pc-tile-kpi" onclick="showPC('kpi', this)"><div class="klbl">KPIs / OKRs</div><div class="kval">82%</div><div class="ksub">Aligned · click for detail</div></div>
+        <div class="kc amber" id="pc-tile-comp" onclick="showPC('comp', this)"><div class="klbl">Comp Band Outliers</div><div class="kval">22</div><div class="ksub">Click for outliers only</div></div>
+        <div class="kc amber" id="pc-tile-promo" onclick="showPC('promo', this)"><div class="klbl">Promo Slate Q2</div><div class="kval">24</div><div class="ksub">8 need 360 input</div></div>
+      </div>
+
+      <div class="card-box" style="padding:14px;">
+        <div id="pc-content"></div>
+      </div>
+    </div>
+
+    <!-- TAB 6: Workforce Health — tile-as-tab + shared table (matches Performance pattern) -->
+    <div class="pane" id="pane-wh">
+      <div class="kgrid" style="grid-template-columns:repeat(6,1fr);">
+        <div class="kc green active" id="wh-tile-gr" onclick="showWH('gr', this)"><div class="klbl">Golden Ratio</div><div class="kval">1:7.4</div><div class="ksub">Click for detail</div></div>
+        <div class="kc amber" id="wh-tile-util" onclick="showWH('util', this)"><div class="klbl">Utilization</div><div class="kval"><span style="color:var(--amber);">10</span> / <span style="color:var(--green);">252</span> / <span style="color:var(--red);">8</span></div><div class="ksub">Bench / Util / Over</div></div>
+        <div class="kc amber" id="wh-tile-ha" onclick="showWH('ha', this)"><div class="klbl">Hiring &amp; Attrition</div><div class="kval"><span style="color:var(--green);">5↑</span> / <span style="color:var(--red);">4↓</span></div><div class="ksub">3 at-risk</div></div>
+        <div class="kc red" id="wh-tile-att" onclick="showWH('att', this)"><div class="klbl">Attendance</div><div class="kval">94.2%</div><div class="ksub">5 flagged</div></div>
+        <div class="kc green" id="wh-tile-succ" onclick="showWH('succ', this)"><div class="klbl">Succession</div><div class="kval">4/8</div><div class="ksub">Critical roles</div></div>
+        <div class="kc red" id="wh-tile-appr" onclick="showWH('appr', this)"><div class="klbl">Appraisals</div><div class="kval">68%</div><div class="ksub">Q1 · 5 delayed</div></div>
+      </div>
+
+      <div class="card-box" style="padding:14px;">
+        <div id="wh-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script src="dm-flyouts.js"></script>
+  <script>
+    function showTab(t, el) {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.pane').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('pane-' + t).classList.add('active');
+      if (t === 'hc') setTimeout(drawHC, 50);
+      if (t === 'pc') setTimeout(() => showPC('kpi', document.getElementById('pc-tile-kpi')), 30);
+      if (t === 'wh') setTimeout(() => showWH('gr', document.getElementById('wh-tile-gr')), 30);
+    }
+    function showOX(t, el) {
+      document.querySelectorAll('.inner-tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.inner-pane').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('ox-' + t).classList.add('active');
+    }
+    function toggleSidebar() { var sb=document.querySelector('.sidebar'); if(sb) sb.classList.toggle('collapsed'); document.body.classList.toggle('sidebar-collapsed'); }
+    setTimeout(drawHC, 100);
+
+    function drawHC() {
+      const el = document.getElementById('hcChart'); if (!el || el._init) return; el._init = true;
+      const ch = echarts.init(el);
+      window.addEventListener('resize', function(){ ch.resize(); });
+      ch.setOption({
+        grid: { left: 50, right: 50, top: 44, bottom: 30 },
+        tooltip: { trigger: 'axis' },
+        legend: { top: 6, right: 10, textStyle: { fontSize: 10 } },
+        xAxis: { type: 'category', data: ['Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May'] },
+        yAxis: [
+          { type: 'value', name: 'Headcount', position: 'left', axisLine: { show: true, lineStyle: { color: '#94A3B8' } } },
+          { type: 'value', name: 'Hires / Exits', position: 'right', axisLine: { show: true, lineStyle: { color: '#94A3B8' } } }
+        ],
+        series: [
+          { name: 'Headcount', type: 'line', data: [256,259,261,262,264,265,266,267,268,269,269,270], lineStyle: { color: '#FF9933', width: 3 }, itemStyle: { color: '#FF9933' }, symbol: 'circle', smooth: true },
+          { name: 'New Hires', type: 'line', yAxisIndex: 1, data: [22,18,20,16,14,12,18,16,14,18,30,28], lineStyle: { color: '#16A34A', width: 2.5 }, itemStyle: { color: '#16A34A' }, symbol: 'circle', smooth: true },
+          { name: 'Exits', type: 'line', yAxisIndex: 1, data: [16,12,12,14,12,10,16,14,12,16,22,22], lineStyle: { color: '#DC2626', width: 2.5 }, itemStyle: { color: '#DC2626' }, symbol: 'circle', smooth: true }
+        ]
+      });
+    }
+
+    // === Performance & Comp — tile-as-tab, shared content area ===
+    function showPC(view, el) {
+      document.querySelectorAll('#pane-pc .kc').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      const c = document.getElementById('pc-content');
+      if (view === 'kpi') c.innerHTML = pcKPI();
+      else if (view === 'comp') c.innerHTML = pcComp();
+      else if (view === 'promo') c.innerHTML = pcPromo();
+    }
+
+    // === Workforce Health — tile-as-tab, shared table area ===
+    function showWH(view, el) {
+      document.querySelectorAll('#pane-wh .kc').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      const c = document.getElementById('wh-content');
+      if (view === 'gr') c.innerHTML = whGR();
+      else if (view === 'util') c.innerHTML = whUtil();
+      else if (view === 'ha') c.innerHTML = whHA();
+      else if (view === 'att') c.innerHTML = whAtt();
+      else if (view === 'succ') c.innerHTML = whSucc();
+      else if (view === 'appr') c.innerHTML = whAppr();
+    }
+    // === Golden Ratio · Dept landing → Manager expand → Reportee flyout ===
+    // Org policy (HR): ≤6 healthy · 7–9 watch · >9 critical
+    function _grRag(span) {
+      if (span <= 6) return '<span class="badge green">Healthy</span>';
+      if (span <= 9) return '<span class="badge amber">Watch</span>';
+      return '<span class="badge red">Critical</span>';
+    }
+    const GR_DATA = {
+      Engineering: { hc: 145, mgrs: [
+        { n:'John Doe', role:'Engineering Director', reports:9, span:9, team:[
+          {n:'Kavya Sharma', role:'Tech Lead (HLS)', tenure:'4y 2m'},
+          {n:'Priya M.', role:'Platform Lead', tenure:'5y 6m'},
+          {n:'Rajesh Kumar', role:'QA Pod Mgr', tenure:'3y 8m'},
+          {n:'Vikram J.', role:'Web Lead', tenure:'6y 1m'},
+          {n:'Maya R.', role:'Mobile Lead', tenure:'4y 9m'},
+          {n:'M. Krishnan', role:'Senior Eng Mgr', tenure:'7y 3m'},
+          {n:'P. Banerjee', role:'Architect Mgr', tenure:'8y 4m'},
+          {n:'S. Naidu', role:'DevOps Lead', tenure:'3y 1m'},
+          {n:'D. Patel', role:'Data Lead', tenure:'2y 7m'}
+        ]},
+        { n:'Kavya Sharma', role:'Tech Lead (HLS)', reports:6, span:6, team:[
+          {n:'A. Rao', role:'Java Eng', tenure:'2y'},{n:'B. Kumar', role:'Senior Java', tenure:'4y'},
+          {n:'C. Iyer', role:'React Dev', tenure:'1y 6m'},{n:'L. Krishnan', role:'Senior Java', tenure:'3y'},
+          {n:'M. Verma', role:'Senior Java', tenure:'5y'},{n:'R. Mehta', role:'Data Eng', tenure:'8m'}
+        ]},
+        { n:'Priya M.', role:'Platform Lead', reports:8, span:8, team:[
+          {n:'F. Nair', role:'Data Eng', tenure:'3y'},{n:'G. Sen', role:'UX', tenure:'2y'},
+          {n:'H. Sharma', role:'DevOps Sr', tenure:'4y'},{n:'I. Joshi', role:'Mobile Dev', tenure:'1y 8m'},
+          {n:'J. Khan', role:'Tech Lead', tenure:'5y'},{n:'K. Verma', role:'Senior QA', tenure:'3y 4m'},
+          {n:'N. Reddy', role:'Product Mgr', tenure:'2y 9m'},{n:'O. Iyer', role:'Senior React', tenure:'1y 11m'}
+        ]},
+        { n:'Rajesh Kumar', role:'QA Pod Mgr', reports:12, span:12, team:[
+          {n:'Q. Rao', role:'Architect', tenure:'6y'},{n:'M. Sharma', role:'Java Eng', tenure:'2y'},
+          {n:'L. Pillai', role:'DevOps', tenure:'3y'},{n:'... 9 more', role:'QA / SDET / Automation', tenure:'mixed'}
+        ]},
+        { n:'Vikram J.', role:'Web Lead', reports:6, span:6, team:[{n:'(6 reportees)', role:'Web ICs', tenure:'mixed'}]},
+        { n:'Maya R.', role:'Mobile Lead', reports:5, span:5, team:[{n:'(5 reportees)', role:'Mobile ICs', tenure:'mixed'}]},
+        { n:'M. Krishnan', role:'Senior Eng Mgr', reports:10, span:10, team:[{n:'(10 reportees)', role:'Mixed engineering', tenure:'mixed'}]},
+        { n:'P. Banerjee', role:'Architect Mgr', reports:5, span:5, team:[{n:'(5 reportees)', role:'Architects + ICs', tenure:'mixed'}]}
+      ]},
+      Sales: { hc: 22, mgrs: [
+        { n:'Vikram S.', role:'Sales Director', reports:4, span:4, team:[
+          {n:'A. Khan', role:'Senior Account Mgr', tenure:'5y'},{n:'S. Reddy', role:'Account Mgr', tenure:'3y'},
+          {n:'V. Joshi', role:'Account Mgr', tenure:'2y'},{n:'P. Banerjee', role:'BDR Lead', tenure:'1y 6m'}
+        ]},
+        { n:'A. Khan', role:'Senior Account Mgr', reports:4, span:4, team:[{n:'(4 reportees)', role:'BDRs', tenure:'mixed'}]},
+        { n:'S. Reddy', role:'Account Mgr', reports:8, span:8, team:[{n:'(8 reportees)', role:'BDRs', tenure:'mixed'}]},
+        { n:'V. Joshi', role:'Account Mgr', reports:6, span:6, team:[{n:'(6 reportees)', role:'BDRs', tenure:'mixed'}]}
+      ]},
+      HR: { hc: 14, mgrs: [
+        { n:'Anita Mehta', role:'HR Director', reports:5, span:5, team:[
+          {n:'Sarah Patel', role:'HRBP Lead', tenure:'4y'},{n:'M. Rao', role:'L&D Lead', tenure:'3y'},
+          {n:'D. Verma', role:'Comp & Ben Lead', tenure:'5y'},{n:'P. Singh', role:'HRBP', tenure:'2y'},{n:'R. Iyer', role:'HRIS', tenure:'1y 6m'}
+        ]},
+        { n:'Sarah Patel', role:'HRBP Lead', reports:6, span:6, team:[{n:'(6 reportees)', role:'HRBPs', tenure:'mixed'}]}
+      ]},
+      TA: { hc: 12, mgrs: [
+        { n:'Karthik R.', role:'TA Lead', reports:8, span:8, team:[
+          {n:'M. Joshi', role:'Senior Recruiter', tenure:'3y'},{n:'N. Pillai', role:'Recruiter', tenure:'2y'},
+          {n:'T. Sinha', role:'Recruiter', tenure:'1y 8m'},{n:'U. Khan', role:'Recruiter', tenure:'2y 4m'},
+          {n:'(4 more)', role:'Sourcers + Coordinators', tenure:'mixed'}
+        ]}
+      ]},
+      PMO: { hc: 10, mgrs: [
+        { n:'M. Rao', role:'PMO Head', reports:6, span:6, team:[{n:'(6 reportees)', role:'Project Coordinators', tenure:'mixed'}]}
+      ]},
+      Finance: { hc: 8, mgrs: [
+        { n:'Vinay K.', role:'Finance Head', reports:7, span:7, team:[{n:'(7 reportees)', role:'Accounts + AR/AP + Treasury', tenure:'mixed'}]}
+      ]}
+    };
+    function whGR() {
+      const seg = window._whGRSeg || 'Engineering';
+      const depts = Object.keys(GR_DATA);
+      const tabs = depts.map(d => {
+        const data = GR_DATA[d];
+        const worstSpan = Math.max.apply(null, data.mgrs.map(m => m.span));
+        const cls = worstSpan <= 6 ? 'green' : (worstSpan <= 9 ? 'amber' : 'red');
+        return `<span class="seg-tab ${cls} ${seg===d?'active':''}" onclick="setWhGRSeg('${d}')">${d} (${data.mgrs.length})</span>`;
+      }).join('');
+      const data = GR_DATA[seg];
+      const totalReports = data.mgrs.reduce((s,m) => s + m.reports, 0);
+      const avgSpan = (totalReports / data.mgrs.length).toFixed(1);
+      const worstSpan = Math.max.apply(null, data.mgrs.map(m => m.span));
+      const mgrRows = data.mgrs.map(m => `<tr onclick="openGRMgr('${m.n}','${seg}')"><td><strong>${m.n}</strong></td><td>${m.role}</td><td>${m.reports}</td><td>1:${m.span}</td><td>${_grRag(m.span)}</td></tr>`).join('');
+      return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:10px;">
+        <div style="font-size:13px;font-weight:700;color:var(--navy);">Golden Ratio · Span of Control by Department</div>
+        <div style="font-size:11px;color:var(--text-muted);">Policy: ≤6 <span class="badge green">Healthy</span> · 7–9 <span class="badge amber">Watch</span> · &gt;9 <span class="badge red">Critical</span></div>
+      </div>
+      <div class="seg-tabs">${tabs}</div>
+      <div style="font-size:11px;color:var(--text-muted);margin:8px 0;"><strong>${seg}</strong> · ${data.hc} HC · ${data.mgrs.length} managers · Avg span 1:${avgSpan} · Worst span 1:${worstSpan} ${_grRag(worstSpan)} · Click manager for team composition</div>
+      <table class="tbl"><thead><tr><th>Manager</th><th>Role</th><th>Reports</th><th>Span (1:N)</th><th>RAG</th></tr></thead><tbody>${mgrRows}</tbody></table>`;
+    }
+    window.setWhGRSeg = function(d) { window._whGRSeg = d; document.getElementById('wh-content').innerHTML = whGR(); };
+    window.openGRMgr = function(name, dept) {
+      const m = (GR_DATA[dept].mgrs.find(x => x.n === name)) || {team:[], reports:0, span:0};
+      const team = m.team || [];
+      openFlyoutPinned({title: name + ' · Team Composition', sub: `${dept} · ${m.reports} direct reports · Span 1:${m.span}`,
+        pinned: `<div class="fly-insight"><strong>${_grRag(m.span)}</strong> per HR policy (≤6 healthy · 7–9 watch · &gt;9 critical).</div>`,
+        body: `<table class="g-tbl" style="text-align:left;"><thead><tr><th style="text-align:left;">Reportee</th><th style="text-align:left;">Role</th><th style="text-align:left;">Tenure</th></tr></thead><tbody>
+        ${team.map(t => `<tr><td style="text-align:left;"><strong>${t.n}</strong></td><td style="text-align:left;">${t.role}</td><td style="text-align:left;">${t.tenure}</td></tr>`).join('')}
+        </tbody></table>`});
+    };
+    // Utilization — pillbox segments (org-wide)
+    const WH_UTIL_DATA = {
+      bench: [
+        { n:'A. Rao', skill:'Java', dur:'14d', notes:'Awaiting MedTech ramp' },
+        { n:'C. Iyer', skill:'React', dur:'8d', notes:'Coming off PharmCare' },
+        { n:'F. Nair', skill:'Data Eng', dur:'22d', notes:'Specialty mismatch — long bench' },
+        { n:'G. Sen', skill:'UX', dur:'5d', notes:'Awaiting BioGen Phase 2' },
+        { n:'P. Singh', skill:'DevOps', dur:'9d', notes:'Awaiting CardioTech ramp' },
+        { n:'... 23 more', skill:'-', dur:'-', notes:'Org bench list (28 total)' }
+      ],
+      ok: [
+        { n:'Kavya Sharma', skill:'Tech Lead', dur:'92%', notes:'MedTech sprint pod' },
+        { n:'Priya M.', skill:'Platform Lead', dur:'94%', notes:'Cross-account' },
+        { n:'Vikram J.', skill:'Web Lead', dur:'92%', notes:'HealthFirst' },
+        { n:'Maya R.', skill:'Mobile Lead', dur:'90%', notes:'HealthFirst' },
+        { n:'... 1,078 more', skill:'-', dur:'-', notes:'Org utilized list (252 total)' }
+      ],
+      over: [
+        { n:'Rajesh K.', skill:'QA Pod Mgr', dur:'118%', notes:'Covering 2 projects · burnout risk' },
+        { n:'H. Sharma', skill:'DevOps Sr.', dur:'124%', notes:'Sole DevOps · backfill needed' },
+        { n:'S. Naidu', skill:'DevOps Sr.', dur:'114%', notes:'Critical role · backfill in motion' },
+        { n:'... 29 more', skill:'-', dur:'-', notes:'Org over-allocated list (8 total)' }
+      ]
+    };
+    function whUtil() {
+      const seg = window._whUtilSeg || 'bench';
+      const dlbl = seg === 'bench' ? 'Days on Bench' : 'Utilization';
+      const rows = WH_UTIL_DATA[seg].map(d => `<tr><td><strong>${d.n}</strong></td><td>${d.skill}</td><td>${d.dur}</td><td>${d.notes}</td></tr>`).join('');
+      return `<div class="seg-tabs"><span class="seg-tab amber ${seg==='bench'?'active':''}" onclick="setWhUtilSeg('bench')">On Bench (10)</span>
+          <span class="seg-tab green ${seg==='ok'?'active':''}" onclick="setWhUtilSeg('ok')">Utilized (252)</span>
+          <span class="seg-tab red ${seg==='over'?'active':''}" onclick="setWhUtilSeg('over')">Over-utilized (8)</span>
+        </div>
+      <table class="tbl"><thead><tr><th>Employee</th><th>Skill</th><th>${dlbl}</th><th>Notes</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    window.setWhUtilSeg = function(s) { window._whUtilSeg = s; document.getElementById('wh-content').innerHTML = whUtil(); };
+
+    // Hiring & Attrition — pillbox 4 segments (org-wide monthly)
+    const WH_HA_DATA = {
+      hires: { cols:['Name','Role','Start Date','Source'], rows:[
+        ['L. Krishnan','Senior Java','Apr 22','Referral'],['M. Joshi','QA Engineer','Apr 28','Inbound'],['N. Pillai','DevOps','May 4','Outbound'],
+        ['T. Sinha','Mobile Dev','May 5','Referral'],['U. Khan','Senior React','May 6','Inbound'],['... 23 more','-','-','-']
+      ]},
+      exits: { cols:['Name','Role','Last Day','Reason'], rows:[
+        ['O. Khan','Senior React','Apr 18','Comp · accepted higher offer'],
+        ['P. Naidu','Platform Eng','Apr 30','Career growth · joined product co'],
+        ['Q. Mehta','QA Lead','Apr 22','Relocation'],['R. Bose','Senior Java','Apr 15','Personal'],
+        ['... 18 more','-','-','-']
+      ]},
+      open: { cols:['Role','Days Open','Pipeline','Hiring Manager'], rows:[
+        ['Senior Java Engineer','9d','12 in funnel','John Doe'],['Data Engineer','22d','8 in funnel · 3 stuck','John Doe'],
+        ['QA Lead','8d','6 in funnel','Sarah Patel'],['UX Designer','14d','5 in funnel','Karthik R.'],
+        ['Product Manager','18d','3 in funnel','Vikram S.'],['... 25 more','-','-','-']
+      ]},
+      risk: { cols:['Name','Role','Risk Score','Driver'], rows:[
+        ['K. Sharma','Tech Lead','<span class="badge red">8.2/10</span>','Comp gap · last 1:1 23d ago'],
+        ['M. Verma','Senior Java','<span class="badge amber">7.6/10</span>','Engagement drop · skipped 1:1s'],
+        ['R. Iyer','Mobile Eng','<span class="badge amber">7.2/10</span>','Career growth signals'],
+        ['S. Krishna','Data Eng','<span class="badge red">8.0/10</span>','Comp gap + stuck on PIP recovery'],
+        ['... 10 more','-','-','-']
+      ]}
+    };
+    function whHA() {
+      const seg = window._whHASeg || 'hires';
+      const d = WH_HA_DATA[seg];
+      const rows = d.rows.map(r => `<tr>${r.map((c,i) => `<td${i===0?'><strong>'+c+'</strong>':'>'+c}</td>`).join('')}</tr>`).join('');
+      return `<div class="seg-tabs"><span class="seg-tab green ${seg==='hires'?'active':''}" onclick="setWhHASeg('hires')">Hires (5)</span>
+          <span class="seg-tab red ${seg==='exits'?'active':''}" onclick="setWhHASeg('exits')">Exits (4)</span>
+          <span class="seg-tab amber ${seg==='open'?'active':''}" onclick="setWhHASeg('open')">Open Positions (8)</span>
+          <span class="seg-tab amber ${seg==='risk'?'active':''}" onclick="setWhHASeg('risk')">At Risk (3)</span>
+        </div>
+      <table class="tbl"><thead><tr>${d.cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    window.setWhHASeg = function(s) { window._whHASeg = s; document.getElementById('wh-content').innerHTML = whHA(); };
+
+    // Attendance — flagged people (org-wide, 18 flagged); click person → individual heatmap
+    const WH_ATT_DATA = [
+      { n:'K. Sharma',  mgr:'Kavya Sharma', buhr:'Anita Mehta', pct:'88%', wfh:'46%', exc:4, anom:'Late logins 4× · short Fridays' },
+      { n:'M. Verma',   mgr:'Rajesh K.',    buhr:'Anita Mehta', pct:'86%', wfh:'42%', exc:6, anom:'6 unplanned absences in 30d' },
+      { n:'R. Pillai',  mgr:'Maya R.',      buhr:'Anita Mehta', pct:'92%', wfh:'38%', exc:3, anom:'Pattern: short Fridays' },
+      { n:'S. Iyer',    mgr:'Vikram J.',    buhr:'Anita Mehta', pct:'90%', wfh:'52%', exc:4, anom:'WFH ratio outside policy' },
+      { n:'T. Patel',   mgr:'Priya M.',     buhr:'Anita Mehta', pct:'87%', wfh:'48%', exc:5, anom:'5 absences · WFH ratio high' },
+      { n:'... 13 more','mgr':'-',          buhr:'-',           pct:'-',   wfh:'-',   exc:'-', anom:'18 total flagged org-wide' }
+    ];
+    function whAtt() {
+      const rows = WH_ATT_DATA.map(p => p.n.startsWith('...')
+        ? `<tr style="background:var(--bg);font-style:italic;color:var(--text-muted);"><td>${p.n}</td><td colspan="6">${p.anom}</td></tr>`
+        : `<tr onclick="openPersonAttendance('${p.n}')"><td><strong>${p.n}</strong></td><td>${p.mgr}</td><td>${p.buhr}</td><td>${p.pct}</td><td>${p.wfh}</td><td>${p.exc}</td><td>${p.anom}</td></tr>`).join('');
+      return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:10px;"><div style="font-size:13px;font-weight:700;color:var(--navy);">Attendance · 5 employees flagged · click row for monthly heatmap</div><div style="font-size:11px;color:var(--text-muted);">Org avg 94.2% · WFH 38% · 14 exceptions in 30d</div></div>
+      <table class="tbl"><thead><tr><th>Employee</th><th>Reporting Manager</th><th>BUHR</th><th>Attendance %</th><th>WFH %</th><th>Exceptions</th><th>Why flagged</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    // Multi-month scrollable calendar (current + 4 previous shown by default; load-more for older)
+    window._attCurrent = { name: null, monthsShown: 5 };
+    function buildAttMonthBlock(name, year, month) {
+      const label = new Date(year, month, 1).toLocaleString('en', {month:'long', year:'numeric'});
+      const firstDay = new Date(year, month, 1);
+      const firstIdx = (firstDay.getDay() + 6) % 7;
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      let cells = '';
+      ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d => cells += `<div class="att-cal-hdr">${d}</div>`);
+      for (let i = 0; i < firstIdx; i++) cells += `<div class="att-cal-cell empty"></div>`;
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dow = (firstIdx + d - 1) % 7;
+        let cls;
+        if (dow === 5 || dow === 6) cls = 'weekend';
+        else {
+          const seed = (name.charCodeAt(0) + month * 31 + d * 7) % 100;
+          if (seed < 50) cls = 'present';
+          else if (seed < 78) cls = 'wfh';
+          else if (seed < 86) cls = 'leave';
+          else if (seed < 94) cls = 'absent';
+          else cls = 'exception';
+        }
+        cells += `<div class="att-cal-cell ${cls}" title="${label} · Day ${d}: ${cls}">${d}</div>`;
+      }
+      return `<div class="cal-month-block"><div class="cal-month-label">${label}</div><div class="att-cal">${cells}</div></div>`;
+    }
+    function buildAttCalScroll(name, monthsShown) {
+      const today = new Date();
+      let blocks = '';
+      for (let i = 0; i < monthsShown; i++) {
+        const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        blocks += buildAttMonthBlock(name, d.getFullYear(), d.getMonth());
+      }
+      // Use fully expanded flex column · zero internal padding · legend + load-more pinned at bottom inside the flyout body
+      // Negative margin counters the parent .g-fly-body 18px top/bottom padding so we use the full vertical real estate
+      return `<div style="display:flex;flex-direction:column;height:calc(100% + 36px);margin:-18px -20px;padding:14px 20px 0;">
+        <div class="cal-scroll" style="flex:1 1 auto;overflow-y:auto;min-height:0;padding-right:6px;margin:0;max-height:none;">${blocks}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:8px 0 6px;border-top:1px solid var(--border);margin-top:6px;">
+          <div class="att-legend" style="margin:0;padding:0;border:none;flex:1;">
+            <span><span class="dot" style="background:rgba(22,163,74,0.5);"></span>Present</span>
+            <span><span class="dot" style="background:rgba(0,176,240,0.5);"></span>WFH</span>
+            <span><span class="dot" style="background:rgba(245,158,11,0.5);"></span>Absent</span>
+            <span><span class="dot" style="background:rgba(148,163,184,0.5);"></span>Leave</span>
+            <span><span class="dot" style="background:rgba(220,38,38,0.5);"></span>Exception</span>
+            <span><span class="dot" style="background:var(--bg);"></span>Weekend</span>
+          </div>
+          <button onclick="loadMoreAttMonths()" style="font-size:11px;font-weight:600;color:var(--blue);background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:5px 14px;cursor:pointer;flex-shrink:0;">Load earlier month</button>
+        </div>
+      </div>`;
+    }
+    window.openPersonAttendance = function(name) {
+      window._attCurrent = { name: name, monthsShown: 5 };
+      const p = WH_ATT_DATA.find(x => x.n === name) || {pct:'92%', wfh:'40%', exc:3, anom:'Flagged'};
+      openFlyoutPinned({
+        title: name + ' · Attendance',
+        sub: `${p.pct} attendance · ${p.wfh} WFH · ${p.exc} exceptions · scroll up to view earlier months`,
+        pinned: `<div class="fly-insight"><strong>Pattern:</strong> ${p.anom}</div>`,
+        body: buildAttCalScroll(name, 2)
+      });
+    };
+    window.loadMoreAttMonths = function() {
+      const a = window._attCurrent; if (!a || !a.name) return;
+      a.monthsShown += 1;
+      const body = document.getElementById('gFlyBody');
+      if (body) body.innerHTML = buildAttCalScroll(a.name, a.monthsShown);
+    };
+
+    // Succession — pillbox tabs (Critical Roles | Successor Readiness)
+    function whSucc() {
+      const seg = window._whSuccSeg || 'critical';
+      let rows, cols;
+      if (seg === 'critical') {
+        cols = ['Role','Incumbent','Successor','Readiness'];
+        rows = [
+          ['Tech Lead (HLS)','John Doe','Kavya Sharma','<span class="badge green">Ready (90 days)</span>'],
+          ['Platform Lead','Priya M.','—','<span class="badge green">Ready (60 days)</span>'],
+          ['QA Lead','—','—','<span class="badge red">Open</span>'],
+          ['DevOps Lead','S. Naidu','—','<span class="badge amber">Partial (180+ days)</span>'],
+          ['Web Lead','Vikram J.','—','<span class="badge green">Ready (90 days)</span>'],
+          ['Mobile Lead','Maya R.','—','<span class="badge green">Ready (120 days)</span>'],
+          ['Sales Director','Vikram S.','—','<span class="badge green">Ready (60 days)</span>'],
+          ['HR Director','Anita Mehta','—','<span class="badge green">Ready (Now)</span>'],
+          ['Architect (HLS)','P. Banerjee','—','<span class="badge amber">Partial (180+ days)</span>'],
+          ['QA Architect','—','—','<span class="badge red">Open</span>'],
+          ['Data Lead','D. Patel','—','<span class="badge green">Ready (90 days)</span>'],
+          ['UX Lead','—','—','<span class="badge red">Open</span>']
+        ];
+      } else {
+        cols = ['Successor','Target Role','Readiness','Gap'];
+        rows = [
+          ['Kavya Sharma','Tech Lead (HLS)','<span class="badge green">90%</span>','Strategic planning'],
+          ['Priya M.','Tech Lead · Sprint Pod','<span class="badge amber">82%</span>','People mgmt'],
+          ['D. Patel','QA Pod Mgr','<span class="badge amber">68%</span>','People mgmt + budgeting'],
+          ['Vikram J.','Sales Director','<span class="badge green">88%</span>','Account strategy'],
+          ['Maya R.','Mobile Lead','<span class="badge green">85%</span>','-'],
+          ['... 4 more','-','-','-']
+        ];
+      }
+      const body = rows.map(r => `<tr><td><strong>${r[0]}</strong></td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('');
+      return `<div class="seg-tabs"><span class="seg-tab ${seg==='critical'?'active':''}" onclick="setWhSuccSeg('critical')">Critical Roles (8)</span>
+          <span class="seg-tab ${seg==='readiness'?'active':''}" onclick="setWhSuccSeg('readiness')">Successor Readiness</span>
+        </div>
+      <table class="tbl"><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table>`;
+    }
+    window.setWhSuccSeg = function(s) { window._whSuccSeg = s; document.getElementById('wh-content').innerHTML = whSucc(); };
+
+    // Appraisals — pillbox Done / Upcoming / Delayed (org-wide)
+    const WH_APPR_DATA = {
+      done: [
+        ['A. Rao','Java Eng','4 of 5','Apr 22'],['B. Kumar','Senior Java','5 of 5','Apr 28'],
+        ['C. Iyer','React','3 of 5','Apr 30'],['D. Patel','QA','4 of 5','May 2'],
+        ['E. Singh','QA','4 of 5','May 3'],['... 657 more','-','-','-']
+      ],
+      upcoming: [
+        ['F. Nair','Data Eng','-','May 8'],['G. Sen','UX','-','May 10'],
+        ['H. Sharma','DevOps','-','May 12'],['I. Joshi','Mobile','-','May 14'],
+        ['... 280 more','-','-','-']
+      ],
+      delayed: [
+        ['J. Khan','Tech Lead','-','12d late'],['K. Verma','Senior QA','-','8d late'],
+        ['L. Pillai','DevOps','-','5d late'],['M. Sharma','Java Eng','-','11d late'],
+        ['... 172 more','-','-','-']
+      ]
+    };
+    function whAppr() {
+      const seg = window._whApprSeg || 'done';
+      const lblDate = seg === 'done' ? 'Completed' : 'Status';
+      const rows = WH_APPR_DATA[seg].map(r => `<tr><td><strong>${r[0]}</strong></td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('');
+      return `<div class="seg-tabs"><span class="seg-tab green ${seg==='done'?'active':''}" onclick="setWhApprSeg('done')">Done (165)</span>
+          <span class="seg-tab amber ${seg==='upcoming'?'active':''}" onclick="setWhApprSeg('upcoming')">Upcoming (70)</span>
+          <span class="seg-tab red ${seg==='delayed'?'active':''}" onclick="setWhApprSeg('delayed')">Delayed (35)</span>
+        </div>
+      <table class="tbl"><thead><tr><th>Name</th><th>Role</th><th>Rating</th><th>${lblDate}</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    window.setWhApprSeg = function(s) { window._whApprSeg = s; document.getElementById('wh-content').innerHTML = whAppr(); };
+    // PMS Review — 4 quarter tiles, color = status, number = score (so trend reads at a glance)
+    function _pmsTiles(quarters) {
+      // quarters: array of 4 objects {q, status, score} where status ∈ g/a/r/x
+      const map = { g: { bg:'#16A34A', fg:'#fff', lbl:'Done' }, a: { bg:'#F59E0B', fg:'#fff', lbl:'Partial' }, r: { bg:'#DC2626', fg:'#fff', lbl:'Delayed' }, x: { bg:'#E2E8F0', fg:'#64748B', lbl:'Not yet' } };
+      return `<span style="display:inline-flex;gap:4px;">${quarters.map(q => {
+        const m = map[q.status];
+        const display = q.status === 'x' ? '—' : (q.score != null ? q.score : m.lbl);
+        return `<span title="${q.q}: ${m.lbl}${q.score != null ? ' · Score ' + q.score : ''}" style="display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:38px;height:34px;border-radius:5px;background:${m.bg};color:${m.fg};font-weight:700;line-height:1;"><span style="font-size:8px;opacity:0.85;letter-spacing:0.4px;margin-bottom:2px;">${q.q}</span><span style="font-size:12px;">${display}</span></span>`;
+      }).join('')}</span>`;
+    }
+    function pcKPI() {
+      return `<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;">KPI / OKR Cascade · click row or + for people</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">PMS Review tiles — color = status, number = quarterly score. <span style="display:inline-block;width:10px;height:10px;background:#16A34A;border-radius:2px;vertical-align:middle;"></span> Done · <span style="display:inline-block;width:10px;height:10px;background:#F59E0B;border-radius:2px;vertical-align:middle;"></span> Partial · <span style="display:inline-block;width:10px;height:10px;background:#DC2626;border-radius:2px;vertical-align:middle;"></span> Delayed · <span style="display:inline-block;width:10px;height:10px;background:#E2E8F0;border-radius:2px;vertical-align:middle;"></span> Not yet · Source: PMS portal</div>
+      <table class="tbl"><thead><tr><th></th><th>Department</th><th>KPIs Set</th><th>OKRs Set</th><th>Avg Score</th><th>PMS Review</th></tr></thead><tbody>
+      <tr onclick="openPCDept('Engineering')"><td><strong>+</strong></td><td><strong>Engineering</strong></td><td><span class="badge green">98%</span></td><td><span class="badge green">89%</span></td><td><span class="badge amber">7.4</span></td><td>${_pmsTiles([{q:'Q1',status:'g',score:7.2},{q:'Q2',status:'a',score:7.4},{q:'Q3',status:'x'},{q:'Q4',status:'x'}])}</td></tr>
+      <tr onclick="openPCDept('Sales')"><td><strong>+</strong></td><td><strong>Sales</strong></td><td><span class="badge green">100%</span></td><td><span class="badge green">96%</span></td><td><span class="badge green">8.1</span></td><td>${_pmsTiles([{q:'Q1',status:'g',score:7.9},{q:'Q2',status:'g',score:8.1},{q:'Q3',status:'x'},{q:'Q4',status:'x'}])}</td></tr>
+      <tr onclick="openPCDept('HR')"><td><strong>+</strong></td><td><strong>HR</strong></td><td><span class="badge green">100%</span></td><td><span class="badge green">100%</span></td><td><span class="badge green">8.4</span></td><td>${_pmsTiles([{q:'Q1',status:'g',score:8.2},{q:'Q2',status:'g',score:8.4},{q:'Q3',status:'x'},{q:'Q4',status:'x'}])}</td></tr>
+      <tr onclick="openPCDept('TA')"><td><strong>+</strong></td><td><strong>TA</strong></td><td><span class="badge green">95%</span></td><td><span class="badge amber">68%</span></td><td><span class="badge amber">7.0</span></td><td>${_pmsTiles([{q:'Q1',status:'g',score:7.1},{q:'Q2',status:'r',score:6.8},{q:'Q3',status:'x'},{q:'Q4',status:'x'}])}</td></tr>
+      <tr onclick="openPCDept('PMO')"><td><strong>+</strong></td><td><strong>PMO</strong></td><td><span class="badge green">100%</span></td><td><span class="badge green">94%</span></td><td><span class="badge green">8.0</span></td><td>${_pmsTiles([{q:'Q1',status:'g',score:7.8},{q:'Q2',status:'g',score:8.0},{q:'Q3',status:'x'},{q:'Q4',status:'x'}])}</td></tr>
+      <tr onclick="openPCDept('Finance')"><td><strong>+</strong></td><td><strong>Finance</strong></td><td><span class="badge green">100%</span></td><td><span class="badge green">92%</span></td><td><span class="badge green">7.9</span></td><td>${_pmsTiles([{q:'Q1',status:'g',score:7.6},{q:'Q2',status:'a',score:7.9},{q:'Q3',status:'x'},{q:'Q4',status:'x'}])}</td></tr>
+      </tbody></table>`;
+    }
+    function pcAppr() {
+      return `<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;">Appraisals · Delayed (default)</div>
+      <div class="inner-tabs"><div class="inner-tab" onclick="apprFilter('delayed', this)" style="border-bottom-color:var(--red);color:var(--red);">Delayed (8)</div><div class="inner-tab" onclick="apprFilter('upcoming', this)">Upcoming (14)</div><div class="inner-tab" onclick="apprFilter('done', this)">This Month (62)</div></div>
+      <div id="apprList">${apprBody('delayed')}</div>`;
+    }
+    function apprBody(t) {
+      const groups = {
+        delayed: [['J. Khan','Tech Lead','12d late'],['K. Verma','Senior QA','8d late'],['L. Pillai','DevOps','5d late'],['M. Sharma','Java Eng','11d late'],['N. Reddy','Product Mgr','3d late'],['O. Iyer','Senior React','7d late'],['P. Joshi','Mobile Dev','9d late'],['Q. Rao','Architect','6d late']],
+        upcoming: [['F. Nair','Data Eng','May 8'],['G. Sen','UX','May 10'],['H. Sharma','DevOps','May 12'],['I. Joshi','Mobile','May 14']],
+        done: [['A. Rao','Java Eng','Apr 22 · 4/5'],['B. Kumar','Senior Java','Apr 28 · 5/5'],['C. Iyer','React','Apr 30 · 3/5'],['D. Patel','QA','May 2 · 4/5'],['E. Singh','QA','May 3 · 4/5']]
+      };
+      const rows = groups[t];
+      return `<table class="tbl"><thead><tr><th>Name</th><th>Role</th><th>${t==='done'?'Date · Rating':'Status'}</th></tr></thead><tbody>${rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody></table>`;
+    }
+    window.apprFilter = function(t, el) {
+      el.parentElement.querySelectorAll('.inner-tab').forEach(x => { x.classList.remove('active'); x.style.color = 'var(--text-muted)'; x.style.borderBottomColor = 'transparent'; });
+      el.classList.add('active');
+      const c = t === 'delayed' ? 'var(--red)' : (t === 'upcoming' ? 'var(--amber)' : 'var(--green)');
+      el.style.color = c; el.style.borderBottomColor = c;
+      document.getElementById('apprList').innerHTML = apprBody(t);
+    };
+    function pcComp() {
+      return `<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;">Compensation Band — Outliers (22 employees)</div>
+      <div class="fly-insight"><strong>Outliers only.</strong> 22 employees comp falls outside band (94% in-band). Top driver: market premium on senior Java + DevOps roles.</div>
+      <table class="tbl"><thead><tr><th>Employee</th><th>Role</th><th>Band</th><th>Actual</th><th>Reason</th></tr></thead><tbody>
+      <tr><td>K. Sharma</td><td>Tech Lead</td><td>L5</td><td><span class="badge red">+12%</span></td><td>Senior Java market premium</td></tr>
+      <tr><td>P. Banerjee</td><td>Platform Lead</td><td>L5</td><td><span class="badge red">+8%</span></td><td>Hot skill retention</td></tr>
+      <tr><td>L. Krishnan</td><td>Senior Java</td><td>L4</td><td><span class="badge red">+15%</span></td><td>Counter-offer matching</td></tr>
+      <tr><td>R. Mehta</td><td>Data Engineer</td><td>L4</td><td><span class="badge red">+11%</span></td><td>Specialty premium</td></tr>
+      <tr><td>S. Naidu</td><td>DevOps Sr</td><td>L5</td><td><span class="badge red">+13%</span></td><td>Critical role</td></tr>
+      <tr><td>T. Patel</td><td>UX Lead</td><td>L5</td><td><span class="badge amber">-6%</span></td><td>Pending promotion alignment</td></tr>
+      <tr><td>U. Joshi</td><td>QA Lead</td><td>L4</td><td><span class="badge amber">-4%</span></td><td>Below-band on transfer</td></tr>
+      </tbody></table>`;
+    }
+    function pcPromo() {
+      return `<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;">Promotion Slate Q2 · 24 candidates · 6-month plan progress</div>
+      <table class="tbl"><thead><tr><th>Candidate</th><th>Current</th><th>Target</th><th>Plan timeline</th><th>KPIs Observed</th><th>Progress</th></tr></thead><tbody>
+      <tr><td><strong>Kavya Sharma</strong></td><td>Tech Lead L5</td><td>Senior Tech Lead L6</td><td>Mar – Aug 2026</td><td>4 of 5 KPIs on track</td><td><span class="badge green">68%</span></td></tr>
+      <tr><td><strong>Priya M.</strong></td><td>Platform Lead L5</td><td>Senior Platform L6</td><td>Feb – Jul 2026</td><td>5 of 5 KPIs met</td><td><span class="badge green">82%</span></td></tr>
+      <tr><td><strong>D. Patel</strong></td><td>QA L4</td><td>QA Lead L5</td><td>Apr – Sep 2026</td><td>3 of 4 KPIs</td><td><span class="badge amber">42%</span></td></tr>
+      <tr><td><strong>Vikram J.</strong></td><td>Web Lead L5</td><td>Senior Web L6</td><td>Mar – Aug 2026</td><td>4 of 5 KPIs</td><td><span class="badge amber">58%</span></td></tr>
+      <tr><td><strong>Maya R.</strong></td><td>Mobile Lead L5</td><td>Senior Mobile L6</td><td>Apr – Sep 2026</td><td>3 of 4 KPIs</td><td><span class="badge amber">36%</span></td></tr>
+      </tbody></table>`;
+    }
+    window.openPCDept = function(dept) {
+      openFlyout({title: dept + ' · KPI/OKR Cascade', sub: 'People-level detail',
+        body: `<table class="g-tbl"><thead><tr><th>Employee</th><th>KPIs Set</th><th>OKRs Set</th><th>Score</th></tr></thead><tbody>
+        <tr><td>Manager 1</td><td><span class="g-tag green">Yes</span></td><td><span class="g-tag green">Yes</span></td><td>8.2</td></tr>
+        <tr><td>Manager 2</td><td><span class="g-tag green">Yes</span></td><td><span class="g-tag amber">Partial</span></td><td>7.4</td></tr>
+        <tr><td>IC 1</td><td><span class="g-tag green">Yes</span></td><td><span class="g-tag green">Yes</span></td><td>7.8</td></tr>
+        <tr><td>IC 2</td><td><span class="g-tag amber">Draft</span></td><td><span class="g-tag red">No</span></td><td>—</td></tr>
+        <tr><td>IC 3</td><td><span class="g-tag green">Yes</span></td><td><span class="g-tag green">Yes</span></td><td>8.0</td></tr>
+        </tbody></table>`});
+    };
+
+    // === Onboarding individual flyout — 5-stage timeline + Feedback/Survey tabs ===
+    const ONB_DATA = {
+      'D. Patel': {sub:'Day 8 · stuck at BGV', stages:[
+        {name:'Data Captured', src:'Onboarding SharePoint', detail:'All sections filled · Apr 28', status:'done'},
+        {name:'Onboarding Plan Shared', src:'Onboarding SharePoint', detail:'Manager: Rajesh K. · Late by 1d', status:'late'},
+        {name:'HR Induction', src:'Event Portal', detail:'Not yet scheduled', status:'todo'},
+        {name:'BGV', src:'EmployVerify', detail:'Address verification stuck · 22d (delayed by 8d)', status:'late'},
+        {name:'KPIs Set', src:'PMS Portal', detail:'Pending · awaiting Plan', status:'todo'}
+      ], mgrFb:[
+        {when:'Day 30', status:'todo', detail:'Not yet due'},{when:'Day 60', status:'todo', detail:'Not yet due'},{when:'Day 90', status:'todo', detail:'Not yet due'}
+      ], joinerSurvey:[
+        {when:'Day 1', status:'done', detail:'Submitted Apr 28 · Score 8/10'},{when:'Day 30', status:'todo', detail:'Not yet due'},{when:'Day 60', status:'todo', detail:'Not yet due'},{when:'Day 90', status:'todo', detail:'Not yet due'}
+      ]},
+      'C. Iyer': {sub:'Day 12 · complete · score 8.2', stages:[
+        {name:'Data Captured', src:'Onboarding SharePoint', detail:'Filled Apr 24', status:'done'},
+        {name:'Onboarding Plan Shared', src:'Onboarding SharePoint', detail:'Manager: John Doe · On time (Day 3)', status:'done'},
+        {name:'HR Induction', src:'Event Portal', detail:'Completed Apr 25 · 14 attendees', status:'done'},
+        {name:'BGV', src:'Hirewise', detail:'Completed Apr 30 (6d)', status:'done'},
+        {name:'KPIs Set', src:'PMS Portal', detail:'Set May 2 · Day 9', status:'done'}
+      ], mgrFb:[
+        {when:'Day 30', status:'done', detail:'Submitted by John Doe · Strong start'},{when:'Day 60', status:'todo', detail:'Not yet due'},{when:'Day 90', status:'todo', detail:'Not yet due'}
+      ], joinerSurvey:[
+        {when:'Day 1', status:'done', detail:'Submitted Apr 24 · Score 9/10'},{when:'Day 30', status:'done', detail:'Submitted May 24 · Score 8/10'},{when:'Day 60', status:'todo', detail:'Not yet due'},{when:'Day 90', status:'todo', detail:'Not yet due'}
+      ]}
+    };
+    function _statusTag(s) { const cls = s==='done'?'green':(s==='late'?'red':(s==='active'?'amber':'grey')); const lbl = s==='late'?'Delayed':(s==='active'?'In progress':(s==='done'?'Done':'Pending')); return `<span class="g-tag ${cls}">${lbl}</span>`; }
+    window.openOnboardingDetail = function(name) {
+      const d = ONB_DATA[name] || ONB_DATA['D. Patel'];
+      window._onbCurrent = name;
+      openFlyoutPinned({title: name + ' · Onboarding', sub: d.sub,
+        pinned: `<div class="fly-insight"><strong>Stage timeline</strong> · 5 stages from Data Capture to KPIs Set. Hover stage chips on the table for source.</div>`,
+        body: _onbBody(d)});
+    };
+    function _onbBody(d) {
+      const stageRows = d.stages.map(s => `<tr><td><strong>${s.name}</strong></td><td>${s.src}</td><td>${s.detail}</td><td>${_statusTag(s.status)}</td></tr>`).join('');
+      const mgrRows = d.mgrFb.map(f => `<tr><td><strong>${f.when}</strong></td><td>${f.detail}</td><td>${_statusTag(f.status)}</td></tr>`).join('');
+      const joinerRows = d.joinerSurvey.map(f => `<tr><td><strong>${f.when}</strong></td><td>${f.detail}</td><td>${_statusTag(f.status)}</td></tr>`).join('');
+      return `<div class="g-section-title" style="text-align:left;">Stage Timeline</div>
+      <table class="g-tbl" style="text-align:left;"><thead><tr><th style="text-align:left;">Stage</th><th style="text-align:left;">Source</th><th style="text-align:left;">Detail</th><th style="text-align:left;">Status</th></tr></thead><tbody>${stageRows}</tbody></table>
+      <div class="inner-tabs" style="margin-top:18px;">
+        <div class="inner-tab active" onclick="onbTab('mgr', this)">Manager Feedback (30/60/90)</div>
+        <div class="inner-tab" onclick="onbTab('joiner', this)">New Joiner Survey (D1/30/60/90)</div>
+      </div>
+      <div id="onbTabBody"><table class="g-tbl" style="text-align:left;"><thead><tr><th style="text-align:left;">Checkpoint</th><th style="text-align:left;">Detail</th><th style="text-align:left;">Status</th></tr></thead><tbody>${mgrRows}</tbody></table></div>`;
+    }
+    window.onbTab = function(t, el) {
+      el.parentElement.querySelectorAll('.inner-tab').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      const d = ONB_DATA[window._onbCurrent] || ONB_DATA['D. Patel'];
+      const rows = (t === 'mgr' ? d.mgrFb : d.joinerSurvey).map(f => `<tr><td><strong>${f.when}</strong></td><td>${f.detail}</td><td>${_statusTag(f.status)}</td></tr>`).join('');
+      document.getElementById('onbTabBody').innerHTML = `<table class="g-tbl" style="text-align:left;"><thead><tr><th style="text-align:left;">Checkpoint</th><th style="text-align:left;">Detail</th><th style="text-align:left;">Status</th></tr></thead><tbody>${rows}</tbody></table>`;
+    };
+
+    // === Exit individual flyout — 7-stage timeline ===
+    const EXIT_DATA = {
+      'S. Verma': {sub:'Java Eng · HLS · Apr 26 · Comp gap', stages:[
+        {name:'Resignation Submitted', src:'HRMS', detail:'Apr 5', status:'done'},
+        {name:'KT Plan Defined', src:'HR Repo', detail:'Apr 10 · Manager: Rajesh K.', status:'done'},
+        {name:'KT Sign-off', src:'HR Repo', detail:'Not received from manager', status:'late'},
+        {name:'Exit Interview', src:'HR scheduling', detail:'Skipped by employee', status:'late'},
+        {name:'Exit Survey', src:'HR Exit Portal', detail:'Not completed', status:'todo'},
+        {name:'Asset/Access Revoked', src:'IT Service Desk', detail:'In progress · 2/4 assets returned', status:'active'},
+        {name:'Final Settlement (FnF)', src:'Finance', detail:'Pending KT clearance', status:'todo'}
+      ]},
+      'T. Sen': {sub:'Data Eng · NHS · Apr 29 · Personal', stages:[
+        {name:'Resignation Submitted', src:'HRMS', detail:'Apr 1', status:'done'},
+        {name:'KT Plan Defined', src:'HR Repo', detail:'Apr 4 · Manager: Sarah Patel', status:'done'},
+        {name:'KT Sign-off', src:'HR Repo', detail:'In progress · awaiting manager review', status:'active'},
+        {name:'Exit Interview', src:'HR scheduling', detail:'Done Apr 25', status:'done'},
+        {name:'Exit Survey', src:'HR Exit Portal', detail:'Completed Apr 26', status:'done'},
+        {name:'Asset/Access Revoked', src:'IT Service Desk', detail:'In progress', status:'active'},
+        {name:'Final Settlement (FnF)', src:'Finance', detail:'Pending KT sign-off', status:'todo'}
+      ]},
+      'O. Khan': {sub:'Senior React · HLS · Apr 18 · Higher offer', stages:[
+        {name:'Resignation Submitted', src:'HRMS', detail:'Mar 18', status:'done'},
+        {name:'KT Plan Defined', src:'HR Repo', detail:'Mar 22', status:'done'},
+        {name:'KT Sign-off', src:'HR Repo', detail:'Received Apr 12', status:'done'},
+        {name:'Exit Interview', src:'HR scheduling', detail:'Done Apr 15 · Honest, useful', status:'done'},
+        {name:'Exit Survey', src:'HR Exit Portal', detail:'Completed Apr 16', status:'done'},
+        {name:'Asset/Access Revoked', src:'IT Service Desk', detail:'Apr 18 · all returned', status:'done'},
+        {name:'Final Settlement (FnF)', src:'Finance', detail:'Apr 30 · paid', status:'done'}
+      ]}
+    };
+    window.openExitDetail = function(name) {
+      const d = EXIT_DATA[name] || EXIT_DATA['S. Verma'];
+      const rows = d.stages.map(s => `<tr><td><strong>${s.name}</strong></td><td>${s.src}</td><td>${s.detail}</td><td>${_statusTag(s.status)}</td></tr>`).join('');
+      const flagged = d.stages.filter(s => s.status === 'late');
+      const notes = flagged.length ? `<div class="fly-insight" style="background:rgba(220,38,38,0.06);border-left-color:#DC2626;"><strong>Blockers:</strong> ${flagged.map(s => s.name + ' — ' + s.detail).join(' · ')}</div>` : '';
+      openFlyoutPinned({title: name + ' · Exit Lifecycle', sub: d.sub,
+        pinned: `<div class="fly-insight"><strong>7-stage exit timeline</strong> · Resignation → FnF. Late stages flagged in red.</div>`,
+        body: `<div class="g-section-title" style="text-align:left;">Stage Timeline</div>
+        <table class="g-tbl" style="text-align:left;"><thead><tr><th style="text-align:left;">Stage</th><th style="text-align:left;">Source</th><th style="text-align:left;">Detail</th><th style="text-align:left;">Status</th></tr></thead><tbody>${rows}</tbody></table>${notes}`});
+    };
+
+    // BGV tile click → switch to Onboardings sub-tab + scroll to alert
+    window.scrollToOnboardingBGV = function() {
+      // ensure Onboarding & Exits tab is active
+      const tab = document.querySelector('.tab[onclick*="\\\'ox\\\'"]');
+      if (tab) tab.click();
+      setTimeout(() => {
+        const ox = document.querySelector('.inner-tab[onclick*="onboard"]');
+        if (ox) ox.click();
+        const banner = document.querySelector('#ox-onboard .fly-alert');
+        if (banner) banner.scrollIntoView({behavior:'smooth', block:'center'});
+      }, 60);
+    };
+    window.openMgr1on1 = function(mgr, total, done) {
+      openFlyout({title: mgr + ' · 1-on-1 Coverage', sub: `${done} of ${total} reports`,
+        body: `<table class="g-tbl"><thead><tr><th>Report</th><th>Last 1:1</th><th>Status</th></tr></thead><tbody>
+        ${Array.from({length: total}, (_, i) => `<tr><td>Report ${i+1}</td><td>${i < done ? Math.floor(Math.random()*14)+1+'d ago' : Math.floor(Math.random()*30)+15+'d ago'}</td><td><span class="g-tag ${i < done ? 'green' : 'red'}">${i < done ? 'On track' : 'Overdue'}</span></td></tr>`).join('')}
+        </tbody></table>`});
+    };
+
+    // L&D dept drill — fix column alignment + add Training column
+    window.openLDDept = function(dept, total, done) {
+      const trainings = ['SOC2 Compliance', 'Code Quality 101', 'Security Basics', 'Data Privacy', 'Leadership Foundations', 'Customer Centricity'];
+      openFlyoutPinned({title: dept + ' · L&D Detail', sub: `${done} of ${total} (${Math.round(done/total*100)}%)`,
+        pinned: `<div class="g-stat-row">
+          <div class="g-stat" onclick="renderLDPeople('done', ${done})" style="cursor:pointer;"><div class="g-stat-label">Completed</div><div class="g-stat-val green">${done}</div></div>
+          <div class="g-stat" onclick="renderLDPeople('pending', ${total-done})" style="cursor:pointer;"><div class="g-stat-label">Not completed</div><div class="g-stat-val red">${total-done}</div></div>
+          <div class="g-stat"><div class="g-stat-label">Total</div><div class="g-stat-val">${total}</div></div>
+        </div>`,
+        body: renderLDPeopleBody('done', Math.min(done, 12), trainings)});
+    };
+    function renderLDPeopleBody(t, n, trainings) {
+      const sample = ['A. Rao','B. Kumar','C. Iyer','D. Patel','E. Singh','F. Nair','G. Sen','H. Sharma','I. Joshi','J. Khan','K. Verma','L. Pillai'];
+      const roles = ['Java Eng','Senior Java','React Dev','QA','Senior QA','Data Eng','UX','DevOps','Mobile Dev','Tech Lead','Architect','Senior PM'];
+      return `<div class="g-section-title" style="text-align:left;">${t === 'done' ? 'Completed' : 'Pending'} (top ${n})</div>
+      <table class="g-tbl" style="text-align:left;"><thead><tr><th style="text-align:left;">Employee</th><th style="text-align:left;">Role</th><th style="text-align:left;">Training</th><th style="text-align:left;">${t === 'done' ? 'Completed on' : 'Status'}</th></tr></thead><tbody>
+      ${Array.from({length: n}, (_, i) => `<tr><td style="text-align:left;">${sample[i % sample.length]}</td><td style="text-align:left;">${roles[i % roles.length]}</td><td style="text-align:left;">${trainings[i % trainings.length]}</td><td style="text-align:left;">${t === 'done' ? 'Apr ' + (i*3 % 28 + 1) : (Math.floor(Math.random()*30)+1)+'d overdue'}</td></tr>`).join('')}
+      </tbody></table>`;
+    }
+    window.renderLDPeople = function(t, n) {
+      const trainings = ['SOC2 Compliance', 'Code Quality 101', 'Security Basics', 'Data Privacy', 'Leadership Foundations', 'Customer Centricity'];
+      swapFlyoutBody(renderLDPeopleBody(t, Math.min(n, 12), trainings));
+    };
+
+    window.openHREngagement = function() {
+      openFlyoutPinned({title: 'Engagement Score · 7.6/10', sub: 'Q2 cycle · 87% participation',
+        pinned: `<div class="fly-insight"><strong>Source:</strong> Quarterly engagement surveys + post-event pulse checks.</div>`,
+        body: `<div class="g-section-title">Survey events · Q2 2026</div>
+        <table class="g-tbl"><thead><tr><th>Event</th><th>Date</th><th>Participants</th><th>Score</th><th>Insight</th></tr></thead><tbody>
+        <tr><td>Quarterly engagement survey</td><td>Apr 18</td><td>232 / 270</td><td><span class="g-tag green">7.6</span></td><td>Career growth lowest (6.4)</td></tr>
+        <tr><td>Town hall pulse</td><td>Apr 25</td><td>620</td><td><span class="g-tag green">7.8</span></td><td>Strategic direction clarity</td></tr>
+        <tr><td>L&amp;D feedback poll</td><td>Apr 30</td><td>284</td><td><span class="g-tag amber">7.2</span></td><td>Training relevance flagged</td></tr>
+        <tr><td>Manager effectiveness</td><td>Mar 14</td><td>244</td><td><span class="g-tag green">8.0</span></td><td>Trust score consistent</td></tr>
+        </tbody></table>`});
+    };
+
+    function openLDMandatory() { openFlyout({title:'Mandatory L&D · 76%', sub:'70 pending', body:'<p>Compliance / security training. 14 overdue >30d trigger manager escalation.</p>'}); }
+    function openAttritionDrill() { openFlyout({title:'Attrition (12m) · 18.4%', sub:'Industry avg 22%', body:'<p>Top reasons: Comp (38%), Career growth (24%), Relocation (18%), Personal (12%), PIP (8%).</p>'}); }
+  </script>
+</body>
+</html>

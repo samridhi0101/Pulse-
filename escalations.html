@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Escalations — Pulse · Nalashaa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .esc-banner{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+    .esc-banner-item{background:var(--card);border-radius:8px;padding:12px 14px;border:1px solid var(--border);}
+    .esc-banner-label{font-size:10px;text-transform:uppercase;letter-spacing:.3px;color:var(--text-muted);font-weight:600;margin-bottom:4px;}
+    .esc-banner-val{font-size:20px;font-weight:700;color:var(--navy);}
+    .esc-banner-val.red{color:var(--red);}
+    .esc-type-ext{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;background:#FEE2E2;color:#991B1B;}
+    .esc-type-int{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;background:#EDE9FE;color:#5B21B6;}
+    .creator-stamp{font-size:10px;color:var(--text-muted);margin-top:2px;display:flex;align-items:center;gap:3px;}
+    .esc-row{cursor:pointer;}.esc-row:hover td{background:#FFF5F5;}
+    .expand-detail{display:none;}.expand-detail.open{display:table-row;}
+    .expand-cell{background:#FFF5F5;padding:10px 14px;font-size:12px;color:var(--text-muted);border-bottom:1px solid var(--border);}
+    .tbl-section-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+    .filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+    .filter-bar select{font-size:12px;border:1px solid var(--border);border-radius:6px;padding:6px 10px;background:var(--card);color:var(--text);font-family:var(--font);cursor:pointer;}
+    .log-form-panel{display:none;background:#F8FAFC;border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:14px;}
+    .log-form-panel.open{display:block;}
+    .log-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+    .log-form-grid .field label{font-size:11px;font-weight:600;color:var(--navy);display:block;margin-bottom:4px;}
+    .log-form-grid .field input,.log-form-grid .field select,.log-form-grid .field textarea{width:100%;font-size:12px;border:1px solid var(--border);border-radius:5px;padding:6px 10px;background:#fff;font-family:var(--font);}
+    .log-form-grid .field textarea{height:60px;resize:vertical;}
+    .inline-ai-form{background:#F0F7FF;border:1px solid #BFDBFE;border-radius:8px;padding:10px 12px;margin-top:12px;}
+    .inline-ai-form-title{font-size:11px;font-weight:700;color:var(--navy);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+    .inline-ai-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+    .inline-ai-row input[type=text]{flex:2;min-width:140px;font-size:11px;border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-family:var(--font);}
+    .inline-ai-row select,.inline-ai-row input[type=date]{font-size:11px;border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-family:var(--font);background:#fff;}
+    .inline-ai-saved{font-size:11px;color:var(--green);font-weight:700;display:none;margin-top:4px;}
+    .type-toggle{display:inline-flex;gap:0;background:var(--border);border-radius:14px;padding:2px;}
+    .type-toggle button{padding:4px 12px;border:none;background:transparent;cursor:pointer;font-size:11px;border-radius:12px;font-weight:600;font-family:inherit;color:var(--text);transition:all .15s;}
+    .type-toggle button.on.ext{background:#DC2626;color:#fff;}
+    .type-toggle button.on.int{background:#7C3AED;color:#fff;}
+
+    /* ── Column-header filter dropdowns ────────────────────────────────── */
+    th.filterable { cursor:pointer; user-select:none; }
+    th.filterable .cfwrap { display:inline-flex; align-items:center; gap:5px; }
+    th.filterable .cfi { font-size:9px; opacity:0.65; }
+    th.filterable.cf-active { background:#1a3a6e !important; }
+    th.filterable.cf-active .cfi { opacity:1; color:#F97316; }
+    /* Panel appended to body — bypasses overflow:hidden and white-text inherit */
+    .cf-panel {
+      display:none; position:fixed; z-index:9999;
+      background:#ffffff; border:1px solid #CBD5E1;
+      border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,.15);
+      min-width:172px; padding:6px 0;
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    }
+    .cf-panel.cf-open { display:block; }
+    .cf-panel label {
+      display:flex; align-items:center; gap:8px;
+      padding:6px 14px; font-size:11px; font-weight:500;
+      color:#1E293B !important; cursor:pointer; white-space:nowrap;
+    }
+    .cf-panel label:hover { background:#F1F5F9; }
+    .cf-panel label input[type=checkbox] {
+      accent-color:#002060; width:13px; height:13px; flex-shrink:0;
+    }
+    .cf-panel hr { border:none; border-top:1px solid #E2E8F0; margin:4px 0; }
+    .cf-panel .cf-apply {
+      display:block; margin:5px 10px 3px; padding:5px 0; text-align:center;
+      background:#002060; color:#fff !important; border:none; border-radius:5px;
+      font-size:11px; font-weight:700; cursor:pointer; width:calc(100% - 20px);
+      font-family:inherit;
+    }
+    .cf-panel .cf-apply:hover { background:#1a3a6e; }
+    .cf-panel .cf-clear {
+      display:block; margin:0 10px 5px; padding:4px 0; text-align:center;
+      background:transparent; color:#64748B !important; border:1px solid #CBD5E1;
+      border-radius:5px; font-size:10px; cursor:pointer; width:calc(100% - 20px);
+      font-family:inherit;
+    }
+    .cf-panel .cf-clear:hover { background:#F8FAFC; }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="hamburger-btn" onclick="toggleSidebar()" title="Toggle menu"><i class="bi bi-list"></i></button>
+      <div class="pulse-logo">
+        <span class="pulse-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="1" y="3" width="20" height="14" rx="2" stroke="#3B82F6" stroke-width="1.6" fill="none"/><rect x="0" y="16" width="22" height="2.5" rx="1" fill="#3B82F6" opacity="0.25"/><rect x="8" y="18.5" width="6" height="1.5" rx="0.75" fill="#3B82F6"/><polyline points="2,11 5,11 7,6 9,15 11,8 13,13 15,11 20,11" stroke="#3B82F6" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <div style="position:relative;">
+        <button class="theme-btn" onclick="toggleThemePicker()" title="Theme"><i class="bi bi-palette"></i></button>
+        <div class="theme-picker" id="themePicker">
+          <div class="theme-picker-title">Colour Theme</div>
+          <div class="theme-swatches">
+            <div class="theme-swatch blue active" data-theme="blue" onclick="setTheme('blue')"></div>
+            <div class="theme-swatch teal" data-theme="teal" onclick="setTheme('teal')"></div>
+            <div class="theme-swatch violet" data-theme="violet" onclick="setTheme('violet')"></div>
+          </div>
+          <div class="theme-divider"></div>
+          <div class="theme-mode-row">
+            <span class="mode-label">Light</span>
+            <div class="theme-toggle" id="modeToggle" onclick="toggleDarkMode()"><div class="theme-toggle-knob"></div></div>
+          </div>
+        </div>
+      </div>
+      <button class="tickets-btn" onclick="toggleTickets()" title="Feature Tickets"><i class="bi bi-ticket-perforated"></i><div class="badge">5</div></button>
+      <button class="help-btn" onclick="toggleHelp()" title="Help">?</button>
+      <div class="alert-bell" onclick="toggleNotif()"><i class="bi bi-bell-fill"></i><div class="badge">4</div></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <div class="help-overlay" id="helpOverlay" onclick="toggleHelp()"></div>
+  <div class="help-panel" id="helpPanel">
+    <div class="help-panel-header"><span class="help-panel-title">Help &amp; Guide</span><span style="cursor:pointer;opacity:0.6;font-size:20px;" onclick="toggleHelp()">&#10005;</span></div>
+    <div class="help-panel-body">
+      <div class="help-toc-section">
+        <div class="help-toc-title">Escalation Types</div>
+        <div class="help-toc-item"><span class="help-toc-item-icon" style="background:#FEE2E2;border-radius:4px;padding:2px 6px;font-size:10px;font-weight:700;color:#991B1B;">EXT</span><div><div class="help-toc-item-title">External</div><div class="help-toc-item-desc">Client-facing: Invoices/Payments, Quality of Deliverables, Discipline, Budget.</div></div></div>
+        <div class="help-toc-item"><span class="help-toc-item-icon" style="background:#EDE9FE;border-radius:4px;padding:2px 6px;font-size:10px;font-weight:700;color:#5B21B6;">INT</span><div><div class="help-toc-item-title">Internal</div><div class="help-toc-item-desc">Internal delivery: SDLC Discipline, Mining/Visibility, Resourcing, Communication.</div></div></div>
+        <div class="help-toc-item"><span class="help-toc-item-icon">&#9663;</span><div><div class="help-toc-item-title">Column Filters</div><div class="help-toc-item-desc">Click &#9663; on any column header to filter by Type, Category, Owner, Department, Status or Age.</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tickets-overlay" id="ticketsOverlay" onclick="closeTickets()"></div>
+  <div class="tickets-panel" id="ticketsPanel">
+    <div class="tickets-panel-header"><span class="tickets-panel-title"><i class="bi bi-ticket-perforated"></i> Feature Tickets</span><span onclick="closeTickets()" style="cursor:pointer;opacity:0.5;font-size:18px;">&#10005;</span></div>
+    <div class="tickets-panel-body"><div class="ticket-item medium"><div class="ticket-id">BMD-039</div><div class="ticket-desc">Export current view to PDF report</div><div class="ticket-tag medium">Medium</div></div></div>
+  </div>
+
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-header"><span>Notifications</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button class="notif-pin-btn" id="notifPinBtn" onclick="pinNotif()"><i class="bi bi-pin-angle"></i></button>
+        <span style="opacity:.5;cursor:pointer;font-size:18px;" onclick="toggleNotif()">&#10005;</span>
+      </div>
+    </div>
+    <div class="notif-item"><div class="notif-type" style="color:var(--red);">Escalation</div><div class="notif-text">New escalation opened - MedTech Corp (Quality)</div><div class="notif-time">2 hours ago</div></div>
+  </div>
+
+  <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html" class="active"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+    <div class="sidebar-brand"><img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo"></div>
+  </div>
+
+  <div class="main">
+    <div class="breadcrumb"><a href="dm-home.html">Meta-Dashboard</a><span class="sep">/</span><a href="dm-home.html">John Doe</a><span class="sep">/</span><span>Account Escalations</span></div>
+    <div class="page-title">Section 2 — Account Escalations</div>
+    <div class="page-subtitle">AMs are primary owners. External = client-facing; Internal = delivery-side. Click &#9663; on column headers to filter. Click any row for detail.</div>
+
+    <div class="esc-banner">
+      <div class="esc-banner-item"><div class="esc-banner-label">Open Escalations</div><div class="esc-banner-val red" id="b-open">—</div></div>
+      <div class="esc-banner-item"><div class="esc-banner-label">External</div><div class="esc-banner-val red" id="b-ext">—</div></div>
+      <div class="esc-banner-item"><div class="esc-banner-label">Internal</div><div class="esc-banner-val" style="color:#5B21B6;" id="b-int">—</div></div>
+      <div class="esc-banner-item"><div class="esc-banner-label">Avg Age (Open)</div><div class="esc-banner-val amber" id="b-age">—</div></div>
+    </div>
+
+    <div class="tbl-section-hdr">
+      <div class="filter-bar">
+        <select onchange="filterEsc(this.value)">
+          <option value="all">All</option>
+          <option value="ext">External only</option>
+          <option value="int">Internal only</option>
+          <option value="open">Open</option>
+          <option value="mon">Monitoring</option>
+        </select>
+      </div>
+      <button class="btn btn-orange" onclick="document.getElementById('logForm').classList.toggle('open')"><i class="bi bi-plus-lg"></i> Log Escalation</button>
+    </div>
+
+    <div class="tbl-wrap">
+      <table id="esc-table">
+        <thead><tr>
+          <th>Account</th>
+          <th class="filterable" id="th-type"   style="width:80px;"  onclick="cfOpen('th-type','type',COL_CF,renderEscRows,function(){return _escFilter;},null,function(){return ESC_DATA.map(function(i){return i.type;});})"><span class="cfwrap">Type <span class="cfi">&#9663;</span></span></th>
+          <th class="filterable" id="th-cat"    style="width:152px;" onclick="cfOpen('th-cat','cat',COL_CF,renderEscRows,function(){return _escFilter;},null,function(){return ESC_DATA.map(function(i){return i.cat;});})"><span class="cfwrap">Category <span class="cfi">&#9663;</span></span></th>
+          <th class="filterable" id="th-owner"  style="width:112px;" onclick="cfOpen('th-owner','owner',COL_CF,renderEscRows,function(){return _escFilter;},null,function(){return ESC_DATA.map(function(i){return i.owner;});})"><span class="cfwrap">Account Manager <span class="cfi">&#9663;</span></span></th>
+          <th class="filterable" id="th-dept"   style="width:110px;" onclick="cfOpen('th-dept','dept',COL_CF,renderEscRows,function(){return _escFilter;},null,function(){return ESC_DATA.map(function(i){return i.dept;});})"><span class="cfwrap">Department <span class="cfi">&#9663;</span></span></th>
+          <th style="width:108px;">Resolution Date</th>
+          <th class="filterable" id="th-status" style="width:100px;" onclick="cfOpen('th-status','status',COL_CF,renderEscRows,function(){return _escFilter;},null,function(){return ESC_DATA.map(function(i){return i.status;});})"><span class="cfwrap">Status <span class="cfi">&#9663;</span></span></th>
+          <th class="filterable" id="th-age"    style="width:70px;"  onclick="cfOpen('th-age','age',COL_CF,renderEscRows,function(){return _escFilter;},[{val:'<7',lbl:'< 7 days'},{val:'7-30',lbl:'7–30 days'},{val:'>30',lbl:'> 30 days'}],null)"><span class="cfwrap">Age <span class="cfi">&#9663;</span></span></th>
+          <th style="width:175px;">Next Action</th>
+        </tr></thead>
+        <tbody id="esc-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Log Escalation Form -->
+    <div id="logForm" class="log-form-panel">
+      <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:12px;">Log New Escalation</div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:600;color:var(--navy);margin-bottom:6px;">Escalation Type *</div>
+        <div class="type-toggle">
+          <button class="on ext" id="typeBtn-ext" onclick="setEscType('External')">External (Client-facing)</button>
+          <button id="typeBtn-int" onclick="setEscType('Internal')">Internal (Delivery)</button>
+        </div>
+        <div id="type-hint" style="font-size:10px;color:#991B1B;margin-top:5px;">Categories: Invoices/Payments, Quality of Deliverables, Discipline, Budget</div>
+      </div>
+      <div class="log-form-grid">
+        <div class="field"><label>Account *</label><select id="form-acct"><option>MedTech Corp</option><option>HealthFirst US</option><option>BioSync Labs</option><option>Renewal Care</option></select></div>
+        <div class="field"><label>Category *</label><select id="form-cat"><option>Invoices/Payments</option><option>Quality of Deliverables</option><option>Discipline</option><option>Budget</option></select></div>
+        <div class="field"><label>Root Cause *</label><textarea id="form-rootcause" placeholder="Describe the root cause..."></textarea></div>
+        <div class="field"><label>Remedy in Progress *</label><textarea id="form-remedy" placeholder="What is being done..."></textarea></div>
+        <div class="field"><label>Owner *</label><select id="form-owner"><option>Sarah M.</option><option>Rajesh K.</option><option>John Doe</option><option>Priya K.</option></select></div>
+        <div class="field"><label>Department *</label><select id="form-dept"><option>Account Mgmt</option><option>Engineering</option><option>HR</option><option>PMO</option><option>Finance</option><option>TA</option></select></div>
+        <div class="field"><label>Resolution Date *</label><input type="date" id="form-resdate" value="2026-04-30"></div>
+        <div class="field"><label>Logged By</label><input type="text" value="John Doe" readonly style="background:#f1f5f9;color:var(--text-muted);"></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="alert('Escalation saved (prototype)')">Save Escalation</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('logForm').classList.remove('open')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="flyout-overlay" class="flyout-overlay" onclick="closeFlyout()"></div>
+  <div id="main-flyout" class="flyout"></div>
+
+  <div class="footer-bar"><span class="data-freshness"><span class="dot"></span>BMD v2.3 · Data as of May 19, 2026 07:00 IST</span></div>
+  <div class="global-footer">Nalashaa &copy; 2026 &middot; All rights reserved</div>
+
+  <script>
+    const TODAY=new Date('2026-05-19');
+    function daysBetween(a,b){return Math.round((b-a)/86400000);}
+
+    var ESC_DATA=[
+      {id:'e1',acct:'MedTech Corp',type:'External',cat:'Quality of Deliverables',owner:'Sarah M.',dept:'Account Mgmt',openDate:'2026-04-11',resDate:'Apr 20, 2026',status:'Open',createdBy:'John Doe',nextAction:'Hotfix delivery confirmation + client sign-off by Apr 16',desc:'Sprint 14 defect spike in EMR module caused 3 P1 bugs during client UAT. Client escalated to VP Engineering. Hotfix in progress.'},
+      {id:'e2',acct:'HealthFirst US',type:'External',cat:'Budget',owner:'Rajesh K.',dept:'Account Mgmt',openDate:'2026-04-08',resDate:'Apr 25, 2026',status:'In Progress',createdBy:'Sarah M.',nextAction:'Confirm AM-side resource plan acknowledgement by Apr 25',desc:'Two senior engineers resigned in March. Team at 78% capacity, sprint velocity down 15%. Client aware; timeline in negotiation.'},
+      {id:'e3',acct:'BioSync Labs',type:'Internal',cat:'SDLC Discipline',owner:'Sarah M.',dept:'Account Mgmt',openDate:'2026-04-04',resDate:'Apr 15, 2026',status:'Monitoring',createdBy:'John Doe',nextAction:'Fortnightly exec sync - confirm client attendance Apr 17',desc:'Client VP Engineering raised concern over 2 consecutive missed weekly status updates. AM resumed weekly cadence from Apr 7. Monitoring.'},
+      {id:'e4',acct:'HLS - MedTech Pod',type:'Internal',cat:'SDLC Discipline',owner:'John Doe',dept:'Engineering',openDate:'2026-04-25',resDate:'May 10, 2026',status:'Open',createdBy:'Priya K.',nextAction:'Root cause analysis + sprint retro by May 5',desc:'Sprint carry-forward >20% for 3 consecutive sprints. Root cause: scope creep. Engineering lead to run retro and cap carry-fwd at 15%.'},
+      {id:'e5',acct:'HLS - HealthFirst',type:'Internal',cat:'Resourcing',owner:'John Doe',dept:'Engineering',openDate:'2026-05-04',resDate:'May 15, 2026',status:'In Progress',createdBy:'John Doe',nextAction:'Internal mobility request approval by May 10',desc:'2 senior exits not backfilled. Internal mobility request pending approval. Hiring JD raised on Tara.'}
+    ];
+    var COL_CF={type:[],cat:[],owner:[],dept:[],status:[],age:[]};
+    var _escType='External';
+    var ESC_CATS={'External':['Invoices/Payments','Quality of Deliverables','Discipline','Budget'],'Internal':['SDLC Discipline','Mining/Visibility','Resourcing','Communication']};
+    var ESC_HINTS={'External':'Categories: Invoices/Payments, Quality of Deliverables, Discipline, Budget','Internal':'Categories: SDLC Discipline, Mining/Visibility, Resourcing, Communication'};
+
+
+    /* ═══ COLUMN FILTER ENGINE ═══════════════════════════════════════════ */
+    var _cfPanel = null, _cfOpenTh = null, _cfState = null, _cfRender = null, _cfQuick = null;
+
+    function _cfGetPanel() {
+      if (!_cfPanel) {
+        _cfPanel = document.createElement('div');
+        _cfPanel.className = 'cf-panel';
+        document.body.appendChild(_cfPanel);
+        document.addEventListener('click', function(e) {
+          if (!e.target.closest('.cf-panel') && !e.target.closest('.filterable'))
+            _cfClose();
+        });
+        document.addEventListener('keydown', function(e) { if(e.key==='Escape') _cfClose(); });
+        window.addEventListener('scroll', _cfClose, true);
+      }
+      return _cfPanel;
+    }
+    function _cfClose() {
+      var p = _cfGetPanel();
+      p.classList.remove('cf-open');
+      _cfOpenTh = null;
+    }
+    function cfOpen(thId, colKey, filterState, renderFn, getQuickFilter, buckets, valGetter) {
+      var th = document.getElementById(thId);
+      if (!th) return;
+      if (_cfOpenTh === thId) { _cfClose(); return; }
+      _cfClose();
+      _cfOpenTh = thId; _cfState = filterState; _cfRender = renderFn; _cfQuick = getQuickFilter;
+
+      var vals = buckets ? buckets : (function(){
+        var s={}, r=[];
+        valGetter().forEach(function(v){ if(v&&!s[v]){s[v]=1;r.push({val:v,lbl:v});} });
+        return r;
+      })();
+
+      var checked = filterState[colKey] || [];
+      var html = vals.map(function(o){
+        return '<label><input type="checkbox" value="'+o.val+'"'+(checked.indexOf(o.val)>=0?' checked':'')+'>'+o.lbl+'</label>';
+      }).join('');
+      html += '<hr><button class="cf-apply" onclick="cfApply(''+thId+'',''+colKey+'')">Apply</button>';
+      html += '<button class="cf-clear" onclick="cfClear(''+thId+'',''+colKey+'')">Clear</button>';
+
+      var p = _cfGetPanel();
+      p.innerHTML = html;
+      var r = th.getBoundingClientRect();
+      p.style.top  = (r.bottom+2)+'px';
+      p.style.left = Math.max(0,r.left)+'px';
+      p.classList.add('cf-open');
+      requestAnimationFrame(function(){
+        var pr=p.getBoundingClientRect();
+        if(pr.right>window.innerWidth-8) p.style.left=(r.right-pr.width)+'px';
+      });
+    }
+    function cfApply(thId, colKey) {
+      var checked = Array.from(_cfGetPanel().querySelectorAll('input:checked')).map(function(i){return i.value;});
+      _cfState[colKey] = checked;
+      var th=document.getElementById(thId);
+      if(th) th.classList.toggle('cf-active', checked.length>0);
+      _cfClose();
+      _cfRender(_cfQuick());
+    }
+    function cfClear(thId, colKey) {
+      _cfState[colKey] = [];
+      var th=document.getElementById(thId);
+      if(th) th.classList.remove('cf-active');
+      _cfClose();
+      _cfRender(_cfQuick());
+    }
+    /* ═══════════════════════════════════════════════════════════════════ */
+
+    function ageDays(item){return daysBetween(new Date(item.openDate),TODAY);}
+    function ageBucket(item){var d=ageDays(item);return d<7?'<7':d<=30?'7-30':'>30';}
+    function ageLabel(item){
+      var d=ageDays(item);
+      var c=d>30?'color:var(--red);font-weight:700;':d>7?'color:var(--amber);font-weight:700;':'color:var(--text-muted);';
+      return '<span style="'+c+'">'+d+'d</span>';
+    }
+
+    var _escFilter='all';
+    function renderEscRows(filter){
+      if(filter!=null)_escFilter=filter; else filter=_escFilter;
+      var html='',openCt=0,extCt=0,intCt=0,ageSum=0,ageN=0;
+      ESC_DATA.forEach(function(item){
+        var show=false;
+        if(filter==='all')show=true;
+        else if(filter==='ext')show=item.type==='External';
+        else if(filter==='int')show=item.type==='Internal';
+        else if(filter==='open')show=item.status==='Open';
+        else if(filter==='mon')show=item.status==='Monitoring';
+        else show=true;
+        if(!show)return;
+        if(COL_CF.type.length  &&COL_CF.type.indexOf(item.type)<0)return;
+        if(COL_CF.cat.length   &&COL_CF.cat.indexOf(item.cat)<0)return;
+        if(COL_CF.owner.length &&COL_CF.owner.indexOf(item.owner)<0)return;
+        if(COL_CF.dept.length  &&COL_CF.dept.indexOf(item.dept)<0)return;
+        if(COL_CF.status.length&&COL_CF.status.indexOf(item.status)<0)return;
+        if(COL_CF.age.length   &&COL_CF.age.indexOf(ageBucket(item))<0)return;
+        if(item.status==='Open'||item.status==='In Progress'){openCt++;ageSum+=ageDays(item);ageN++;}
+        if(item.type==='External')extCt++;else intCt++;
+        var tc=item.type==='External'?'esc-type-ext':'esc-type-int';
+        var sb=item.status==='Open'?'<span class="badge badge-red">Open</span>'
+              :item.status==='In Progress'?'<span class="badge badge-amber">In Progress</span>'
+              :'<span class="badge badge-muted">Monitoring</span>';
+        html+='<tr class="esc-row" onclick="openEscFlyout(''+item.id+'')"><td><strong>'+item.acct+'</strong><div class="creator-stamp"><i class="bi bi-person-fill"></i> '+item.createdBy+'</div></td>'
+          +'<td><span class="'+tc+'">'+item.type+'</span></td>'
+          +'<td style="font-size:11px;">'+item.cat+'</td>'
+          +'<td style="font-size:11px;">'+item.owner+'</td>'
+          +'<td style="font-size:11px;"><span style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:2px 8px;">'+item.dept+'</span></td>'
+          +'<td style="font-size:11px;">'+item.resDate+'</td>'
+          +'<td>'+sb+'</td>'
+          +'<td>'+ageLabel(item)+'</td>'
+          +'<td style="font-size:11px;color:var(--text-muted);">'+item.nextAction+'</td>'
+          +'</tr>'
+          +'<tr id="esc-detail-'+item.id+'" class="expand-detail"><td colspan="9" class="expand-cell"><i class="bi bi-journal-text"></i>&nbsp; '+item.desc+'</td></tr>';
+      });
+      if(!html)html='<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-muted);font-size:12px;">No escalations match this filter.</td></tr>';
+      document.getElementById('esc-tbody').innerHTML=html;
+      document.getElementById('b-open').textContent=openCt;
+      document.getElementById('b-ext').textContent=extCt;
+      document.getElementById('b-int').textContent=intCt;
+      document.getElementById('b-age').textContent=ageN?Math.round(ageSum/ageN)+'d':'—';
+    }
+    function filterEsc(f){renderEscRows(f);}
+
+    function openEscFlyout(id){
+      var item=ESC_DATA.find(function(e){return e.id===id;});if(!item)return;
+      var tc=item.type==='External'?'esc-type-ext':'esc-type-int';
+      var sb=item.status==='Open'?'<span class="badge badge-red">Open</span>'
+            :item.status==='In Progress'?'<span class="badge badge-amber">In Progress</span>'
+            :'<span class="badge badge-muted">Monitoring</span>';
+      var fl=document.getElementById('main-flyout');
+      fl.innerHTML='<div class="flyout-header"><div><div class="flyout-title">'+item.acct+' — '+item.cat+'</div>'
+        +'<div class="flyout-sub"><span class="'+tc+'">'+item.type+'</span> &nbsp;|&nbsp; Age: '+ageDays(item)+'d &nbsp;|&nbsp; <i class="bi bi-person-fill" style="font-size:10px;"></i> '+item.createdBy+'</div></div>'
+        +'<button class="flyout-close" onclick="closeFlyout()">&#10005;</button></div>'
+        +'<div class="flyout-body">'
+        +'<div class="flyout-row"><div class="flyout-col"><div class="flyout-label">Owner</div><div class="flyout-value" style="font-weight:700;">'+item.owner+'</div></div>'
+        +'<div class="flyout-col"><div class="flyout-label">Department</div><div class="flyout-value"><span style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:2px 10px;font-size:11px;">'+item.dept+'</span></div></div>'
+        +'<div class="flyout-col"><div class="flyout-label">Status</div><div class="flyout-value">'+sb+'</div></div></div>'
+        +'<div class="flyout-section"><div class="flyout-label">Escalation</div><div class="flyout-value">'+item.desc+'</div></div>'
+        +'<div class="flyout-section"><div class="flyout-label">Next Action</div><div class="flyout-value">'+item.nextAction+'</div></div>'
+        +'<div class="flyout-row"><div class="flyout-col"><div class="flyout-label">Resolution Date</div><div class="flyout-value">'+item.resDate+'</div></div></div>'
+        +'<div class="inline-ai-form"><div class="inline-ai-form-title"><i class="bi bi-plus-circle-fill"></i> Add Action Item</div>'
+        +'<div class="inline-ai-row"><input type="text" placeholder="Action description...">'
+        +'<select><option>'+item.owner+'</option><option>John Doe</option></select>'
+        +'<select><option value="ESC">Category: ESC</option><option value="PROJ">PROJ</option></select>'
+        +'<input type="date" value="'+item.resDate.replace('Apr ','2026-04-').replace('May ','2026-05-').replace(', 2026','').replace(' ','').padEnd(10,'')+'"><button class="btn btn-primary" onclick="saveInlineAI(this)">Save</button></div>'
+        +'<div class="inline-ai-saved">Action item saved</div></div>'
+        +'</div>';
+      fl.classList.add('open');
+      document.getElementById('flyout-overlay').classList.add('open');
+    }
+    function closeFlyout(){document.getElementById('main-flyout').classList.remove('open');document.getElementById('flyout-overlay').classList.remove('open');}
+    function saveInlineAI(btn){
+      var form=btn.closest('.inline-ai-form'),desc=form.querySelector('input[type=text]').value.trim();
+      if(!desc){form.querySelector('input[type=text]').style.borderColor='var(--red)';return;}
+      form.querySelector('input[type=text]').style.borderColor='';
+      var saved=form.querySelector('.inline-ai-saved');saved.style.display='block';btn.disabled=true;
+      setTimeout(function(){saved.style.display='none';btn.disabled=false;form.querySelector('input[type=text]').value='';},2000);
+    }
+
+    function setEscType(type){
+      _escType=type;
+      document.getElementById('typeBtn-ext').className=type==='External'?'on ext':'';
+      document.getElementById('typeBtn-int').className=type==='Internal'?'on int':'';
+      document.getElementById('type-hint').textContent=ESC_HINTS[type];
+      document.getElementById('type-hint').style.color=type==='External'?'#991B1B':'#5B21B6';
+      var sel=document.getElementById('form-cat');
+      sel.innerHTML=ESC_CATS[type].map(function(c){return '<option>'+c+'</option>';}).join('');
+    }
+    function toggleNotif(){document.getElementById('notifPanel').classList.toggle('open');}
+    function toggleHelp(){document.getElementById('helpPanel').classList.toggle('open');document.getElementById('helpOverlay').classList.toggle('open');}
+    document.addEventListener('click',function(e){
+      var p=document.getElementById('notifPanel');
+      if(!e.target.closest('.alert-bell')&&!p.contains(e.target))p.classList.remove('open');
+    });
+    window.addEventListener('load',function(){renderEscRows('all');});
+  </script>
+  <script src="shared.js"></script>
+</body>
+</html>

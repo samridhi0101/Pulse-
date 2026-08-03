@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mining Threads — John Doe · HLS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .mine-banner { display: grid; grid-template-columns: repeat(4,1fr); gap:10px; margin-bottom:14px; }
+    .mine-banner-item { background:var(--card); border-radius:8px; padding:12px 14px; border:1px solid var(--border); }
+    .mine-banner-label { font-size:10px; text-transform:uppercase; letter-spacing:0.3px; color:var(--text-muted); font-weight:600; margin-bottom:4px; }
+    .mine-banner-val { font-size:20px; font-weight:700; color:var(--navy); }
+    .mine-banner-val.red { color:var(--red); }
+    .mine-banner-val.amber { color:var(--amber); }
+    .mine-banner-val.green { color:var(--green); }
+    .tabs { display:flex; gap:2px; margin-bottom:14px; background:var(--bg); border-radius:8px; padding:3px; width:fit-content; }
+    .tab { padding:6px 16px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; color:var(--text-muted); }
+    .tab.active { background:#fff; color:var(--navy); box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .done-list { display:flex; flex-direction:column; gap:4px; font-size:11px; margin-top:4px; }
+    .done-list div { padding:3px 0; border-bottom:1px dashed var(--border); color:var(--text); }
+    .done-list div:last-child { border-bottom:none; }
+    .inline-ai-form { background:#F0F7FF; border:1px solid #BFDBFE; border-radius:8px; padding:10px 12px; margin-top:12px; }
+    .inline-ai-form-title { font-size:11px; font-weight:700; color:var(--navy); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+    .inline-ai-row { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+    .inline-ai-row input[type=text] { flex:2; min-width:130px; font-size:11px; border:1px solid var(--border); border-radius:5px; padding:5px 8px; font-family:var(--font); }
+    .inline-ai-row select { font-size:11px; border:1px solid var(--border); border-radius:5px; padding:5px 8px; font-family:var(--font); background:#fff; }
+    .inline-ai-row input[type=date] { font-size:11px; border:1px solid var(--border); border-radius:5px; padding:5px 8px; font-family:var(--font); }
+    .inline-ai-saved { font-size:11px; color:var(--green); font-weight:700; display:none; margin-top:4px; }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="hamburger-btn" onclick="toggleSidebar()" title="Toggle menu">
+        <i class="bi bi-list"></i>
+      </button>
+      <div class="pulse-logo">
+      <span class="pulse-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="1" y="3" width="20" height="14" rx="2" stroke="#3B82F6" stroke-width="1.6" fill="none"/><rect x="0" y="16" width="22" height="2.5" rx="1" fill="#3B82F6" opacity="0.25"/><rect x="8" y="18.5" width="6" height="1.5" rx="0.75" fill="#3B82F6"/><polyline points="2,11 5,11 7,6 9,15 11,8 13,13 15,11 20,11" stroke="#3B82F6" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="pulse-wordmark">Pulse</span>
+    </div>
+    </div>
+    <div class="top-nav-right">
+      <div class="data-freshness" style="color:#94A3B8;"><div class="dot"></div>Refreshed 07:00 today</div>
+      <!-- Theme Picker -->
+      <div style="position:relative;">
+        <button class="theme-btn" onclick="toggleThemePicker()" title="Theme">
+          <i class="bi bi-palette"></i>
+        </button>
+        <div class="theme-picker" id="themePicker">
+          <div class="theme-picker-title">Colour Theme</div>
+          <div class="theme-swatches">
+            <div class="theme-swatch blue active" data-theme="blue" onclick="setTheme('blue')" title="Blue"></div>
+            <div class="theme-swatch teal" data-theme="teal" onclick="setTheme('teal')" title="Teal"></div>
+            <div class="theme-swatch violet" data-theme="violet" onclick="setTheme('violet')" title="Violet"></div>
+          </div>
+          <div class="theme-divider"></div>
+          <div class="theme-mode-row">
+            <span class="mode-label">Light</span>
+            <div class="theme-toggle" id="modeToggle" onclick="toggleDarkMode()"><div class="theme-toggle-knob"></div></div>
+          </div>
+        </div>
+      </div>
+      <button class="tickets-btn" onclick="toggleTickets()" title="Feature Tickets">
+        <i class="bi bi-ticket-perforated"></i>
+        <div class="badge">5</div>
+      </button>
+      <button class="help-btn" onclick="toggleHelp()" title="Help">?</button>
+      <div class="alert-bell" onclick="toggleNotif()"><i class="bi bi-bell-fill"></i><div class="badge">4</div></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <!-- HELP OVERLAY & PANEL -->
+  <div class="help-overlay" id="helpOverlay" onclick="toggleHelp()"></div>
+  <div class="help-panel" id="helpPanel">
+    <div class="help-panel-header">
+      <div class="help-panel-title">Help & Guidance</div>
+      <button class="flyout-close" onclick="toggleHelp()">✕</button>
+    </div>
+    <div class="help-panel-body">
+      <div class="help-toc-section">
+        <div class="help-toc-title">Mining Threads</div>
+        <div class="help-toc-item">
+          <div class="help-toc-item-icon">🧵</div>
+          <div>
+            <div class="help-toc-item-title">Swimlane View</div>
+            <div class="help-toc-item-desc">Expansion and renewal deliverables by account. Green = active pipeline activity.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- TICKETS PANEL -->
+  <div class="tickets-overlay" id="ticketsOverlay" onclick="closeTickets()"></div>
+  <div class="tickets-panel" id="ticketsPanel">
+    <div class="tickets-panel-header">
+      <span class="tickets-panel-title"><i class="bi bi-ticket-perforated"></i> Feature Tickets</span>
+      <span onclick="closeTickets()" style="cursor:pointer;opacity:0.5;font-size:18px;">✕</span>
+    </div>
+    <div class="tickets-panel-body">
+      <div class="ticket-item medium"><div class="ticket-id">BMD-039</div><div class="ticket-desc">Export current view to PDF report</div><div class="ticket-tag medium">Medium</div></div>
+      <div class="ticket-item low"><div class="ticket-id">BMD-033</div><div class="ticket-desc">Scheduled daily brief delivery via email</div><div class="ticket-tag low">Low</div></div>
+    </div>
+  </div>
+
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-header">
+      <span>Notifications</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button class="notif-pin-btn" id="notifPinBtn" onclick="pinNotif()" title="Pin panel"><i class="bi bi-pin-angle"></i></button>
+        <span style="opacity:0.5;cursor:pointer;font-size:18px;" onclick="toggleNotif()">✕</span>
+      </div>
+    </div>
+    <div class="notif-item"><div class="notif-type" style="color:var(--red);">Escalation</div><div class="notif-text">New escalation opened — MedTech Corp (Quality)</div><div class="notif-time">2 hours ago</div></div>
+  </div>
+
+    <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html" class="active"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+
+    <!-- Nalashaa branding -->
+    <div class="sidebar-brand">
+      <img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo">
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="breadcrumb">
+      <a href="dm-home.html">Meta-Dashboard</a><span class="sep">/</span>
+      <a href="dm-home.html">John Doe</a><span class="sep">/</span>
+      <span>Mining Threads</span>
+    </div>
+    <div class="page-title">🟢 Mining Threads</div>
+    <div class="page-subtitle">Active expansion &amp; renewal deliverables per account (green = active pipeline activity). Click any deliverable for timeline.</div>
+
+    <!-- Banner -->
+    <div class="mine-banner">
+      <div class="mine-banner-item"><div class="mine-banner-label">Total Deliverables</div><div class="mine-banner-val">5</div></div>
+      <div class="mine-banner-item"><div class="mine-banner-label">Late</div><div class="mine-banner-val red">1</div></div>
+      <div class="mine-banner-item"><div class="mine-banner-label">At Risk</div><div class="mine-banner-val amber">1</div></div>
+      <div class="mine-banner-item"><div class="mine-banner-label">Done This Week</div><div class="mine-banner-val green">1</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active">All Accounts</div>
+      <div class="tab">Sarah M. (AM)</div>
+      <div class="tab" style="opacity:0.4;cursor:default;">+ Add Filter</div>
+    </div>
+
+    <!-- Swimlane Matrix -->
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div class="swimlane-wrap">
+        <table class="swimlane-table">
+          <thead>
+            <tr>
+              <th class="col-account">Account</th>
+              <th style="color:var(--red);">Late 🔴</th>
+              <th style="color:var(--amber);">At Risk ⚠️</th>
+              <th style="color:var(--green);">On Track ✅</th>
+              <th style="color:#64748B;">Upcoming</th>
+              <th style="color:#64748B;">Done ✓</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- MedTech Corp - Red (has Late) -->
+            <tr>
+              <td><div class="swimlane-account-cell"><span class="rag-dot red"></span><strong>MedTech Corp</strong></div></td>
+              <td>
+                <div class="swimlane-pill late" onclick="openFlyout('mine1')">
+                  <div class="swimlane-pill-name">Expansion Proposal</div>
+                  <div class="swimlane-pill-date">$0.25M · Due Apr 5 → Late +8d · Sarah M.</div>
+                </div>
+              </td>
+              <td></td>
+              <td>
+                <div class="swimlane-pill on-track" onclick="openFlyout('mine2')">
+                  <div class="swimlane-pill-name">Module Demo</div>
+                  <div class="swimlane-pill-date">$0.25M · Due Apr 22 · Sarah M.</div>
+                </div>
+              </td>
+              <td></td>
+              <td></td>
+            </tr>
+            <!-- HealthFirst US - Green -->
+            <tr>
+              <td><div class="swimlane-account-cell"><span class="rag-dot green"></span>HealthFirst US</div></td>
+              <td></td>
+              <td></td>
+              <td>
+                <div class="swimlane-pill on-track" onclick="openFlyout('mine3')">
+                  <div class="swimlane-pill-name">Renewal SOW</div>
+                  <div class="swimlane-pill-date">$0.18M · Due Apr 30 · Sarah M.</div>
+                </div>
+              </td>
+              <td></td>
+              <td></td>
+            </tr>
+            <!-- BioSync Labs - Amber (At Risk) -->
+            <tr>
+              <td><div class="swimlane-account-cell"><span class="rag-dot amber"></span>BioSync Labs</div></td>
+              <td></td>
+              <td>
+                <div class="swimlane-pill at-risk" onclick="openFlyout('mine4')">
+                  <div class="swimlane-pill-name">Expansion Proposal</div>
+                  <div class="swimlane-pill-date">$0.15M · Due Apr 16 · Sarah M.</div>
+                </div>
+              </td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <!-- Renewal Care - Green (Done) -->
+            <tr>
+              <td><div class="swimlane-account-cell"><span class="rag-dot green"></span>Renewal Care</div></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td>
+                <div class="swimlane-pill done" onclick="openFlyout('mine5')">
+                  <div class="swimlane-pill-name">Feature Estimation ✓</div>
+                  <div class="swimlane-pill-date">$0.08M · Delivered Apr 9 · John Doe</div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ACCOUNT ESCALATIONS SECTION -->
+    <div class="section-gap"></div>
+    <div style="font-size:13px;font-weight:700;color:var(--red);display:flex;align-items:center;gap:8px;margin-bottom:10px;">🔴 Account Escalations <span class="badge badge-red" style="font-size:10px;">3 Open</span></div>
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Open escalations requiring D/AM/D+AM attention. Mining activity without resolution drives escalation creation.</div>
+    <table style="font-size:11px;width:100%;margin-bottom:10px;">
+      <thead>
+        <tr><th style="text-align:left;font-size:10px;text-transform:uppercase;color:var(--text-muted);font-weight:700;padding:0 0 8px 0;border-bottom:1px solid var(--border);">Account</th><th style="text-align:left;font-size:10px;text-transform:uppercase;color:var(--text-muted);font-weight:700;padding:0 0 8px 0;border-bottom:1px solid var(--border);">Type</th><th style="text-align:left;font-size:10px;text-transform:uppercase;color:var(--text-muted);font-weight:700;padding:0 0 8px 0;border-bottom:1px solid var(--border);">Owner</th><th style="text-align:left;font-size:10px;text-transform:uppercase;color:var(--text-muted);font-weight:700;padding:0 0 8px 0;border-bottom:1px solid var(--border);">Status</th><th style="text-align:left;font-size:10px;text-transform:uppercase;color:var(--text-muted);font-weight:700;padding:0 0 8px 0;border-bottom:1px solid var(--border);">Due</th></tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="openFlyout('esc1')">
+          <td style="padding:8px 0;"><strong>MedTech Corp</strong></td>
+          <td style="padding:8px 0;">Quality</td>
+          <td style="padding:8px 0;">Sarah M. (AM)</td>
+          <td style="padding:8px 0;"><span class="badge badge-red">Overdue</span></td>
+          <td style="padding:8px 0;font-size:10px;color:var(--red);font-weight:700;">Apr 7</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="openFlyout('esc2')">
+          <td style="padding:8px 0;"><strong>HealthFirst US</strong></td>
+          <td style="padding:8px 0;">Staffing</td>
+          <td style="padding:8px 0;">Rajesh K. (D)</td>
+          <td style="padding:8px 0;"><span class="badge badge-amber">In Progress</span></td>
+          <td style="padding:8px 0;font-size:10px;color:var(--amber);font-weight:700;">Apr 10</td>
+        </tr>
+        <tr style="cursor:pointer;" onclick="openFlyout('esc3')">
+          <td style="padding:8px 0;"><strong>BioSync Labs</strong></td>
+          <td style="padding:8px 0;">Revenue Risk</td>
+          <td style="padding:8px 0;">Sarah M. (AM)</td>
+          <td style="padding:8px 0;"><span class="badge badge-amber">Open</span></td>
+          <td style="padding:8px 0;font-size:10px;color:var(--amber);font-weight:700;">Apr 14</td>
+        </tr>
+      </tbody>
+    </table>
+    <div><a href="escalations.html" style="color:var(--blue);font-size:11px;font-weight:600;text-decoration:none;">View full Escalations register →</a></div>
+
+    <!-- Action Item Form -->
+    <div class="ai-form">
+      <div class="ai-form-title">+ Add Action Item — Mining</div>
+      <div class="ai-form-row">
+        <input type="text" placeholder="Action description…" style="flex:3;">
+        <select><option>Owner: John Doe</option><option>Owner: AM</option><option>Owner: D+AM</option></select>
+        <select><option>D</option><option>AM</option><option>D+AM</option></select>
+        <input type="date" value="2026-04-20" style="flex:0.8;">
+        <button class="btn btn-primary" style="flex-shrink:0;" onclick="alert('Action item saved')">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLYOUT OVERLAY -->
+  <div id="flyout-overlay" class="flyout-overlay" onclick="closeFlyout()"></div>
+
+  <!-- Flyout: MedTech Expansion Proposal (Late) -->
+  <div id="flyout-mine1" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">MedTech Corp — Expansion Proposal</div><div class="flyout-sub">MINE-2026-14-001 · Late 🔴 · +8 days · Sarah M. (AM)</div></div>
+      <button class="flyout-close" onclick="closeFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section">
+        <div class="flyout-label">Current Status</div>
+        <div class="flyout-value"><span class="badge badge-red">Late +8d</span> — Under review with client VP. Original due Apr 5, revised Apr 8. Now Apr 13 — overdue.</div>
+      </div>
+      <div class="flyout-section">
+        <div class="flyout-label">What Got Done</div>
+        <div class="done-list">
+          <div>✅ Initial proposal drafted — Apr 3</div>
+          <div>✅ ROI section added per client request — Apr 8</div>
+          <div>✅ Proposal submitted to client VP for review — Apr 9</div>
+        </div>
+      </div>
+      <div class="flyout-section">
+        <div class="flyout-label">What's Next</div>
+        <div class="flyout-value">Follow-up call with client VP scheduled Apr 14. If no response, escalate to Rajesh K. (D). Target closure Apr 16.</div>
+      </div>
+      <div class="inline-ai-form">
+        <div class="inline-ai-form-title"><i class="bi bi-plus-circle-fill"></i> Add Action Item</div>
+        <div class="inline-ai-row">
+          <input type="text" placeholder="Action description…">
+          <select><option>Sarah M. (AM)</option><option>John Doe (D)</option><option>D+AM</option></select>
+          <select><option value="Mining">Category: Mining</option><option value="ESC">ESC</option></select>
+          <input type="date" value="2026-04-16">
+          <button class="btn btn-primary" onclick="saveMineAI(this)">Save</button>
+        </div>
+        <div class="inline-ai-saved">✓ Action item saved</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flyout: MedTech Module Demo (On Track) -->
+  <div id="flyout-mine2" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">MedTech Corp — Module Demo</div><div class="flyout-sub">MINE-2026-15-002 · On Track ✅ · John Doe (D)</div></div>
+      <button class="flyout-close" onclick="closeFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section">
+        <div class="flyout-label">Current Status</div>
+        <div class="flyout-value"><span class="badge badge-green">On Track</span> — Due Apr 22. Demo environment ready. No blockers.</div>
+      </div>
+      <div class="flyout-section">
+        <div class="flyout-label">What Got Done</div>
+        <div class="done-list">
+          <div>✅ Demo environment provisioned and tested — Apr 8</div>
+          <div>✅ Core module walkthrough script drafted — Apr 10</div>
+        </div>
+      </div>
+      <div class="flyout-section">
+        <div class="flyout-label">What's Next</div>
+        <div class="flyout-value">Rehearsal with AM on Apr 19. Live demo with client Apr 22. Capture feedback for Phase 2 scope.</div>
+      </div>
+      <div class="inline-ai-form">
+        <div class="inline-ai-form-title"><i class="bi bi-plus-circle-fill"></i> Add Action Item</div>
+        <div class="inline-ai-row">
+          <input type="text" placeholder="Action description…">
+          <select><option>John Doe (D)</option><option>Sarah M. (AM)</option><option>D+AM</option></select>
+          <select><option value="Mining">Category: Mining</option><option value="PROJ">PROJ</option></select>
+          <input type="date" value="2026-04-22">
+          <button class="btn btn-primary" onclick="saveMineAI(this)">Save</button>
+        </div>
+        <div class="inline-ai-saved">✓ Action item saved</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flyout: HealthFirst Renewal SOW -->
+  <div id="flyout-mine3" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">HealthFirst US — Renewal SOW</div><div class="flyout-sub">MINE-2026-14-003 · On Track ✅ · D+AM</div></div>
+      <button class="flyout-close" onclick="closeFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section">
+        <div class="flyout-label">Current Status</div>
+        <div class="flyout-value"><span class="badge badge-green">On Track</span> — Due Apr 30. Commercial terms being drafted jointly with AM.</div>
+      </div>
+      <div class="flyout-section">
+        <div class="flyout-label">What Got Done</div>
+        <div class="done-list">
+          <div>✅ Scope baseline confirmed with client — Apr 5</div>
+          <div>✅ Commercial terms draft v1 shared with AM — Apr 11</div>
+        </div>
+      </div>
+      <div class="flyout-section">
+        <div class="flyout-label">What's Next</div>
+        <div class="flyout-value">AM to review terms with client by Apr 18. Legal sign-off targeted Apr 25. SOW signature Apr 30.</div>
+      </div>
+      <div class="inline-ai-form">
+        <div class="inline-ai-form-title"><i class="bi bi-plus-circle-fill"></i> Add Action Item</div>
+        <div class="inline-ai-row">
+          <input type="text" placeholder="Action description…">
+          <select><option>Sarah M. (AM)</option><option>Rajesh K. (D)</option><option>D+AM</option></select>
+          <select><option value="Mining">Category: Mining</option><option value="PROJ">PROJ</option></select>
+          <input type="date" value="2026-04-30">
+          <button class="btn btn-primary" onclick="saveMineAI(this)">Save</button>
+        </div>
+        <div class="inline-ai-saved">✓ Action item saved</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flyout: BioSync Expansion Proposal (At Risk) -->
+  <div id="flyout-mine4" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">BioSync Labs — Expansion Proposal</div><div class="flyout-sub">MINE-2026-14-004 · At Risk ⚠️ · Sarah M. (AM)</div></div>
+      <button class="flyout-close" onclick="closeFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section">
+        <div class="flyout-label">Current Status</div>
+        <div class="flyout-value"><span class="badge badge-amber">At Risk</span> — Due Apr 16. Relationship escalation still open — may affect client reception.</div>
+      </div>
+      <div class="flyout-section">
+        <div class="flyout-label">What Got Done</div>
+        <div class="done-list">
+          <div>✅ Proposal v1 completed and reviewed — Apr 6</div>
+          <div>✅ Client review meeting scheduled Apr 15 — Apr 9</div>
+        </div>
+      </div>
+      <div class="flyout-section">
+        <div class="flyout-label">What's Next</div>
+        <div class="flyout-value">Client review Apr 15. If escalation still unresolved, AM to address relationship concern before leading commercial discussion.</div>
+      </div>
+      <div class="inline-ai-form">
+        <div class="inline-ai-form-title"><i class="bi bi-plus-circle-fill"></i> Add Action Item</div>
+        <div class="inline-ai-row">
+          <input type="text" placeholder="Action description…">
+          <select><option>Sarah M. (AM)</option><option>John Doe (D)</option><option>D+AM</option></select>
+          <select><option value="Mining">Category: Mining</option><option value="ESC">ESC</option></select>
+          <input type="date" value="2026-04-16">
+          <button class="btn btn-primary" onclick="saveMineAI(this)">Save</button>
+        </div>
+        <div class="inline-ai-saved">✓ Action item saved</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flyout: Renewal Care Feature Estimation (Done) -->
+  <div id="flyout-mine5" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">Renewal Care — Feature Estimation</div><div class="flyout-sub">MINE-2026-13-005 · Done ✅ · John Doe (D)</div></div>
+      <button class="flyout-close" onclick="closeFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section">
+        <div class="flyout-label">Current Status</div>
+        <div class="flyout-value"><span class="badge badge-green" style="background:#D1FAE5;color:#065F46;">Delivered ✓</span> — Apr 9, one day ahead of schedule.</div>
+      </div>
+      <div class="flyout-section">
+        <div class="flyout-label">What Got Done</div>
+        <div class="done-list">
+          <div>✅ Feature list reviewed with delivery team — Apr 4</div>
+          <div>✅ Estimation doc completed (story points + timeline) — Apr 7</div>
+          <div>✅ Delivered to client — Apr 9 (1 day ahead)</div>
+        </div>
+      </div>
+      <div class="flyout-section">
+        <div class="flyout-label">What's Next</div>
+        <div class="flyout-value">Client has initiated renewal SOW discussion off the back of this estimation. Track via HealthFirst Renewal SOW thread.</div>
+      </div>
+      <div class="inline-ai-form">
+        <div class="inline-ai-form-title"><i class="bi bi-plus-circle-fill"></i> Add Action Item</div>
+        <div class="inline-ai-row">
+          <input type="text" placeholder="Action description…">
+          <select><option>John Doe (D)</option><option>Sarah M. (AM)</option></select>
+          <select><option value="Mining">Category: Mining</option><option value="PROJ">PROJ</option></select>
+          <input type="date" value="2026-04-30">
+          <button class="btn btn-primary" onclick="saveMineAI(this)">Save</button>
+        </div>
+        <div class="inline-ai-saved">✓ Action item saved</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Escalation Flyouts -->
+  <div id="flyout-esc1" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">MedTech Corp — Quality Escalation</div><div class="flyout-sub">ESC-2026-14-001 · Overdue 🔴 · Sarah M. (AM)</div></div>
+      <button class="flyout-close" onclick="closeFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section"><div class="flyout-label">Escalation</div><div class="flyout-value">EMR module quality issues causing production deployment failures. Client VP escalated on Apr 5. AM is primary owner driving resolution coordination.</div></div>
+      <div class="flyout-section"><div class="flyout-label">Account Manager</div><div class="flyout-value" style="font-weight:700;">Sarah M.</div></div>
+      <div class="flyout-section">
+        <div class="flyout-label">Next Action</div>
+        <div class="flyout-value" style="color:var(--red);">Overdue Apr 7 — AM to confirm hotfix delivery and client sign-off immediately.</div>
+      </div>
+      <div class="inline-ai-form">
+        <div class="inline-ai-form-title"><i class="bi bi-plus-circle-fill"></i> Add Action Item</div>
+        <div class="inline-ai-row">
+          <input type="text" placeholder="Action description…">
+          <select><option>Sarah M. (AM)</option><option>John Doe (D)</option></select>
+          <select><option value="ESC">Category: ESC</option><option value="Mining">Mining</option></select>
+          <input type="date" value="2026-04-14">
+          <button class="btn btn-primary" onclick="saveMineAI(this)">Save</button>
+        </div>
+        <div class="inline-ai-saved">✓ Action item saved</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="flyout-esc2" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">HealthFirst US — Staffing Escalation</div><div class="flyout-sub">ESC-2026-15-002 · In Progress ⚠️ · Rajesh K. (AM)</div></div>
+      <button class="flyout-close" onclick="closeFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section"><div class="flyout-label">Escalation</div><div class="flyout-value">Two senior engineers resigned in March. Team at 78% capacity, sprint velocity down 15%. Client is aware and timeline renegotiation is in progress.</div></div>
+      <div class="flyout-section"><div class="flyout-label">Account Manager</div><div class="flyout-value" style="font-weight:700;">Rajesh K.</div></div>
+      <div class="flyout-section">
+        <div class="flyout-label">Next Action</div>
+        <div class="flyout-value">AM to confirm resource plan acknowledgement with client by Apr 10. Hiring JD for 2 Sr. Engineers raised in parallel.</div>
+      </div>
+      <div class="inline-ai-form">
+        <div class="inline-ai-form-title"><i class="bi bi-plus-circle-fill"></i> Add Action Item</div>
+        <div class="inline-ai-row">
+          <input type="text" placeholder="Action description…">
+          <select><option>Rajesh K. (AM)</option><option>John Doe (D)</option><option>D+AM</option></select>
+          <select><option value="ESC">Category: ESC</option><option value="Mining">Mining</option></select>
+          <input type="date" value="2026-04-10">
+          <button class="btn btn-primary" onclick="saveMineAI(this)">Save</button>
+        </div>
+        <div class="inline-ai-saved">✓ Action item saved</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="flyout-esc3" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">BioSync Labs — Revenue Risk</div><div class="flyout-sub">ESC-2026-14-003 · Open ⚠️ · Sarah M. (AM)</div></div>
+      <button class="flyout-close" onclick="closeFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section"><div class="flyout-label">Escalation</div><div class="flyout-value">Integration Platform project at risk due to client budget constraints. Renewal discussion pending and AM is managing the commercial relationship to prevent churn.</div></div>
+      <div class="flyout-section"><div class="flyout-label">Account Manager</div><div class="flyout-value" style="font-weight:700;">Sarah M.</div></div>
+      <div class="flyout-section">
+        <div class="flyout-label">Next Action</div>
+        <div class="flyout-value">AM to present commercial options to client by Apr 14. Expansion proposal review on Apr 15 is a parallel opportunity to demonstrate value.</div>
+      </div>
+      <div class="inline-ai-form">
+        <div class="inline-ai-form-title"><i class="bi bi-plus-circle-fill"></i> Add Action Item</div>
+        <div class="inline-ai-row">
+          <input type="text" placeholder="Action description…">
+          <select><option>Sarah M. (AM)</option><option>John Doe (D)</option></select>
+          <select><option value="ESC">Category: ESC</option><option value="Mining">Mining</option></select>
+          <input type="date" value="2026-04-14">
+          <button class="btn btn-primary" onclick="saveMineAI(this)">Save</button>
+        </div>
+        <div class="inline-ai-saved">✓ Action item saved</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bar"><span class="data-freshness"><span class="dot"></span>BMD v1.0 · Data as of Apr 13, 2026 07:00 IST</span></div>
+  <script>
+    function openFlyout(id) { document.getElementById('flyout-'+id).classList.add('open'); document.getElementById('flyout-overlay').classList.add('open'); }
+    function closeFlyout() { document.querySelectorAll('.flyout').forEach(f=>f.classList.remove('open')); document.getElementById('flyout-overlay').classList.remove('open'); }
+    function saveMineAI(btn) {
+      const form = btn.closest('.inline-ai-form');
+      const desc = form.querySelector('input[type=text]').value.trim();
+      if (!desc) { form.querySelector('input[type=text]').style.borderColor='var(--red)'; return; }
+      form.querySelector('input[type=text]').style.borderColor='';
+      const saved = form.querySelector('.inline-ai-saved');
+      saved.style.display = 'block'; btn.disabled = true;
+      setTimeout(() => { saved.style.display='none'; btn.disabled=false; form.querySelector('input[type=text]').value=''; }, 2000);
+    }
+    function toggleHelp() { document.getElementById('helpPanel').classList.toggle('open'); document.getElementById('helpOverlay').classList.toggle('open'); }
+    function toggleNotif() { document.getElementById('notifPanel').classList.toggle('open'); }
+    document.addEventListener('click', function(e) { const p=document.getElementById('notifPanel'); if(!e.target.closest('.alert-bell')&&!p.contains(e.target)) p.classList.remove('open'); });
+  </script>
+  <!-- GLOBAL FOOTER -->
+  <div class="global-footer">Nalashaa &copy; 2026 &nbsp;&middot;&nbsp; All rights reserved</div>
+
+  <script src="shared.js"></script>
+</body>
+</html>

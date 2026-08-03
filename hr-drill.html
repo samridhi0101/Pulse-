@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HR Drill — Nalashaa Business Monitoring</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .compact-table { font-size: 11px; }
+    .compact-table td, .compact-table th { padding: 6px 8px; }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div class="logo">NALASHAA</div>
+    <div class="top-nav-right">
+      <div class="alert-bell">
+        🔔
+        <div class="badge">3</div>
+      </div>
+      <div class="avatar">AM</div>
+    </div>
+  </div>
+
+    <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html" class="active"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+
+    <!-- Nalashaa branding -->
+    <div class="sidebar-brand">
+      <img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo">
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="breadcrumb">
+      <a href="org-pulse.html">Org Pulse</a>
+      <span class="sep">/</span>
+      <a href="hr.html">HR</a>
+      <span class="sep">/</span>
+      <span>Engineering Dept</span>
+    </div>
+    <div class="page-title">Engineering Department KPIs</div>
+    <div class="page-subtitle">128 employees, 6 KPI metrics tracked</div>
+
+    <!-- KPI Cards -->
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Headcount</div>
+        </div>
+        <div style="margin: 12px 0; text-align: center;">
+          <div style="font-size: 24px; font-weight: 700; color: var(--navy); margin-bottom: 4px;">128</div>
+          <span class="badge badge-green">✓ On Target</span>
+          <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Target: 125</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Attrition Rate</div>
+        </div>
+        <div style="margin: 12px 0; text-align: center;">
+          <div style="font-size: 24px; font-weight: 700; color: var(--navy); margin-bottom: 4px;">4.8%</div>
+          <span class="badge badge-green">✓ On Target</span>
+          <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Target: &lt;5%</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Utilisation</div>
+        </div>
+        <div style="margin: 12px 0; text-align: center;">
+          <div style="font-size: 24px; font-weight: 700; color: var(--navy); margin-bottom: 4px;">85%</div>
+          <span class="badge badge-green">✓ Excellent</span>
+          <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Target: 80%</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Avg Salary</div>
+        </div>
+        <div style="margin: 12px 0; text-align: center;">
+          <div style="font-size: 20px; font-weight: 700; color: var(--navy); margin-bottom: 4px;">₹12.4L</div>
+          <span class="badge badge-amber">⚠ Above Range</span>
+          <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Benchmark: ₹11.8L</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Training Hours/Employee</div>
+        </div>
+        <div style="margin: 12px 0; text-align: center;">
+          <div style="font-size: 24px; font-weight: 700; color: var(--navy); margin-bottom: 4px;">24</div>
+          <span class="badge badge-amber">⚠ Below Target</span>
+          <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Target: 30</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Perf Rating Avg</div>
+        </div>
+        <div style="margin: 12px 0; text-align: center;">
+          <div style="font-size: 24px; font-weight: 700; color: var(--navy); margin-bottom: 4px;">3.6/5</div>
+          <span class="badge badge-green">✓ Strong</span>
+          <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Target: 3.5+</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Employee Table -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Employee KPI Breakdown</div>
+      </div>
+      <div style="overflow-x: auto; margin: 12px 0;">
+        <table class="compact-table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Role</th>
+              <th>Utilisation</th>
+              <th>Perf Rating</th>
+              <th>Training (hrs)</th>
+              <th>Promotion Status</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Vikram Singh</strong></td>
+              <td>Sr. Engineer</td>
+              <td style="text-align: center;">92%</td>
+              <td style="text-align: center;">4.2</td>
+              <td style="text-align: center;">32</td>
+              <td style="font-size: 10px;">Eligible</td>
+              <td><span class="badge badge-green">✓</span></td>
+            </tr>
+            <tr>
+              <td><strong>Neha Joshi</strong></td>
+              <td>Engineer</td>
+              <td style="text-align: center;">88%</td>
+              <td style="text-align: center;">3.9</td>
+              <td style="text-align: center;">28</td>
+              <td style="font-size: 10px;">On track</td>
+              <td><span class="badge badge-green">✓</span></td>
+            </tr>
+            <tr>
+              <td><strong>Arjun Patel</strong></td>
+              <td>Engineer</td>
+              <td style="text-align: center;">76%</td>
+              <td style="text-align: center;">3.2</td>
+              <td style="text-align: center;">18</td>
+              <td style="font-size: 10px;">Development</td>
+              <td><span class="badge badge-amber">⚠</span></td>
+            </tr>
+            <tr>
+              <td><strong>Anjali Sharma</strong></td>
+              <td>Sr. Engineer</td>
+              <td style="text-align: center;">95%</td>
+              <td style="text-align: center;">4.5</td>
+              <td style="text-align: center;">40</td>
+              <td style="font-size: 10px;">Lead track</td>
+              <td><span class="badge badge-green">✓</span></td>
+            </tr>
+            <tr>
+              <td><strong>Ravi Kulkarni</strong></td>
+              <td>Engineer</td>
+              <td style="text-align: center;">82%</td>
+              <td style="text-align: center;">3.6</td>
+              <td style="text-align: center;">26</td>
+              <td style="font-size: 10px;">On track</td>
+              <td><span class="badge badge-green">✓</span></td>
+            </tr>
+            <tr>
+              <td><strong>Deepa Nair</strong></td>
+              <td>QA Engineer</td>
+              <td style="text-align: center;">89%</td>
+              <td style="text-align: center;">3.8</td>
+              <td style="text-align: center;">24</td>
+              <td style="font-size: 10px;">On track</td>
+              <td><span class="badge badge-green">✓</span></td>
+            </tr>
+            <tr>
+              <td><strong>Suresh Reddy</strong></td>
+              <td>Engineer</td>
+              <td style="text-align: center;">68%</td>
+              <td style="text-align: center;">2.9</td>
+              <td style="text-align: center;">14</td>
+              <td style="font-size: 10px;">Improvement plan</td>
+              <td><span class="badge badge-red">✗</span></td>
+            </tr>
+            <tr>
+              <td><strong>Priya Verma</strong></td>
+              <td>Sr. Engineer</td>
+              <td style="text-align: center;">91%</td>
+              <td style="text-align: center;">4.1</td>
+              <td style="text-align: center;">36</td>
+              <td style="font-size: 10px;">Mentor role</td>
+              <td><span class="badge badge-green">✓</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="data-freshness">
+        <div class="dot"></div>
+        <span>Data as of 27 Mar 2026, 07:45 IST • HRIS</span>
+      </div>
+    </div>
+
+    <!-- Back Button -->
+    <div style="margin-top: 14px;">
+      <a href="hr.html" class="btn btn-secondary">← Back to HR</a>
+    </div>
+  </div>
+  <!-- GLOBAL FOOTER -->
+  <div class="global-footer">Nalashaa &copy; 2026 &nbsp;&middot;&nbsp; All rights reserved</div>
+
+  <script src="shared.js"></script>
+</body>
+</html>

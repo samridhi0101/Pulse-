@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="blue">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales — Pulse · Nalashaa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <style>
+    .tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 18px; }
+    .tab { padding: 10px 14px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-muted); border-bottom: 3px solid transparent; margin-bottom: -2px; }
+    .tab.active { color: var(--navy); border-bottom-color: var(--orange); }
+    [data-mode="dark"] .tab.active { color: #fff; }
+    .pane { display: none; } .pane.active { display: block; }
+    .kgrid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px; }
+    .kc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; border-left: 4px solid transparent; transition: all 0.15s; }
+    .kc.green { border-left-color: var(--green); } .kc.amber { border-left-color: var(--amber); } .kc.red { border-left-color: var(--red); }
+    .klbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; }
+    .kval { font-size: 22px; font-weight: 800; color: var(--navy); }
+    [data-mode="dark"] .kval { color: #fff; }
+    .ksub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .stitle { font-size: 13px; font-weight: 700; color: var(--navy); margin: 14px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--border); }
+    [data-mode="dark"] .stitle { color: #fff; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .card-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    .funnel-bar { background: var(--border); height: 28px; border-radius: 6px; overflow: hidden; cursor: pointer; }
+    .funnel-fill { height: 100%; display: flex; align-items: center; padding-left: 10px; color: #fff; font-size: 11px; font-weight: 700; }
+    .funnel-fill.s1 { background: linear-gradient(90deg, #FF9933 0%, #FFB976 100%); }
+    .funnel-fill.s2 { background: linear-gradient(90deg, #F47C28 0%, #FFA868 100%); }
+    .funnel-fill.s3 { background: linear-gradient(90deg, #E66B1F 0%, #F89954 100%); }
+    .funnel-fill.s4 { background: linear-gradient(90deg, #C95819 0%, #E48944 100%); }
+    .funnel-fill.s5 { background: linear-gradient(90deg, #A6450F 0%, #C97132 100%); }
+    .data-fresh { font-size: 10px; color: var(--text-muted); margin-bottom: 10px; }
+    .tbl { width: 100%; font-size: 12px; border-collapse: collapse; }
+    .tbl th { padding: 8px 10px; background: var(--navy); color: #fff !important; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .tbl td { padding: 8px 10px; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .tbl tr:hover td { background: var(--bg); }
+    .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+    .badge.green { background: #D1FAE5; color: #065F46; }
+    .badge.amber { background: #FEF3C7; color: #92400E; }
+    .badge.red { background: #FEE2E2; color: #991B1B; }
+    .badge.grey { background: #F1F5F9; color: #475569; }
+    .badge.future { background: #E0E7FF; color: #3730A3; }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:0;">
+      <button class="hamburger-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <div class="pulse-logo">
+        <span class="pulse-icon"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="2" width="25" height="17" rx="2.5" stroke="#FF9933" stroke-width="1.5"/><line x1="14" y1="19" x2="14" y2="23.5" stroke="#FF9933" stroke-width="1.5"/><line x1="9" y1="23.5" x2="19" y2="23.5" stroke="#FF9933" stroke-width="1.8" stroke-linecap="round"/><polyline points="4,10.5 7,10.5 8.5,6.5 10,14.5 11.5,10.5 13,10.5 14,8 15,13 16.5,10.5 18,10.5 24,10.5" stroke="#FF9933" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg></span>
+        <span class="pulse-wordmark">Pulse</span>
+        <span class="pulse-sub">Sales · Pipeline health &amp; deal conversion</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <button class="help-btn">?</button>
+      <div class="alert-bell"><i class="bi bi-bell-fill" style="font-size:16px;"></i></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="sales.html" class="active"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+    <div class="sidebar-brand"><img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo"></div>
+  </div>
+
+  <div class="main" style="padding:18px 28px;">
+    <div class="dept-meta-above"><i class="bi bi-clock"></i> Data as of 2026-05-05 09:14 · Source: HubSpot CRM</div>
+    <div class="dept-banner">
+      <div class="dept-banner-top">
+        <div class="dept-banner-titleblock">
+          <div class="dept-banner-title">Sales · Pipeline health & deal conversion <span class="info-i" data-tip-title="Sales" data-tip="Pipeline health, deal velocity, and rep accountability. Owned by Vikram S.">i</span></div>
+          <div class="dept-banner-sub">Owner: Vikram S. · 8 reps · 186 active deals</div>
+        </div>
+        <div class="dept-banner-stats">
+          <div class="dept-banner-stat"><div class="dept-banner-stat-val green">$5.1M</div><div class="dept-banner-stat-lbl">Open Pipeline</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val green">186</div><div class="dept-banner-stat-lbl">Deals</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">28</div><div class="dept-banner-stat-lbl">Meetings This Wk</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val green">6</div><div class="dept-banner-stat-lbl">Wins MTD</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val green">$0.82M</div><div class="dept-banner-stat-lbl">Wins $</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val red">14</div><div class="dept-banner-stat-lbl">Aging >60d</div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('mr', this)"><i class="bi bi-calendar-check-fill"></i> Meeting Readiness <span class="badge red">3 missing</span></div>
+      <div class="tab" onclick="showTab('pa', this)"><i class="bi bi-funnel-fill"></i> Pipeline Activity</div>
+    </div>
+
+    <!-- TAB 1: MEETING READINESS — tiles non-clickable, table sorted by date -->
+    <div class="pane active" id="pane-mr">
+      <div class="kgrid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="kc amber"><div class="klbl">Meetings This Week</div><div class="kval">28</div><div class="ksub">8 reps · 12 strategic</div></div>
+        <div class="kc red"><div class="klbl">Battle Cards Ready</div><div class="kval">68%</div><div class="ksub">Target ≥ 90%</div></div>
+        <div class="kc amber"><div class="klbl">Avg Call Score</div><div class="kval">7.4/10</div><div class="ksub">Last 30d</div></div>
+        </div>
+
+      <div class="stitle">Meeting Readiness · Sorted by date (chronological)</div>
+      <div class="card-box" style="padding:0;overflow:hidden;">
+      <div class="tbl-scroll">
+      <table class="tbl">
+        <thead><tr><th>Date</th><th>Account</th><th>Rep</th><th>Battle Card</th><th>Interaction Brief</th><th>Outcome</th><th>Score</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge grey">Apr 22 · Past</span></td><td><strong>PharmCare</strong></td><td>Suresh K.</td><td><span class="badge red">Missing</span></td><td style="text-align:left;font-size:11px;">Quarterly review · pricing pushback expected</td><td><span class="badge red">No-show</span></td><td>—</td></tr>
+          <tr><td><span class="badge grey">Apr 24 · Past</span></td><td><strong>CardioTech</strong></td><td>Divya L.</td><td><span class="badge red">Missing</span></td><td style="text-align:left;font-size:11px;">Demo · feature gap follow-up needed</td><td><span class="badge amber">Held</span></td><td>6.4</td></tr>
+          <tr><td><span class="badge grey">Apr 28 · Past</span></td><td><strong>BioGen Labs</strong></td><td>Kiran R.</td><td><span class="badge amber">Draft</span></td><td style="text-align:left;font-size:11px;">Stakeholder alignment · CIO turnover impact</td><td><span class="badge amber">Rescheduled</span></td><td>—</td></tr>
+          <tr><td><span class="badge grey">Apr 29 · Past</span></td><td><strong>NeuroLab</strong></td><td>Arjun N.</td><td><span class="badge amber">Draft</span></td><td style="text-align:left;font-size:11px;">Discovery · imaging integration scope</td><td><span class="badge green">Held</span></td><td>7.0</td></tr>
+          <tr><td><span class="badge grey">Apr 30 · Past</span></td><td><strong>MedTech Corp</strong></td><td>Vikram S.</td><td><span class="badge green">Ready</span></td><td style="text-align:left;font-size:11px;">Phase 2 demo · 4 stakeholders incl VP</td><td><span class="badge green">Closed-won next steps</span></td><td>8.4</td></tr>
+          <tr><td><span class="badge grey">May 1 · Past</span></td><td><strong>HealthFirst Inc</strong></td><td>Anita M.</td><td><span class="badge green">Ready</span></td><td style="text-align:left;font-size:11px;">Renewal discussion · expansion appetite</td><td><span class="badge green">Follow-up scheduled</span></td><td>8.1</td></tr>
+          <tr><td><span class="badge grey">May 2 · Past</span></td><td><strong>WellnessOne</strong></td><td>Meera P.</td><td><span class="badge green">Ready</span></td><td style="text-align:left;font-size:11px;">Renewal verbal closing call</td><td><span class="badge green">Renewal verbal</span></td><td>7.9</td></tr>
+          <tr><td><span class="badge future">May 6 · Future</span></td><td><strong>PharmCare</strong></td><td>Suresh K.</td><td><span class="badge red">Missing</span></td><td style="text-align:left;font-size:11px;">Quarterly review · pricing pushback expected</td><td>—</td><td>—</td></tr>
+          <tr><td><span class="badge future">May 7 · Future</span></td><td><strong>CardioTech</strong></td><td>Divya L.</td><td><span class="badge red">Missing</span></td><td style="text-align:left;font-size:11px;">Demo · feature gap follow-up needed</td><td>—</td><td>—</td></tr>
+          <tr><td><span class="badge future">May 7 · Future</span></td><td><strong>PediaCare</strong></td><td>Rohan T.</td><td><span class="badge red">Missing</span></td><td style="text-align:left;font-size:11px;">Discovery · platform fit assessment</td><td>—</td><td>—</td></tr>
+          <tr><td><span class="badge future">May 8 · Future</span></td><td><strong>OrthoFix</strong></td><td>Kiran R.</td><td><span class="badge amber">Draft</span></td><td style="text-align:left;font-size:11px;">Pricing approval · director sign-off needed</td><td>—</td><td>—</td></tr>
+          <tr><td><span class="badge future">May 9 · Future</span></td><td><strong>MedTech Corp</strong></td><td>Vikram S.</td><td><span class="badge green">Ready</span></td><td style="text-align:left;font-size:11px;">Phase 2 demo · 4 stakeholders incl VP</td><td>—</td><td>—</td></tr>
+          <tr><td><span class="badge future">May 12 · Future</span></td><td><strong>BioGen Labs</strong></td><td>Kiran R.</td><td><span class="badge amber">Draft</span></td><td style="text-align:left;font-size:11px;">Stakeholder alignment · CIO turnover impact</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+      </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PIPELINE ACTIVITY — opp funnel + opp aging (KPIs already on banner) -->
+    <div class="pane" id="pane-pa">
+      <div class="stitle">Opportunity Pipeline Funnel by Stage · click stage for deals</div>
+      <div class="card-box">
+        <div onclick="openStageFlyout('Discovery', 84, '$1.49M')" style="margin-bottom:6px;"><div class="funnel-bar"><div class="funnel-fill s1" style="width:100%;">Discovery · 84 deals · $1.49M</div></div></div>
+        <div onclick="openStageFlyout('Qualification', 52, '$1.78M')" style="margin-bottom:6px;"><div class="funnel-bar"><div class="funnel-fill s2" style="width:62%;">Qualification · 52 · $1.78M</div></div></div>
+        <div onclick="openStageFlyout('Proposal', 28, '$1.03M')" style="margin-bottom:6px;"><div class="funnel-bar"><div class="funnel-fill s3" style="width:33%;">Proposal · 28 · $1.03M</div></div></div>
+        <div onclick="openStageFlyout('Negotiation', 14, '$0.50M')" style="margin-bottom:6px;"><div class="funnel-bar"><div class="funnel-fill s4" style="width:17%;">Negotiation · 14 · $0.50M</div></div></div>
+        <div onclick="openStageFlyout('Verbal Yes', 8, '$0.34M')" style="margin-bottom:6px;"><div class="funnel-bar"><div class="funnel-fill s5" style="width:10%;">Verbal Yes · 8 · $0.34M</div></div></div>
+      </div>
+
+      <div class="stitle">Opportunity Aging · Days since last action</div>
+      <div class="card-box" style="padding:0;overflow:hidden;">
+      <div class="tbl-scroll">
+      <table class="tbl">
+        <thead><tr><th>Account</th><th>Opportunity</th><th>Opportunity Brief</th><th>Next Step Plan</th><th>Owner</th><th>Stage</th><th>Value</th><th>Days Since Last Action</th></tr></thead>
+        <tbody>
+          <tr onclick="openOppDetail('BioGen Phase 2','Kiran R.')"><td><strong>BioGen Labs</strong></td><td>BioGen Phase 2</td><td style="text-align:left;font-size:11px;">Phase 2 expansion · stuck on CIO alignment</td><td style="text-align:left;font-size:11px;">CIO alignment meeting May 14</td><td>Kiran R.</td><td>Proposal</td><td>$0.17M</td><td><span class="badge red">42 days</span></td></tr>
+          <tr onclick="openOppDetail('PharmCare Analytics','Suresh K.')"><td><strong>PharmCare</strong></td><td>PharmCare Analytics</td><td style="text-align:left;font-size:11px;">Analytics POC · awaiting data access</td><td style="text-align:left;font-size:11px;">Escalate data access to PharmCare CTO May 8</td><td>Suresh K.</td><td>Qualification</td><td>$0.07M</td><td><span class="badge red">35 days</span></td></tr>
+          <tr onclick="openOppDetail('CardioTech Dashboard','Divya L.')"><td><strong>CardioTech</strong></td><td>CardioTech Dashboard</td><td style="text-align:left;font-size:11px;">Custom dashboard build · scope ambiguity</td><td style="text-align:left;font-size:11px;">Scope clarification call this week</td><td>Divya L.</td><td>Qualification</td><td>$0.12M</td><td><span class="badge amber">22 days</span></td></tr>
+          <tr onclick="openOppDetail('PediaCare Platform','Rohan T.')"><td><strong>PediaCare</strong></td><td>PediaCare Platform</td><td style="text-align:left;font-size:11px;">Platform license · pricing negotiation</td><td style="text-align:left;font-size:11px;">Send revised pricing May 9</td><td>Rohan T.</td><td>Negotiation</td><td>$0.20M</td><td><span class="badge amber">38 days</span></td></tr>
+          <tr onclick="openOppDetail('OrthoFix Mobile','Kiran R.')"><td><strong>OrthoFix</strong></td><td>OrthoFix Mobile</td><td style="text-align:left;font-size:11px;">Mobile app · waiting on director approval</td><td style="text-align:left;font-size:11px;">Follow up on director sign-off May 10</td><td>Kiran R.</td><td>Negotiation</td><td>$0.08M</td><td><span class="badge amber">25 days</span></td></tr>
+          <tr onclick="openOppDetail('HealthFirst DR','Anita M.')"><td><strong>HealthFirst Inc</strong></td><td>HealthFirst DR</td><td style="text-align:left;font-size:11px;">DR setup · SOW under InfoSec review</td><td style="text-align:left;font-size:11px;">InfoSec review checkpoint May 12</td><td>Anita M.</td><td>Proposal</td><td>$0.10M</td><td><span class="badge amber">28 days</span></td></tr>
+          <tr onclick="openOppDetail('MedTech Module Demo','Vikram S.')"><td><strong>MedTech Corp</strong></td><td>MedTech Module Demo</td><td style="text-align:left;font-size:11px;">Module add-on · demo Apr 28 successful</td><td style="text-align:left;font-size:11px;">Send commercial proposal by May 8</td><td>Vikram S.</td><td>Proposal</td><td>$0.25M</td><td><span class="badge green">15 days</span></td></tr>
+          <tr onclick="openOppDetail('NeuroLab Imaging','Arjun N.')"><td><strong>NeuroLab</strong></td><td>NeuroLab Imaging</td><td style="text-align:left;font-size:11px;">Imaging integration · early scope</td><td style="text-align:left;font-size:11px;">Discovery workshop May 13</td><td>Arjun N.</td><td>Discovery</td><td>$0.08M</td><td><span class="badge green">5 days</span></td></tr>
+          <tr onclick="openOppDetail('WellnessOne Renewal','Meera P.')"><td><strong>WellnessOne</strong></td><td>WellnessOne Renewal</td><td style="text-align:left;font-size:11px;">Renewal · verbal yes received May 2</td><td style="text-align:left;font-size:11px;">Contract execution by May 12</td><td>Meera P.</td><td>Verbal Yes</td><td>$0.10M</td><td><span class="badge green">3 days</span></td></tr>
+          <tr onclick="openOppDetail('MedTech DevOps add-on','Vikram S.')"><td><strong>MedTech Corp</strong></td><td>MedTech DevOps add-on</td><td style="text-align:left;font-size:11px;">DevOps add-on · SOW signature pending</td><td style="text-align:left;font-size:11px;">Chase MedTech procurement May 9</td><td>Vikram S.</td><td>Verbal Yes</td><td>$0.04M</td><td><span class="badge green">2 days</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+      </div>
+    </div>
+
+    
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    function showTab(t, el) {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.pane').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('pane-' + t).classList.add('active');
+    }
+    function toggleSidebar() { document.body.classList.toggle('sidebar-collapsed'); }
+
+    function openStageFlyout(stage, count, value) {
+      const dealsByStage = {
+        'Discovery':     [['MedTech Reporting Module','MedTech Corp','Vikram S.','$0.05M','12d'],['HealthFirst Mobile','HealthFirst','Anita M.','$0.10M','8d'],['BioGen LIMS','BioGen','Kiran R.','$0.15M','22d'],['NeuroLab Imaging','NeuroLab','Arjun N.','$0.08M','5d']],
+        'Qualification': [['MedTech DevOps','MedTech Corp','Vikram S.','$0.04M','18d'],['PharmCare Analytics','PharmCare','Suresh K.','$0.07M','35d'],['CardioTech Dashboard','CardioTech','Divya L.','$0.12M','22d']],
+        'Proposal':      [['HealthFirst DR','HealthFirst','Anita M.','$0.10M','28d'],['BioGen Phase 2','BioGen','Kiran R.','$0.17M','42d'],['MedTech Module Demo','MedTech','Vikram S.','$0.25M','15d']],
+        'Negotiation':   [['PediaCare Platform','PediaCare','Rohan T.','$0.20M','38d'],['OrthoFix Mobile','OrthoFix','Kiran R.','$0.08M','25d']],
+        'Verbal Yes':    [['WellnessOne Renewal','WellnessOne','Meera P.','$0.10M','12d'],['MedTech DevOps','MedTech','Vikram S.','$0.04M','22d']]
+      };
+      const rows = (dealsByStage[stage] || []).map(d => `<tr><td>${d[0]}</td><td>${d[1]}</td><td>${d[2]}</td><td>${d[3]}</td><td>${d[4]}</td></tr>`).join('');
+      openFlyout({
+        title: 'Pipeline Stage: ' + stage,
+        sub: `${count} deals · ${value} total value`,
+        body: `
+          <div class="g-stat-row">
+            <div class="g-stat"><div class="g-stat-label">Deals</div><div class="g-stat-val">${count}</div></div>
+            <div class="g-stat"><div class="g-stat-label">Total value</div><div class="g-stat-val">${value}</div></div>
+            <div class="g-stat"><div class="g-stat-label">Avg age</div><div class="g-stat-val">${stage === 'Discovery' ? '12d' : (stage === 'Qualification' ? '24d' : (stage === 'Proposal' ? '28d' : '30d'))}</div></div>
+          </div>
+          <div class="g-section-title">Top deals at this stage</div>
+          <table class="g-tbl"><thead><tr><th>Deal</th><th>Account</th><th>Owner</th><th>Value</th><th>Age</th></tr></thead><tbody>${rows}</tbody></table>`
+      });
+    }
+    const OPP_DETAIL = {
+      'BioGen Phase 2': { current:'Proposal', value:'$0.17M', daysSinceAction:42, closeProb:38, owner:'Kiran R.', alert:{kind:'red',html:'<strong>Stalled:</strong> 42 days without action · CIO turnover blocking decision · risk of slippage to Q3'}, stages:[
+        {name:'Discovery',  date:'Mar 12 · Done',  status:'done',   salient:'Initial scope confirmed · 3 stakeholders'},
+        {name:'Qualification', date:'Mar 28 · Done', status:'done', salient:'BANT confirmed · CIO sponsor'},
+        {name:'Proposal',  date:'Apr 8 · Stuck',   status:'late',   salient:'$0.17M proposal sent · awaiting response', noteCls:'late-note', note:'CIO replaced Apr 12 · new sponsor not aligned'},
+        {name:'Negotiation', date:'TBD',           status:'todo',   salient:'Pending after CIO alignment'},
+        {name:'Verbal Yes', date:'TBD',           status:'todo',   salient:''},
+        {name:'Closed',    date:'TBD',           status:'todo',   salient:''}
+      ], activity:['Apr 8 — Proposal sent ($0.17M scope)','Mar 28 — BANT qualified · CIO confirmed','Mar 22 — Architecture review','Mar 12 — Discovery call (3 stakeholders)']},
+      'PediaCare Platform': { current:'Negotiation', value:'$0.20M', daysSinceAction:38, closeProb:55, owner:'Rohan T.', alert:{kind:'red',html:'<strong>At Risk:</strong> 38d without action · pricing negotiation stalled at procurement step'}, stages:[
+        {name:'Discovery',date:'Feb 18 · Done',status:'done',salient:'5 stakeholders mapped'},
+        {name:'Qualification',date:'Mar 5 · Done',status:'done',salient:'Budget approved'},
+        {name:'Proposal',date:'Mar 22 · Done',status:'done',salient:'Multi-tier pricing presented'},
+        {name:'Negotiation',date:'Apr 5 · Active',status:'active',salient:'Awaiting volume discount approval', note:'Procurement layer added Apr 5'},
+        {name:'Verbal Yes',date:'TBD',status:'todo',salient:''},
+        {name:'Closed',date:'TBD',status:'todo',salient:''}
+      ], activity:['Apr 5 — Procurement entered process','Mar 28 — Negotiation kickoff','Mar 22 — Proposal delivered','Mar 5 — Qualified','Feb 18 — Discovery']},
+      'OrthoFix Mobile': { current:'Negotiation', value:'$0.08M', daysSinceAction:25, closeProb:62, owner:'Kiran R.', alert:{kind:'amber',html:'<strong>Watch:</strong> Pricing approval pending from director · 25d w/o action'}, stages:[
+        {name:'Discovery',date:'Done',status:'done',salient:''},{name:'Qualification',date:'Done',status:'done',salient:''},{name:'Proposal',date:'Done',status:'done',salient:''},{name:'Negotiation',date:'Active',status:'active',salient:'Director approval pending'},{name:'Verbal Yes',date:'TBD',status:'todo',salient:''},{name:'Closed',date:'TBD',status:'todo',salient:''}
+      ], activity:['Apr 12 — Pricing model sent','Apr 4 — Negotiation start','Mar 22 — Proposal','Mar 5 — Qualified']},
+      'CardioTech Dashboard': { current:'Verbal Yes', value:'$0.12M', daysSinceAction:22, closeProb:78, owner:'Divya L.', alert:{kind:'amber',html:'<strong>Watch:</strong> Verbal yes received but contract still pending · 22d'}, stages:[
+        {name:'Discovery',date:'Done',status:'done',salient:''},{name:'Qualification',date:'Done',status:'done',salient:''},{name:'Proposal',date:'Done',status:'done',salient:''},{name:'Negotiation',date:'Done',status:'done',salient:'Final pricing locked'},{name:'Verbal Yes',date:'Apr 13',status:'active',salient:'Contract drafting in progress'},{name:'Closed',date:'TBD',status:'todo',salient:''}
+      ], activity:['Apr 13 — Verbal yes received','Apr 8 — Final negotiation','Apr 1 — Proposal','Mar 18 — Qualified']},
+      'HealthFirst DR': { current:'Negotiation', value:'$0.10M', daysSinceAction:18, closeProb:72, owner:'Anita M.', alert:{kind:'amber',html:'<strong>Watch:</strong> InfoSec review delaying SOW signature'}, stages:[
+        {name:'Discovery',date:'Done',status:'done',salient:''},{name:'Qualification',date:'Done',status:'done',salient:''},{name:'Proposal',date:'Done',status:'done',salient:''},{name:'Negotiation',date:'Active',status:'active',salient:'InfoSec review'},{name:'Verbal Yes',date:'TBD',status:'todo',salient:''},{name:'Closed',date:'TBD',status:'todo',salient:''}
+      ], activity:['Apr 17 — SOW with InfoSec','Apr 12 — Pricing agreed','Apr 1 — Proposal','Mar 18 — Qualified']},
+      'MedTech DevOps add-on': { current:'Verbal Yes', value:'$0.04M', daysSinceAction:2, closeProb:92, owner:'Vikram S.', alert:{kind:'green',html:'<strong>On Track:</strong> Verbal yes secured · contract signature May 9'}, stages:[
+        {name:'Discovery',date:'Done',status:'done',salient:''},{name:'Qualification',date:'Done',status:'done',salient:''},{name:'Proposal',date:'Done',status:'done',salient:''},{name:'Negotiation',date:'Done',status:'done',salient:''},{name:'Verbal Yes',date:'May 3',status:'active',salient:'Signature scheduled May 9'},{name:'Closed',date:'May 9',status:'todo',salient:'Contract signing'}
+      ], activity:['May 3 — Verbal yes','Apr 28 — Final terms','Apr 14 — Proposal','Apr 1 — Discovery']},
+      'WellnessOne Renewal': { current:'Verbal Yes', value:'$0.10M', daysSinceAction:3, closeProb:95, owner:'Meera P.', alert:{kind:'green',html:'<strong>On Track:</strong> Renewal verbal yes · expansion verbal received'}, stages:[
+        {name:'Discovery',date:'Done',status:'done',salient:'Renewal triggered'},{name:'Qualification',date:'Done',status:'done',salient:''},{name:'Proposal',date:'Done',status:'done',salient:''},{name:'Negotiation',date:'Done',status:'done',salient:''},{name:'Verbal Yes',date:'May 2',status:'active',salient:'Renewal + expansion'},{name:'Closed',date:'May 12',status:'todo',salient:''}
+      ], activity:['May 2 — Verbal yes','Apr 25 — Renewal terms','Apr 10 — Proposal','Mar 28 — Discovery']}
+    };
+    function openOppDetail(name, owner) {
+      const d = OPP_DETAIL[name] || { current:'Discovery', value:'TBD', daysSinceAction:0, closeProb:50, owner:owner, alert:{kind:'amber',html:'<strong>Detail:</strong> Standard opportunity tracking.'}, stages:[
+        {name:'Discovery',date:'',status:'todo',salient:''},{name:'Qualification',date:'',status:'todo',salient:''},{name:'Proposal',date:'',status:'todo',salient:''},{name:'Negotiation',date:'',status:'todo',salient:''},{name:'Verbal Yes',date:'',status:'todo',salient:''},{name:'Closed',date:'',status:'todo',salient:''}
+      ], activity:[]};
+
+      const stagesHtml = d.stages.map(s => `
+        <div class="sdlc-step">
+          <div class="sdlc-spine">
+            <div class="sdlc-dot ${s.status}"></div>
+            <div class="sdlc-marker-line"></div>
+            <div class="sdlc-line"></div>
+          </div>
+          <div class="sdlc-content">
+            <div class="sdlc-row">
+              <div class="sdlc-text">
+                <div class="sdlc-stage-name">${s.name}</div>
+                <div class="sdlc-dates">${s.date}</div>
+              </div>
+              ${s.salient ? `<div class="sdlc-salient">${s.salient}</div>` : ''}
+            </div>
+            ${s.note ? `<div class="sdlc-note ${s.noteCls || ''}">${s.note}</div>` : ''}
+          </div>
+        </div>`).join('');
+
+      openFlyoutPinned({
+        title: name,
+        sub: `Owner: ${d.owner} · Value: ${d.value} · ${d.daysSinceAction}d w/o action`,
+        pinned: `<div class="fly-alert ${d.alert.kind}">${d.alert.html}</div>
+          <div class="g-stat-row">
+            <div class="g-stat"><div class="g-stat-label">Current Stage</div><div class="g-stat-val">${d.current}</div></div>
+            <div class="g-stat"><div class="g-stat-label">Days w/o Action</div><div class="g-stat-val ${d.daysSinceAction>21?'red':(d.daysSinceAction>10?'amber':'green')}">${d.daysSinceAction}d</div></div>
+            <div class="g-stat"><div class="g-stat-label">Close Prob</div><div class="g-stat-val ${d.closeProb>=70?'green':(d.closeProb>=50?'amber':'red')}">${d.closeProb}%</div></div>
+          </div>`,
+        body: `
+          <div class="g-section-title">Sales Pipeline Stages</div>
+          <div class="sdlc-track">${stagesHtml}</div>
+          <div class="g-section-title">Activity Timeline</div>
+          ${d.activity.length ? d.activity.map(a => `<div style="padding:6px 8px;background:var(--bg);border-left:3px solid var(--blue);border-radius:4px;margin-bottom:5px;font-size:11px;color:var(--text);">${a}</div>`).join('') : '<p style="color:var(--text-muted);font-size:12px;">No activity logged.</p>'}`,
+        footer: `<button class="btn primary">Log activity</button> <button class="btn ghost" onclick="closeFlyout()">Close</button>`
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.installActionsSection) {
+        window.installActionsSection([
+          {av:'VS',bg:'#FF9933',text:'Close MedTech Phase 2 demo follow-up',owner:'Vikram S.',planned:'2026-05-09',status:'wip'},
+          {av:'SK',bg:'#DC2626',text:'Send technical proposal to MedTech',owner:'Suresh K.',planned:'2026-04-15',status:'todo'},
+          {av:'KR',bg:'#F59E0B',text:'BioGen stakeholder alignment meeting',owner:'Kiran R.',planned:'2026-05-12',status:'wip'}
+        ]);
+      }
+    });
+  </script>
+</body>
+</html>

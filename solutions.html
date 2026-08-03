@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="blue">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solutions — Pulse · Nalashaa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <style>
+    /* ── 4-column DM-style BA grid ─────────────────────────── */
+    .ba-grid-3 { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
+    .ba-dm-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; cursor:pointer; transition:all .18s; border-left:4px solid transparent; text-decoration:none; color:inherit; display:flex; flex-direction:column; gap:10px; }
+    .ba-dm-card.green { border-left-color:var(--green); }
+    .ba-dm-card.amber { border-left-color:var(--amber); }
+    .ba-dm-card.red   { border-left-color:var(--red); }
+    .ba-dm-card:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,32,96,.10); }
+    .bdc-head { display:flex; align-items:center; gap:12px; }
+    .bdc-av   { width:44px; height:44px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; flex-shrink:0; box-shadow:0 3px 8px rgba(0,0,0,.18); }
+    .bdc-nm   { font-size:14px; font-weight:700; color:var(--navy); line-height:1.1; }
+    [data-mode="dark"] .bdc-nm { color:#fff; }
+    .bdc-un   { font-size:10px; color:var(--text-muted); margin-top:2px; }
+    .bdc-projs { font-size:11px; color:var(--text); line-height:1.5; }
+    .bdc-projs strong { color:var(--text-muted); font-size:9px; text-transform:uppercase; letter-spacing:.4px; font-weight:700; margin-right:6px; }
+    .bdc-pills { display:flex; gap:5px; flex-wrap:wrap; }
+    .bdc-pill  { display:inline-flex; align-items:center; gap:4px; padding:4px 8px; border-radius:12px; font-size:10px; font-weight:700; border:1px solid var(--border); background:var(--bg); }
+    .bdc-pill.green { color:var(--green); border-color:rgba(22,163,74,.25); background:rgba(22,163,74,.06); }
+    .bdc-pill.amber { color:var(--amber); border-color:rgba(245,158,11,.25); background:rgba(245,158,11,.06); }
+    .bdc-pill.red   { color:var(--red);   border-color:rgba(220,38,38,.25);  background:rgba(220,38,38,.06); }
+    .bdc-pill.navy  { color:var(--navy);  border-color:rgba(0,32,96,.18); }
+    [data-mode="dark"] .bdc-pill.navy { color:#fff; }
+
+    /* ── Misc ──────────────────────────────────────────────── */
+    .section-sep  { height:1px; background:var(--border); margin:22px 0 16px; }
+    .section-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--text-muted); margin:0 0 12px; display:flex; justify-content:space-between; align-items:center; }
+    .data-fresh   { font-size:10px; color:var(--text-muted); margin-bottom:14px; }
+    .toggle-window { display:inline-flex; gap:0; background:var(--border); border-radius:14px; padding:2px; }
+    .toggle-window button { padding:4px 10px; border:none; background:transparent; color:var(--text); cursor:pointer; font-size:10px; border-radius:12px; font-weight:600; }
+    .toggle-window button.on { background:var(--orange); color:#fff; }
+    .chart-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:0;">
+      <button class="hamburger-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <div class="pulse-logo">
+        <span class="pulse-icon"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="2" width="25" height="17" rx="2.5" stroke="#FF9933" stroke-width="1.5"/><line x1="14" y1="19" x2="14" y2="23.5" stroke="#FF9933" stroke-width="1.5"/><line x1="9" y1="23.5" x2="19" y2="23.5" stroke="#FF9933" stroke-width="1.8" stroke-linecap="round"/><polyline points="4,10.5 7,10.5 8.5,6.5 10,14.5 11.5,10.5 13,10.5 14,8 15,13 16.5,10.5 18,10.5 24,10.5" stroke="#FF9933" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg></span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <button class="help-btn">?</button>
+      <div class="alert-bell"><i class="bi bi-bell-fill" style="font-size:16px;"></i></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html" class="active"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+    <div class="sidebar-brand"><img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo"></div>
+  </div>
+
+  <div class="main" style="padding:18px 28px;">
+    <div class="global-breadcrumb">
+      <a href="org-pulse.html" class="bc-link"><i class="bi bi-house-heart-fill"></i> Org Pulse</a>
+      <span class="bc-sep">›</span>
+      <span class="bc-current"><i class="bi bi-diagram-3-fill"></i> Solutions</span>
+    </div>
+    <div class="dept-meta-above"><i class="bi bi-clock"></i> Data as of 2026-05-15 08:30 · Source: SharePoint · Jira · Manual (presales)</div>
+
+    <div class="dept-banner">
+      <div class="dept-banner-top">
+        <div class="dept-banner-icon"><i class="bi bi-diagram-3-fill"></i></div>
+        <div class="dept-banner-titleblock">
+          <div class="dept-banner-title">Solutions <span class="info-i" data-tip-title="Solutions" data-tip="Preventive view of BA unit health. Owner: Nandita V.">i</span></div>
+          <div class="dept-banner-sub">Owner: Nandita V. · 5 BAs · 12 active projects · Avg 8.4d kick-off → first artefact</div>
+        </div>
+        <div class="dept-banner-stats">
+          <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">75%</div><div class="dept-banner-stat-lbl">BRD Coverage</div></div>
+          <div class="dept-banner-pipe"></div>
+          <div class="dept-banner-stat"><div class="dept-banner-stat-val red">24</div><div class="dept-banner-stat-lbl">Sprint Churn</div></div>
+          <div class="dept-banner-pipe"></div>
+          <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">18</div><div class="dept-banner-stat-lbl">Missing ACs</div></div>
+          <div class="dept-banner-pipe"></div>
+          <div class="dept-banner-stat"><div class="dept-banner-stat-val green">$0.62M</div><div class="dept-banner-stat-lbl">YTD Billing</div></div>
+          <div class="dept-banner-pipe"></div>
+          <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">4/6</div><div class="dept-banner-stat-lbl">Presales Covered</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-section-title" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin:0 0 12px;">Solutions Team · Click a card to open individual dashboard</div>
+
+    <div class="ba-grid-3">
+
+      <a href="solutions-detail.html?ba=ananya" class="ba-dm-card green">
+        <div class="bdc-head">
+          <div class="bdc-av" style="background:#16A34A;">AS</div>
+          <div><div class="bdc-nm">Ananya S.</div><div class="bdc-un">Senior BA · Healthcare &amp; Life Sciences</div></div>
+        </div>
+        <div class="bdc-projs"><strong>Projects</strong>EHR Phase 3 · UAT+ Portal · Scheduling Engine</div>
+        <div class="bdc-pills">
+          <span class="bdc-pill navy"><i class="bi bi-briefcase-fill"></i> 3 projects</span>
+          <span class="bdc-pill green"><i class="bi bi-file-earmark-check-fill"></i> 100% coverage</span>
+          <span class="bdc-pill green"><i class="bi bi-graph-up-arrow"></i> 0 churn</span>
+          <span class="bdc-pill navy"><i class="bi bi-currency-dollar"></i> $0.18M YTD</span>
+        </div>
+      </a>
+
+      <a href="solutions-detail.html?ba=vikram" class="ba-dm-card amber">
+        <div class="bdc-head">
+          <div class="bdc-av" style="background:#F59E0B;">VT</div>
+          <div><div class="bdc-nm">Vikram T.</div><div class="bdc-un">Senior BA · NHS + Common</div></div>
+        </div>
+        <div class="bdc-projs"><strong>Projects</strong>Mobile App v2 · HL7 Integration · CRM Integration</div>
+        <div class="bdc-pills">
+          <span class="bdc-pill navy"><i class="bi bi-briefcase-fill"></i> 3 projects</span>
+          <span class="bdc-pill amber"><i class="bi bi-exclamation-triangle-fill"></i> 1 template gap</span>
+          <span class="bdc-pill amber"><i class="bi bi-graph-up-arrow"></i> 3 churn</span>
+          <span class="bdc-pill navy"><i class="bi bi-currency-dollar"></i> $0.16M YTD</span>
+        </div>
+      </a>
+
+      <a href="solutions-detail.html?ba=priya" class="ba-dm-card red">
+        <div class="bdc-head">
+          <div class="bdc-av" style="background:#DC2626;">PN</div>
+          <div><div class="bdc-nm">Priya N.</div><div class="bdc-un">Mid BA · HLS-2 + Presales support</div></div>
+        </div>
+        <div class="bdc-projs"><strong>Projects</strong>Analytics Platform · Patient Portal</div>
+        <div class="bdc-pills">
+          <span class="bdc-pill navy"><i class="bi bi-briefcase-fill"></i> 2 projects</span>
+          <span class="bdc-pill red"><i class="bi bi-file-earmark-x-fill"></i> 1 no artefacts</span>
+          <span class="bdc-pill red"><i class="bi bi-graph-up-arrow"></i> 12 churn</span>
+          <span class="bdc-pill navy"><i class="bi bi-currency-dollar"></i> $0.12M YTD</span>
+        </div>
+      </a>
+
+      <a href="solutions-detail.html?ba=rohan" class="ba-dm-card amber">
+        <div class="bdc-head">
+          <div class="bdc-av" style="background:#FF9933;">RM</div>
+          <div><div class="bdc-nm">Rohan M.</div><div class="bdc-un">Mid BA · Common + PMO support</div></div>
+        </div>
+        <div class="bdc-projs"><strong>Projects</strong>Claims Automation · MFG Scheduling · +2 PMO</div>
+        <div class="bdc-pills">
+          <span class="bdc-pill red"><i class="bi bi-briefcase-fill"></i> 4 projects</span>
+          <span class="bdc-pill red"><i class="bi bi-exclamation-octagon-fill"></i> At capacity</span>
+          <span class="bdc-pill red"><i class="bi bi-graph-up-arrow"></i> 9 churn</span>
+          <span class="bdc-pill navy"><i class="bi bi-currency-dollar"></i> $0.10M YTD</span>
+        </div>
+      </a>
+
+      <a href="solutions-detail.html?ba=deepa" class="ba-dm-card green">
+        <div class="bdc-head">
+          <div class="bdc-av" style="background:#0EA5E9;">DK</div>
+          <div><div class="bdc-nm">Deepa K.</div><div class="bdc-un">Mid BA · NHS vertical</div></div>
+        </div>
+        <div class="bdc-projs"><strong>Projects</strong>BI Dashboard · Rx Workflow</div>
+        <div class="bdc-pills">
+          <span class="bdc-pill navy"><i class="bi bi-briefcase-fill"></i> 2 projects</span>
+          <span class="bdc-pill green"><i class="bi bi-file-earmark-check-fill"></i> 100% coverage</span>
+          <span class="bdc-pill green"><i class="bi bi-graph-up-arrow"></i> 0 churn</span>
+          <span class="bdc-pill navy"><i class="bi bi-currency-dollar"></i> $0.06M YTD</span>
+        </div>
+      </a>
+
+    </div>
+
+    <div class="section-sep"></div>
+
+    <div class="section-title">
+      <span>YTD Billing · Solutions Unit — Plan vs Actual</span>
+      <span class="toggle-window">
+        <button class="on" onclick="setRange('1M',this)">MON</button>
+        <button onclick="setRange('1Q',this)">QTR</button>
+      </span>
+    </div>
+    <div class="chart-card"><div id="ytdChart" style="height:280px;"></div></div>
+
+    <div class="section-sep"></div>
+    <div class="section-title">Unit Utilization · All BAs — Monthly Trend</div>
+    <div class="chart-card"><div id="utilChart" style="height:240px;"></div></div>
+
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    function toggleSidebar(){var sb=document.querySelector('.sidebar');if(sb)sb.classList.toggle('collapsed');document.body.classList.toggle('sidebar-collapsed');}
+
+    // ── Unit utilization data ──────────────────────────────────────────
+    var UNIT_UTIL = {
+      months:['Dec','Jan','Feb','Mar','Apr','May'],
+      bas:[
+        {name:'Ananya S.',  color:'#16A34A', util:[75,77,80,93,96,95]},
+        {name:'Vikram T.',  color:'#F59E0B', util:[68,68,75,80,80,82]},
+        {name:'Priya N.',   color:'#DC2626', util:[50,55,70,80,87,85]},
+        {name:'Rohan M.',   color:'#FF9933', util:[45,50,70,85,90,91]},
+        {name:'Deepa K.',   color:'#0EA5E9', util:[65,67,70,75,77,77]}
+      ]
+    };
+    // Unit average per month
+    UNIT_UTIL.avg = UNIT_UTIL.months.map(function(_,i){
+      var s=0; UNIT_UTIL.bas.forEach(function(b){s+=b.util[i];}); return Math.round(s/UNIT_UTIL.bas.length);
+    });
+
+    var utilCh = echarts.init(document.getElementById('utilChart'));
+    var utilSeries = UNIT_UTIL.bas.map(function(b){
+      return { name:b.name, type:'line', data:b.util, smooth:true,
+               lineStyle:{color:b.color,width:1.5,opacity:.7},
+               symbol:'circle', symbolSize:5, itemStyle:{color:b.color}, opacity:.8 };
+    });
+    utilSeries.push({
+      name:'Unit Avg', type:'line', data:UNIT_UTIL.avg, smooth:true,
+      lineStyle:{color:'#002060',width:3},
+      symbol:'circle', symbolSize:7, itemStyle:{color:'#002060'},
+      label:{show:false}, z:10
+    });
+    utilCh.setOption({
+      tooltip:{trigger:'axis', formatter:function(p){
+        var s='<b>'+p[0].axisValue+'</b><br/>';
+        p.forEach(function(x){s+=x.marker+' '+x.seriesName+': '+x.value+'%<br/>';});
+        return s;
+      }},
+      legend:{bottom:0, itemWidth:8, itemHeight:8, textStyle:{fontSize:10}},
+      grid:{top:12,right:24,bottom:50,left:46},
+      xAxis:{type:'category', data:UNIT_UTIL.months, axisLabel:{fontSize:10}},
+      yAxis:{type:'value', max:100, axisLabel:{fontSize:10,formatter:'{value}%'},
+             splitLine:{lineStyle:{type:'dashed',opacity:.4}}},
+      series: utilSeries
+    });
+    window.addEventListener('resize',function(){utilCh.resize();});
+
+    var YTD={
+      '1M':{
+        x:['Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May'],
+        plan:[95,100,102,105,108,110,112,115,116,118,120,124],
+        actual:[88,96,100,102,108,112,110,116,118,112,118,null]
+      },
+      '1Q':{
+        x:['Q1 FY26','Q2 FY26','Q3 FY26','Q4 FY26'],
+        plan:[305,320,330,338],
+        actual:[296,322,336,null]
+      }
+    };
+
+    var chart=echarts.init(document.getElementById('ytdChart'));
+
+    function buildOpt(r){
+      var d=YTD[r];
+      return{
+        tooltip:{trigger:'axis',backgroundColor:'rgba(0,0,0,0.78)',textStyle:{color:'#fff',fontSize:11},
+          formatter:function(p){var s='<b>'+p[0].axisValue+'</b><br/>';p.forEach(function(x){if(x.value!=null)s+=x.marker+' '+x.seriesName+': $'+x.value+'K<br/>';});return s;}},
+        legend:{data:['Plan','Actual'],bottom:0,textStyle:{fontSize:11}},
+        grid:{top:20,right:24,bottom:40,left:58},
+        xAxis:{type:'category',data:d.x,axisLabel:{fontSize:10}},
+        yAxis:{type:'value',name:'$K',nameTextStyle:{fontSize:10},axisLabel:{fontSize:10,formatter:function(v){return'$'+v+'K';}}},
+        series:[
+                    {name:'Plan',type:'line',data:d.plan,smooth:true,symbol:'none',lineStyle:{color:'var(--blue)',width:2,type:'dashed'},itemStyle:{color:'var(--blue)'}},
+          {name:'Actual',type:'line',data:d.actual,smooth:true,symbol:'circle',symbolSize:5,lineStyle:{color:'var(--orange)',width:2.5},itemStyle:{color:'var(--orange)'}}
+        ]
+      };
+    }
+    chart.setOption(buildOpt('1M'));
+    window.setRange=function(r,el){
+      document.querySelectorAll('.range-toggle button').forEach(function(b){b.classList.remove('on');});
+      el.classList.add('on');
+      chart.setOption(buildOpt(r));
+    };
+    window.addEventListener('resize',function(){chart.resize();});
+
+    function toggleNotif() { document.getElementById('notifPanel').classList.toggle('open'); }
+    function toggleHelp() {
+      document.getElementById('helpPanel').classList.toggle('open');
+      document.getElementById('helpOverlay').classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+      const p = document.getElementById('notifPanel');
+      if (!e.target.closest('.alert-bell') && !p.contains(e.target)) p.classList.remove('open');
+    });
+  </script>
+  <script src="shared.js"></script>
+</body>
+</html>

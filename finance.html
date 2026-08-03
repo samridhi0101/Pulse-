@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="blue">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finance — Pulse · Nalashaa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <style>
+    .tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 18px; }
+    .tab { padding: 10px 14px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-muted); border-bottom: 3px solid transparent; margin-bottom: -2px; }
+    .tab.active { color: var(--navy); border-bottom-color: var(--orange); }
+    [data-mode="dark"] .tab.active { color: #fff; }
+    .pane { display: none; } .pane.active { display: block; }
+    .kgrid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px; }
+    .kc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; border-left: 4px solid transparent; cursor: pointer; transition: all 0.15s; }
+    .kc:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+    .kc.green { border-left-color: var(--green); } .kc.amber { border-left-color: var(--amber); } .kc.red { border-left-color: var(--red); }
+    .klbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; }
+    .kval { font-size: 22px; font-weight: 800; color: var(--navy); }
+    [data-mode="dark"] .kval { color: #fff; }
+    .ksub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .stitle { font-size: 13px; font-weight: 700; color: var(--navy); margin: 14px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+    [data-mode="dark"] .stitle { color: #fff; }
+    .card-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    .data-fresh { font-size: 10px; color: var(--text-muted); margin-bottom: 10px; }
+    .tbl { width: 100%; font-size: 12px; border-collapse: collapse; }
+    .tbl th { padding: 8px 10px; background: var(--navy); color: #fff !important; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .tbl td { padding: 8px 10px; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .tbl tr:hover td { background: var(--bg); }
+    .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+    .badge.green { background: #D1FAE5; color: #065F46; }
+    .badge.amber { background: #FEF3C7; color: #92400E; }
+    .badge.red { background: #FEE2E2; color: #991B1B; }
+    .toggle-window { display: inline-flex; gap: 0; background: var(--border); border-radius: 14px; padding: 2px; }
+    .toggle-window button { padding: 4px 10px; border: none; background: transparent; cursor: pointer; font-size: 10px; border-radius: 12px; color: var(--text); font-family: inherit; font-weight: 600; }
+    .toggle-window button.on { background: var(--orange); color: #fff; }
+
+    /* Cost — simpler dept × category rows */
+    .cost-rows { display: flex; flex-direction: column; gap: 8px; }
+    .cost-row { display: grid; grid-template-columns: 120px 1fr 80px; gap: 12px; align-items: center; padding: 8px 12px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
+    .cost-row:hover { background: var(--bg); }
+    .cost-row .dept { font-weight: 700; font-size: 12px; color: var(--navy); }
+    [data-mode="dark"] .cost-row .dept { color: #fff; }
+    .cost-row .stack { display: flex; height: 16px; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+    .cost-row .seg { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 9px; font-weight: 700; opacity: 0.85; }
+    .cost-row .seg.head  { background: #94A3B8; }
+    .cost-row .seg.infra { background: #60A5FA; }
+    .cost-row .seg.te    { background: #F472B6; }
+    .cost-row .seg.train { background: #A78BFA; }
+    .cost-row .seg.other { background: #CBD5E1; }
+    .cost-row .total { text-align: right; font-weight: 800; font-size: 13px; color: var(--navy); }
+    [data-mode="dark"] .cost-row .total { color: #fff; }
+    .cost-row .total.over { color: var(--red); }
+    .cost-row .total.under { color: var(--green); }
+    .cost-legend { display: flex; gap: 12px; font-size: 10px; color: var(--text-muted); margin-bottom: 10px; }
+    .cost-legend .ldot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+    .persona-toggle { display: inline-flex; gap: 0; background: var(--border); border-radius: 14px; padding: 2px; margin-bottom: 10px; }
+    .persona-btn { padding: 4px 12px; border: none; background: transparent; cursor: pointer; font-size: 11px; border-radius: 12px; color: var(--text); font-family: inherit; font-weight: 600; }
+    .persona-btn.on { background: var(--navy); color: #fff; }
+    .fc-up   { color: #16A34A; font-weight: 700; }
+    .fc-down { color: #DC2626; font-weight: 700; }
+    .fc-flat { color: #94A3B8; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:0;">
+      <button class="hamburger-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <div class="pulse-logo">
+        <span class="pulse-icon"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="2" width="25" height="17" rx="2.5" stroke="#FF9933" stroke-width="1.5"/><line x1="14" y1="19" x2="14" y2="23.5" stroke="#FF9933" stroke-width="1.5"/><line x1="9" y1="23.5" x2="19" y2="23.5" stroke="#FF9933" stroke-width="1.8" stroke-linecap="round"/><polyline points="4,10.5 7,10.5 8.5,6.5 10,14.5 11.5,10.5 13,10.5 14,8 15,13 16.5,10.5 18,10.5 24,10.5" stroke="#FF9933" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg></span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <button class="help-btn">?</button>
+      <div class="alert-bell"><i class="bi bi-bell-fill" style="font-size:16px;"></i></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html" class="active"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+    <div class="sidebar-brand"><img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo"></div>
+  </div>
+
+  <div class="main" style="padding:18px 28px;">
+    <div class="dept-meta-above"><i class="bi bi-clock"></i> Data as of 2026-05-05 09:14 · Source: Tally Finance</div>
+    <div class="dept-banner">
+      <div class="dept-banner-top">
+        <div class="dept-banner-titleblock">
+          <div class="dept-banner-title">Finance <span class="info-i" data-tip-title="Finance" data-tip="Revenue, cost, and AR health. Owned by CFO Sanjay R.">i</span></div>
+          <div class="dept-banner-sub">Owner: Sanjay R. · 8 active accounts</div>
+        </div>
+        <div class="dept-banner-stats">
+          <div class="dept-banner-stat"><div class="dept-banner-stat-val green">$11.0M</div><div class="dept-banner-stat-lbl">YTD Revenue</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">$9.2M</div><div class="dept-banner-stat-lbl">OpEx YTD</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val green">$2.30M</div><div class="dept-banner-stat-lbl">Top Account</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val red">$2.7M</div><div class="dept-banner-stat-lbl">Total AR</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val red">$0.5M</div><div class="dept-banner-stat-lbl">90+ Overdue</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">47d</div><div class="dept-banner-stat-lbl">DSO</div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('rev', this)"><i class="bi bi-graph-up-arrow"></i> Revenue</div>
+      <div class="tab" onclick="showTab('cost', this)"><i class="bi bi-cash-coin"></i> Cost</div>
+      <div class="tab" onclick="showTab('ar', this)"><i class="bi bi-receipt"></i> AR &amp; Receivables</div>
+    </div>
+
+    <!-- TAB 1: REVENUE — combined Revenue + Variance stacked -->
+    <div class="pane active" id="pane-rev">
+      <div class="kgrid">
+        <div class="kc green" onclick="openYTDRevenue()"><div class="klbl">YTD Revenue</div><div class="kval">$11.0M</div><div class="ksub">96% of plan · ↑12% YoY</div></div>
+        <div class="kc amber" onclick="openMoMVariance()"><div class="klbl">MoM Variance</div><div class="kval">-3.2%</div><div class="ksub">Apr actual vs plan</div></div>
+        <div class="kc green" onclick="openQuarterForecast()"><div class="klbl">Quarter Forecast</div><div class="kval">$5.5M</div><div class="ksub">88% confidence</div></div>
+        <div class="kc green" onclick="openTopAccount()"><div class="klbl">Top Account</div><div class="kval">$2.30M</div><div class="ksub">MedTech · 21% YTD</div></div>
+      </div>
+
+      <div class="stitle">Revenue vs Plan — Monthly · click any bar for account contribution <span class="toggle-window"><button>1W</button><button class="on">MON</button><button>QTR</button><button>YTD</button></span></div>
+      <div class="card-box"><div id="revChart" style="height:280px;"></div></div>
+
+      <div class="stitle">Portfolio Forecast · AM View with M+1/M+2/M+3 outlook
+        <div class="persona-toggle">
+          <button class="persona-btn on" id="pBtn-all" onclick="setFinPersona('all')">Manager — All</button>
+          <button class="persona-btn" id="pBtn-sarah" onclick="setFinPersona('sarah')">Sarah M. (AM)</button>
+        </div>
+      </div>
+      <div class="card-box" style="padding:0;overflow:hidden;">
+      <div class="tbl-scroll">
+      <table class="tbl">
+        <thead><tr><th>Account</th><th>AM</th><th>YTD Plan</th><th>YTD Actual</th><th>YTD Var</th><th>M+1 (F)</th><th>M+2 (F)</th><th>M+3 (F)</th></tr></thead>
+        <tbody id="finFcBody"></tbody>
+      </table>
+      </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: COST — simpler stacked bars per dept -->
+    <div class="pane" id="pane-cost">
+      <div class="kgrid">
+        <div class="kc amber" onclick="openOpexYTD()"><div class="klbl">OpEx YTD</div><div class="kval">$9.2M</div><div class="ksub">102% of budget</div></div>
+        <div class="kc green" onclick="openGrossMargin()"><div class="klbl">Gross Margin</div><div class="kval">28%</div><div class="ksub">Target ≥ 25%</div></div>
+        <div class="kc red" onclick="openHeadcountCost()"><div class="klbl">Headcount Cost</div><div class="kval">+$0.4M</div><div class="ksub">vs plan</div></div>
+        <div class="kc amber" onclick="openMarginDev()"><div class="klbl">Margin Deviation</div><div class="kval">-1.4pp</div><div class="ksub">QoQ change</div></div>
+      </div>
+
+      <div class="stitle">Department Spend · stacked by category · click row for line items</div>
+      <div class="card-box">
+        <div class="cost-legend">
+          <span><span class="ldot" style="background:#94A3B8;"></span>Headcount</span>
+          <span><span class="ldot" style="background:#60A5FA;"></span>Infra</span>
+          <span><span class="ldot" style="background:#F472B6;"></span>T&amp;E</span>
+          <span><span class="ldot" style="background:#A78BFA;"></span>Training</span>
+          <span><span class="ldot" style="background:#CBD5E1;"></span>Other</span>
+        </div>
+        <div class="cost-rows">
+          <div class="cost-row" onclick="openCostDept('Engineering')"><div class="dept">Engineering</div><div class="stack"><div class="seg head" style="flex:62;">62%</div><div class="seg infra" style="flex:18;">18%</div><div class="seg te" style="flex:8;">8%</div><div class="seg train" style="flex:7;">7%</div><div class="seg other" style="flex:5;"></div></div><div class="total over">$8.2M / 105%</div></div>
+          <div class="cost-row" onclick="openCostDept('Sales')"><div class="dept">Sales</div><div class="stack"><div class="seg head" style="flex:48;">48%</div><div class="seg infra" style="flex:8;"></div><div class="seg te" style="flex:28;">28%</div><div class="seg train" style="flex:8;"></div><div class="seg other" style="flex:8;"></div></div><div class="total">$2.1M / 98%</div></div>
+          <div class="cost-row" onclick="openCostDept('HR')"><div class="dept">HR</div><div class="stack"><div class="seg head" style="flex:55;">55%</div><div class="seg infra" style="flex:5;"></div><div class="seg te" style="flex:10;">10%</div><div class="seg train" style="flex:25;">25%</div><div class="seg other" style="flex:5;"></div></div><div class="total">$0.9M / 96%</div></div>
+          <div class="cost-row" onclick="openCostDept('TA')"><div class="dept">TA</div><div class="stack"><div class="seg head" style="flex:50;">50%</div><div class="seg infra" style="flex:5;"></div><div class="seg te" style="flex:18;">18%</div><div class="seg train" style="flex:12;">12%</div><div class="seg other" style="flex:15;">15%</div></div><div class="total over">$0.7M / 108%</div></div>
+          <div class="cost-row" onclick="openCostDept('PMO')"><div class="dept">PMO</div><div class="stack"><div class="seg head" style="flex:65;">65%</div><div class="seg infra" style="flex:8;"></div><div class="seg te" style="flex:14;">14%</div><div class="seg train" style="flex:8;"></div><div class="seg other" style="flex:5;"></div></div><div class="total">$0.6M / 94%</div></div>
+          <div class="cost-row" onclick="openCostDept('Finance')"><div class="dept">Finance</div><div class="stack"><div class="seg head" style="flex:60;">60%</div><div class="seg infra" style="flex:12;">12%</div><div class="seg te" style="flex:8;">8%</div><div class="seg train" style="flex:10;">10%</div><div class="seg other" style="flex:10;">10%</div></div><div class="total under">$0.5M / 89%</div></div>
+        </div>
+      </div>
+
+      <div class="stitle">OpEx Variance by Category · YTD</div>
+      <div class="card-box"><div id="opexChart" style="height:200px;"></div></div>
+    </div>
+
+    <!-- TAB 3: AR & Receivables -->
+    <div class="pane" id="pane-ar">
+      <div class="kgrid">
+        <div class="kc red" onclick="openTotalAR()"><div class="klbl">Total AR</div><div class="kval">$4.6M</div><div class="ksub">DSO 47d · target ≤ 35d</div></div>
+        <div class="kc red" onclick="open90Plus()"><div class="klbl">90+ Days Overdue</div><div class="kval">$0.5M</div><div class="ksub">4 accounts · escalation needed</div></div>
+        <div class="kc amber" onclick="openCollRate()"><div class="klbl">Collection Rate (30d)</div><div class="kval">88%</div><div class="ksub">Target ≥ 92%</div></div>
+        <div class="kc green" onclick="openMayForecast()"><div class="klbl">May Forecast Collect</div><div class="kval">$2.0M</div><div class="ksub">95% confidence</div></div>
+      </div>
+
+      <div class="stitle">AR Aging Waterfall · click any bucket for invoices</div>
+      <div class="card-box"><div id="agingChart" style="height:240px;"></div></div>
+
+      <div class="stitle">AR Aging by Account · click + to expand invoices</div>
+      <div class="card-box" style="padding:0;overflow:hidden;">
+      <table class="tbl" id="arAccountTable">
+        <thead><tr><th></th><th>Account</th><th>Manager</th><th>Total AR</th><th>Current</th><th>30-60d</th><th>60-90d</th><th>90+d</th></tr></thead>
+        <tbody>
+          <tr onclick="toggleArRow('mt')"><td>+</td><td><strong>MedTech Corp</strong></td><td>Vikram S.</td><td>$1.15M</td><td>$0.54M</td><td>$0.22M</td><td>$0.05M</td><td><span class="badge red">$0.34M</span></td></tr>
+          <tr id="arRow-mt" style="display:none;"><td colspan="8" style="background:var(--bg);"><table class="tbl" style="margin:6px 0;"><thead><tr><th>Invoice</th><th>Amount</th><th>Days</th><th>Status</th></tr></thead><tbody><tr><td>INV-2026-0142</td><td>$0.34M</td><td>102d</td><td><span class="badge red">Disputed</span></td></tr><tr><td>INV-2026-0149</td><td>$0.05M</td><td>78d</td><td>Chase pending</td></tr><tr><td>INV-2026-0156</td><td>$0.22M</td><td>54d</td><td>In progress</td></tr></tbody></table></td></tr>
+
+          <tr onclick="toggleArRow('hf')"><td>+</td><td><strong>HealthFirst Inc</strong></td><td>Anita M.</td><td>$0.74M</td><td>$0.38M</td><td>$0.20M</td><td>$0.02M</td><td><span class="badge red">$0.14M</span></td></tr>
+          <tr id="arRow-hf" style="display:none;"><td colspan="8" style="background:var(--bg);"><table class="tbl" style="margin:6px 0;"><thead><tr><th>Invoice</th><th>Amount</th><th>Days</th><th>Status</th></tr></thead><tbody><tr><td>INV-2026-0118</td><td>$0.14M</td><td>96d</td><td><span class="badge red">PO mismatch</span></td></tr></tbody></table></td></tr>
+
+          <tr onclick="toggleArRow('bg')"><td>+</td><td><strong>BioGen Labs</strong></td><td>Kiran R.</td><td>$0.41M</td><td>$0.22M</td><td>$0.10M</td><td>$0.02M</td><td><span class="badge amber">$0.07M</span></td></tr>
+          <tr id="arRow-bg" style="display:none;"><td colspan="8" style="background:var(--bg);"><table class="tbl" style="margin:6px 0;"><thead><tr><th>Invoice</th><th>Amount</th><th>Days</th><th>Status</th></tr></thead><tbody><tr><td>INV-2026-0166</td><td>$0.07M</td><td>94d</td><td><span class="badge amber">Chase pending</span></td></tr></tbody></table></td></tr>
+
+          <tr onclick="toggleArRow('pc')"><td>+</td><td><strong>PharmCare</strong></td><td>Suresh K.</td><td>$0.29M</td><td>$0.17M</td><td>$0.05M</td><td>$0.02M</td><td><span class="badge amber">$0.05M</span></td></tr>
+          <tr id="arRow-pc" style="display:none;"><td colspan="8" style="background:var(--bg);"><table class="tbl" style="margin:6px 0;"><thead><tr><th>Invoice</th><th>Amount</th><th>Days</th><th>Status</th></tr></thead><tbody><tr><td>INV-2026-0179</td><td>$0.05M</td><td>92d</td><td><span class="badge amber">Client delay</span></td></tr></tbody></table></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    // Portfolio Forecast Data
+    const FIN_FC_ALL = [
+      {acct:'MedTech Corp',     am:'Sarah M.', ytdPlan:2.40, ytdAct:2.30, m1:0.46, m2:0.48, m3:0.50},
+      {acct:'HealthFirst Inc',  am:'Sarah M.', ytdPlan:1.90, ytdAct:2.00, m1:0.40, m2:0.41, m3:0.42},
+      {acct:'BioSync Labs',     am:'Sarah M.', ytdPlan:1.60, ytdAct:1.30, m1:0.30, m2:0.27, m3:0.24},
+      {acct:'BioGen Labs',      am:'Rajesh K.',ytdPlan:1.60, ytdAct:1.30, m1:0.28, m2:0.30, m3:0.32},
+      {acct:'PharmCare',        am:'Rajesh K.',ytdPlan:1.70, ytdAct:1.80, m1:0.36, m2:0.36, m3:0.37},
+      {acct:'WellnessOne',      am:'Rajesh K.',ytdPlan:1.10, ytdAct:1.00, m1:0.22, m2:0.23, m3:0.24},
+      {acct:'NeuroLab',         am:'Anita M.', ytdPlan:0.90, ytdAct:0.85, m1:0.18, m2:0.19, m3:0.20},
+      {acct:'CardioTech',       am:'Anita M.', ytdPlan:1.30, ytdAct:1.35, m1:0.27, m2:0.27, m3:0.28},
+      {acct:'PediaCare',        am:'Anita M.', ytdPlan:0.60, ytdAct:0.40, m1:0.10, m2:0.09, m3:0.08},
+      {acct:'Renewal Care',     am:'Sarah M.', ytdPlan:1.20, ytdAct:1.15, m1:0.24, m2:0.26, m3:0.28},
+      {acct:'OrthoCare',        am:'Rajesh K.',ytdPlan:0.80, ytdAct:0.75, m1:0.16, m2:0.16, m3:0.17}
+    ];
+    function fcCell(val, prev) {
+      const cls = val > prev ? 'fc-up' : val < prev ? 'fc-down' : 'fc-flat';
+      const arr = val > prev ? '▲' : val < prev ? '▼' : '—';
+      return `<span class="${cls}">${arr} $${val.toFixed(2)}M</span>`;
+    }
+    function renderFinFc(data) {
+      const tb = document.getElementById('finFcBody');
+      if (!tb) return;
+      const baseM = 0.38; // approx monthly run rate for M+1 reference
+      tb.innerHTML = data.map(r => {
+        const varAmt = r.ytdAct - r.ytdPlan;
+        const varCls = varAmt > 0 ? 'color:#16A34A;font-weight:700;' : varAmt < 0 ? 'color:#DC2626;font-weight:700;' : 'color:#F59E0B;font-weight:700;';
+        const varStr = (varAmt >= 0 ? '+' : '') + '$' + varAmt.toFixed(2) + 'M';
+        return `<tr onclick="openVarianceAccount('${r.acct}')">
+          <td><strong>${r.acct}</strong></td>
+          <td style="font-size:11px;color:var(--text-muted);">${r.am}</td>
+          <td>$${r.ytdPlan.toFixed(2)}M</td>
+          <td>$${r.ytdAct.toFixed(2)}M</td>
+          <td><span style="${varCls}">${varStr}</span></td>
+          <td>${fcCell(r.m1, r.ytdAct/5)}</td>
+          <td>${fcCell(r.m2, r.m1)}</td>
+          <td>${fcCell(r.m3, r.m2)}</td>
+        </tr>`;
+      }).join('');
+    }
+    function setFinPersona(p) {
+      document.getElementById('pBtn-all').classList.toggle('on', p==='all');
+      document.getElementById('pBtn-sarah').classList.toggle('on', p==='sarah');
+      const data = p === 'sarah' ? FIN_FC_ALL.filter(r => r.am === 'Sarah M.') : FIN_FC_ALL;
+      renderFinFc(data);
+    }
+
+    function showTab(t, el) {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.pane').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('pane-' + t).classList.add('active');
+      if (t === 'rev') setTimeout(drawRev, 50);
+      if (t === 'cost') setTimeout(drawCost, 50);
+      if (t === 'ar') setTimeout(drawAR, 50);
+    }
+    function toggleSidebar() { var sb=document.querySelector('.sidebar'); if(sb) sb.classList.toggle('collapsed'); document.body.classList.toggle('sidebar-collapsed'); }
+    setTimeout(drawRev, 100);
+    setTimeout(() => renderFinFc(FIN_FC_ALL), 50);
+
+    function drawRev() {
+      const el = document.getElementById('revChart'); if (!el || el._init) return; el._init = true;
+      const ch = echarts.init(el);
+      const months = ['Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May'];
+      ch.setOption({
+        grid: { left: 50, right: 30, top: 44, bottom: 40 },
+        tooltip: { trigger: 'axis' },
+        legend: { top: 6, right: 10, textStyle: { fontSize: 10 } },
+        xAxis: { type: 'category', data: months, axisLine: { lineStyle: { color: '#94A3B8' } } },
+        yAxis: { type: 'value', name: '$ M' },
+        series: [
+          { name: 'Plan', type: 'line', data: [1.56,1.62,1.68,1.70,1.74,1.78,1.80,1.82,1.85,1.78,1.75,1.80], lineStyle: { color: '#94A3B8', type:'dashed', width:2 }, symbol:'circle' },
+          { name: 'Actual', type: 'bar', data: [1.54,1.63,1.69,1.68,1.72,1.75,1.81,1.80,1.82,1.73,1.70,null], itemStyle: { color: '#FF9933' } }
+        ]
+      });
+      ch.on('click', function(params) {
+        if (params.componentType === 'series' && params.value !== null) {
+          openMonthDrill(months[params.dataIndex], params.value);
+        }
+      });
+    }
+    function openMonthDrill(month, val) {
+      openFlyout({ title: month + ' Revenue · Account Contribution', sub: '$' + val + 'M actual', body: `<div class="g-section-title">By account</div><table class="g-tbl"><thead><tr><th>Account</th><th>${month} Actual</th><th>vs Plan</th></tr></thead><tbody>
+        <tr><td>MedTech Corp</td><td>$0.28M</td><td><span class="g-tag amber">-3%</span></td></tr>
+        <tr><td>HealthFirst Inc</td><td>$0.25M</td><td><span class="g-tag green">+1%</span></td></tr>
+        <tr><td>BioGen Labs</td><td>$0.16M</td><td><span class="g-tag red">-12%</span></td></tr>
+        <tr><td>PharmCare</td><td>$0.23M</td><td><span class="g-tag green">+2%</span></td></tr>
+        <tr><td>WellnessOne</td><td>$0.12M</td><td><span class="g-tag amber">-4%</span></td></tr>
+        <tr><td>NeuroLab</td><td>$0.10M</td><td><span class="g-tag amber">-3%</span></td></tr>
+        <tr><td>CardioTech</td><td>$0.16M</td><td><span class="g-tag green">+1%</span></td></tr>
+        </tbody></table>`});
+    }
+    function drawCost() {
+      const el = document.getElementById('opexChart'); if (!el || el._init) return; el._init = true;
+      echarts.init(el).setOption({
+        grid: { left: 100, right: 40, top: 20, bottom: 30 },
+        xAxis: { type: 'value', axisLabel: { formatter: '{value}%' } },
+        yAxis: { type: 'category', data: ['Other','Training','T&E','Infra','Headcount'] },
+        series: [{ type: 'bar', data: [-2, 4, 14, 6, 8], itemStyle: { color: function(p) { return p.value < 0 ? '#16A34A' : (p.value < 6 ? '#F59E0B' : '#DC2626'); } } }]
+      });
+    }
+    function drawAR() {
+      const el = document.getElementById('agingChart'); if (!el || el._init) return; el._init = true;
+      const ch = echarts.init(el);
+      const buckets = ['Current','30-60d','60-90d','90+d'];
+      ch.setOption({
+        grid: { left: 60, right: 30, top: 44, bottom: 30 },
+        tooltip: { trigger: 'axis' },
+        xAxis: { type: 'category', data: buckets },
+        yAxis: { type: 'value', name: '$ M' },
+        series: [{ type: 'bar', data: [2.69, 0.98, 0.43, 0.50], itemStyle: { color: function(p) { return ['#16A34A','#F59E0B','#FB923C','#DC2626'][p.dataIndex]; } } }]
+      });
+      ch.on('click', function(params) { openARBucket(buckets[params.dataIndex], params.value); });
+    }
+    function openARBucket(bucket, val) {
+      openFlyout({ title: 'AR Bucket: ' + bucket, sub: '$' + val + 'M total', body: `<div class="g-section-title">Contributing accounts</div><table class="g-tbl"><thead><tr><th>Account</th><th>Amount</th><th>Top invoice</th></tr></thead><tbody>
+        <tr><td>MedTech Corp</td><td>$0.34M</td><td>INV-2026-0142 ($0.34M, 102d)</td></tr>
+        <tr><td>HealthFirst Inc</td><td>$0.14M</td><td>INV-2026-0118 ($0.14M, 96d)</td></tr>
+        <tr><td>BioGen Labs</td><td>$0.07M</td><td>INV-2026-0166 ($0.07M, 94d)</td></tr>
+        <tr><td>PharmCare</td><td>$0.05M</td><td>INV-2026-0179 ($0.05M, 92d)</td></tr>
+        </tbody></table>`});
+    }
+    function toggleArRow(id) { const r = document.getElementById('arRow-' + id); if (r) r.style.display = r.style.display === 'none' ? 'table-row' : 'none'; }
+
+    // KPI tile flyouts
+    function openYTDRevenue() {
+      openFlyoutPinned({title:'YTD Revenue · $11.0M',sub:'96% of plan · ↑12% YoY',
+        pinned:`<div class="fly-alert green"><strong>On track:</strong> Tracking 98% of plan. Driver of -2pp gap: BioGen scope cut Apr 14.</div>
+        <div class="g-stat-row"><div class="g-stat"><div class="g-stat-label">YTD Plan</div><div class="g-stat-val">$11.5M</div></div><div class="g-stat"><div class="g-stat-label">YTD Actual</div><div class="g-stat-val">$11.0M</div></div><div class="g-stat"><div class="g-stat-label">YoY</div><div class="g-stat-val green">+12%</div></div></div>`,
+        body:`<div class="g-section-title">By BU</div><table class="g-tbl"><thead><tr><th>BU</th><th>Plan</th><th>Actual</th><th>%</th></tr></thead><tbody>
+        <tr><td>HLS</td><td>$10.5M</td><td>$10.4M</td><td><span class="g-tag green">99%</span></td></tr>
+        <tr><td>NHS</td><td>$5.8M</td><td>$5.6M</td><td><span class="g-tag amber">97%</span></td></tr>
+        <tr><td>Common Platform</td><td>$2.7M</td><td>$2.7M</td><td><span class="g-tag green">100%</span></td></tr>
+        </tbody></table>`});
+    }
+    function openMoMVariance() {
+      openFlyout({title:'MoM Variance · -3.2%', sub:'Apr actual $1.70M vs plan $1.75M',
+        body:`<div class="fly-alert amber"><strong>Watch:</strong> April variance driven by BioGen scope cut and delayed MedTech Apr billing.</div>
+        <div class="g-section-title">Driver breakdown</div>
+        <table class="g-tbl"><thead><tr><th>Driver</th><th>Impact</th></tr></thead><tbody>
+        <tr><td>BioGen scope reduction</td><td><span class="g-tag red">-$0.04M</span></td></tr>
+        <tr><td>MedTech Apr billing delayed to May</td><td><span class="g-tag amber">-$0.02M</span></td></tr>
+        <tr><td>PharmCare add-on hires</td><td><span class="g-tag green">+$0.01M</span></td></tr>
+        </tbody></table>`});
+    }
+    function openQuarterForecast() {
+      openFlyout({title:'Quarter Forecast · $5.5M', sub:'88% confidence · May+Jun pipeline',
+        body:`<table class="g-tbl"><thead><tr><th>Month</th><th>Forecast</th><th>Confidence</th></tr></thead><tbody>
+        <tr><td>May</td><td>$1.78M</td><td><span class="g-tag green">95%</span></td></tr>
+        <tr><td>Jun</td><td>$1.85M</td><td><span class="g-tag green">88%</span></td></tr>
+        <tr><td>Jul</td><td>$1.92M</td><td><span class="g-tag amber">72%</span></td></tr>
+        </tbody></table>`});
+    }
+    function openTopAccount() {
+      openFlyout({title:'Top Account · MedTech Corp', sub:'$2.30M YTD · 21% of total',
+        body:`<div class="g-section-title">Account profile</div><p>YTD Plan: $2.40M · YTD Actual: $2.30M · Variance: -$0.10M</p><p>Renewal due Q3 2026. Phase 2 expansion in active mining ($0.25M).</p>`});
+    }
+    function openVarianceAccount(acct) {
+      const monthData = {
+        'MedTech Corp':[['Dec','$0.30M','$0.30M','+$0.00M','green'],['Jan','$0.30M','$0.30M','+$0.00M','green'],['Feb','$0.30M','$0.28M','-$0.02M','amber'],['Mar','$0.29M','$0.28M','-$0.01M','green'],['Apr','$0.30M','$0.28M','-$0.02M','amber'],['May (MTD)','$0.30M','$0.10M','—','grey']],
+        'BioGen Labs':[['Dec','$0.20M','$0.20M','+$0.00M','green'],['Jan','$0.20M','$0.20M','+$0.00M','green'],['Feb','$0.20M','$0.18M','-$0.02M','amber'],['Mar','$0.20M','$0.18M','-$0.02M','amber'],['Apr','$0.20M','$0.14M','-$0.06M','red'],['May (MTD)','$0.20M','$0.04M','—','grey']],
+        'HealthFirst Inc':[['Dec','$0.24M','$0.25M','+$0.01M','green'],['Jan','$0.24M','$0.24M','+$0.00M','green'],['Feb','$0.24M','$0.25M','+$0.01M','green'],['Mar','$0.24M','$0.25M','+$0.01M','green'],['Apr','$0.24M','$0.25M','+$0.01M','green'],['May (MTD)','$0.24M','$0.08M','—','grey']]
+      };
+      const months = monthData[acct] || monthData['MedTech Corp'];
+      openFlyoutPinned({title:acct + ' · Variance', sub:'YTD month-on-month',
+        pinned:`<div class="fly-insight"><strong>Summary:</strong> Click any month for invoice-level detail.</div>`,
+        body:`<table class="g-tbl"><thead><tr><th>Month</th><th>Plan</th><th>Actual</th><th>Variance</th></tr></thead><tbody>
+        ${months.map(m => `<tr><td>${m[0]}</td><td>${m[1]}</td><td>${m[2]}</td><td><span style="color:${m[4]==='red'?'#DC2626':(m[4]==='amber'?'#F59E0B':(m[4]==='green'?'#16A34A':'#94A3B8'))};font-weight:700;">${m[3]}</span></td></tr>`).join('')}
+        </tbody></table>`});
+    }
+    function openOpexYTD() { openFlyout({title:'OpEx YTD · $15.4M', sub:'102% of budget · over by $0.3M', body:'<table class="g-tbl"><thead><tr><th>Category</th><th>Budget</th><th>Actual</th><th>Var</th></tr></thead><tbody><tr><td>Headcount</td><td>$11.0M</td><td>$11.4M</td><td><span class="g-tag red">+4%</span></td></tr><tr><td>Infra</td><td>$1.8M</td><td>$1.9M</td><td><span class="g-tag amber">+6%</span></td></tr><tr><td>T&amp;E</td><td>$0.9M</td><td>$1.0M</td><td><span class="g-tag red">+14%</span></td></tr><tr><td>Training</td><td>$0.5M</td><td>$0.5M</td><td><span class="g-tag green">+0%</span></td></tr><tr><td>Other</td><td>$1.2M</td><td>$1.2M</td><td><span class="g-tag green">-2%</span></td></tr></tbody></table>'}); }
+    function openGrossMargin() { openFlyout({title:'Gross Margin · 28%', sub:'Healthy · target ≥ 25%', body:'<p>Driver: utilization at 92% · low bench cost · favorable mix.</p>'}); }
+    function openHeadcountCost() { openFlyout({title:'Headcount Cost · +$0.4M vs plan', sub:'Driver: 14 senior hires above band', body:'<p>14 senior hires this fiscal averaged $0.029M above approved comp band. Driver: market premium on senior Java + DevOps roles.</p>'}); }
+    function openMarginDev() { openFlyout({title:'Margin Deviation · -1.4pp QoQ', sub:'Bench grew 18% during ramp lull', body:'<p>Bench cost rose to $0.18M for the quarter. Recovery expected as new project ramps land in May-Jun.</p>'}); }
+    function openCostDept(dept) {
+      openFlyout({title:dept + ' · Cost detail', sub:'YTD spend by category',
+        body:`<table class="g-tbl"><thead><tr><th>Category</th><th>Budget</th><th>Actual</th><th>Var</th></tr></thead><tbody>
+        <tr><td>Headcount</td><td>$5.0M</td><td>$5.1M</td><td><span class="g-tag amber">+2%</span></td></tr>
+        <tr><td>Infra</td><td>$1.4M</td><td>$1.5M</td><td><span class="g-tag amber">+7%</span></td></tr>
+        <tr><td>T&amp;E</td><td>$0.6M</td><td>$0.7M</td><td><span class="g-tag red">+17%</span></td></tr>
+        <tr><td>Training</td><td>$0.5M</td><td>$0.5M</td><td><span class="g-tag green">+0%</span></td></tr>
+        <tr><td>Other</td><td>$0.4M</td><td>$0.4M</td><td><span class="g-tag green">+0%</span></td></tr>
+        </tbody></table>`});
+    }
+    function openTotalAR() { openFlyout({title:'Total AR · $2.7M', sub:'DSO 47d · target ≤ 35d', body:'<p>4 accounts contribute 80% of total AR. MedTech $0.68M · HealthFirst $0.43M · BioGen $0.24M · PharmCare $0.17M.</p>'}); }
+    function open90Plus() { openFlyout({title:'90+ Days Overdue · $0.5M', sub:'4 invoices · escalation needed', body:'<table class="g-tbl"><thead><tr><th>Account</th><th>Invoice</th><th>Amount</th><th>Days</th></tr></thead><tbody><tr><td>MedTech Corp</td><td>INV-2026-0142</td><td>$0.34M</td><td>102d</td></tr><tr><td>HealthFirst Inc</td><td>INV-2026-0118</td><td>$0.14M</td><td>96d</td></tr><tr><td>BioGen Labs</td><td>INV-2026-0166</td><td>$0.07M</td><td>94d</td></tr><tr><td>PharmCare</td><td>INV-2026-0179</td><td>$0.05M</td><td>92d</td></tr></tbody></table>'}); }
+    function openCollRate() { openFlyout({title:'Collection Rate · 88%', sub:'30-day · target ≥ 92%', body:'<p>Slowest collectors: MedTech (avg 62 days), BioGen (avg 58 days). Target customers for tighter chase cadence.</p>'}); }
+    function openMayForecast() { openFlyout({title:'May Forecast Collect · $2.0M', sub:'95% confidence', body:'<p>Forecast based on aging bucket maturity + historical patterns. Top inflows expected from HealthFirst ($0.42M) + PharmCare ($0.36M).</p>'}); }
+  </script>
+</body>
+</html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Productivity — John Doe · HLS</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .prod-banner { display: grid; grid-template-columns: repeat(4,1fr); gap:10px; margin-bottom:14px; }
+    .prod-banner-item { background:var(--card); border-radius:8px; padding:12px 14px; border:1px solid var(--border); }
+    .prod-banner-label { font-size:10px; text-transform:uppercase; letter-spacing:0.3px; color:var(--text-muted); font-weight:600; margin-bottom:4px; }
+    .prod-banner-val { font-size:18px; font-weight:700; color:var(--navy); }
+    .prod-banner-val.red { color:var(--red); }
+    .prod-banner-val.amber { color:var(--amber); }
+    .prod-banner-val.green { color:var(--green); }
+    .trend-up { color:var(--green); font-weight:700; }
+    .trend-down { color:var(--red); font-weight:700; }
+    .trend-flat { color:var(--amber); font-weight:700; }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="hamburger-btn" onclick="toggleSidebar()" title="Toggle menu">
+        <i class="bi bi-list"></i>
+      </button>
+      <div class="pulse-logo">
+        <span class="pulse-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="1" y="3" width="20" height="14" rx="2" stroke="#3B82F6" stroke-width="1.6" fill="none"/><rect x="0" y="16" width="22" height="2.5" rx="1" fill="#3B82F6" opacity="0.25"/><rect x="8" y="18.5" width="6" height="1.5" rx="0.75" fill="#3B82F6"/><polyline points="2,11 5,11 7,6 9,15 11,8 13,13 15,11 20,11" stroke="#3B82F6" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <div class="data-freshness" style="color:#94A3B8;"><div class="dot"></div>Refreshed 07:00 today</div>
+      <div style="position:relative;">
+        <button class="theme-btn" onclick="toggleThemePicker()" title="Theme"><i class="bi bi-palette"></i></button>
+        <div class="theme-picker" id="themePicker">
+          <div class="theme-picker-title">Colour Theme</div>
+          <div class="theme-swatches">
+            <div class="theme-swatch blue active" onclick="setTheme('blue')"></div>
+            <div class="theme-swatch teal" onclick="setTheme('teal')"></div>
+            <div class="theme-swatch violet" onclick="setTheme('violet')"></div>
+          </div>
+          <div class="theme-divider"></div>
+          <div class="theme-mode-row"><span class="mode-label">Light</span><div class="theme-toggle" id="modeToggle" onclick="toggleDarkMode()"><div class="theme-toggle-knob"></div></div></div>
+        </div>
+      </div>
+      <button class="tickets-btn" onclick="toggleTickets()" title="Feature Tickets"><i class="bi bi-ticket-perforated"></i><div class="badge">5</div></button>
+      <button class="help-btn" onclick="toggleHelp()" title="Help">?</button>
+      <div class="alert-bell" onclick="toggleNotif()"><i class="bi bi-bell-fill"></i><div class="badge">4</div></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+  <!-- TICKETS PANEL -->
+  <div class="tickets-overlay" id="ticketsOverlay" onclick="closeTickets()"></div>
+  <div class="tickets-panel" id="ticketsPanel">
+    <div class="tickets-panel-header">
+      <span class="tickets-panel-title"><i class="bi bi-ticket-perforated"></i> Feature Tickets</span>
+      <span onclick="closeTickets()" style="cursor:pointer;opacity:0.5;font-size:18px;">✕</span>
+    </div>
+    <div class="tickets-panel-body">
+      <div class="ticket-item medium"><div class="ticket-id">BMD-039</div><div class="ticket-desc">Export current view to PDF report</div><div class="ticket-tag medium">Medium</div></div>
+      <div class="ticket-item low"><div class="ticket-id">BMD-033</div><div class="ticket-desc">Scheduled daily brief delivery via email</div><div class="ticket-tag low">Low</div></div>
+    </div>
+  </div>
+
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-header">
+      <span>Notifications</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button class="notif-pin-btn" id="notifPinBtn" onclick="pinNotif()" title="Pin panel"><i class="bi bi-pin-angle"></i></button>
+        <span style="opacity:0.5;cursor:pointer;font-size:18px;" onclick="toggleNotif()">✕</span>
+      </div>
+    </div>
+    <div class="notif-item"><div class="notif-type" style="color:var(--red);">Escalation</div><div class="notif-text">New escalation opened — MedTech Corp (Quality)</div><div class="notif-time">2 hours ago</div></div>
+  </div>
+
+    <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html" class="active"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+
+    <!-- Nalashaa branding -->
+    <div class="sidebar-brand">
+      <img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo">
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="breadcrumb">
+      <a href="dm-home.html">Meta-Dashboard</a><span class="sep">/</span>
+      <a href="dm-home.html">John Doe</a><span class="sep">/</span>
+      <span>Productivity</span>
+    </div>
+    <div class="page-title">Section 3 — Productivity &amp; Customer Value</div>
+    <div class="page-subtitle">Sprint metrics per project, grouped by client. Source: Jira (S8). Click any card to drill down.</div>
+
+    <!-- Portfolio Banner -->
+    <div class="prod-banner">
+      <div class="prod-banner-item"><div class="prod-banner-label">Unit Health</div><div class="prod-banner-val red">1 Red · 1 Amber · 2 Green</div></div>
+      <div class="prod-banner-item"><div class="prod-banner-label">Avg Sprint Velocity</div><div class="prod-banner-val amber">84%</div></div>
+      <div class="prod-banner-item"><div class="prod-banner-label">SLA Breaches</div><div class="prod-banner-val red">1</div></div>
+      <div class="prod-banner-item"><div class="prod-banner-label">Open P1 Defects</div><div class="prod-banner-val red">3</div></div>
+    </div>
+
+    <!-- Cards grouped by client -->
+    <div class="project-group-label">MedTech Corp</div>
+    <div class="grid grid-2" style="margin-bottom:4px;">
+      <div class="project-card red" onclick="openFlyout('prod1')">
+        <div class="project-card-header">
+          <span class="project-name">EMR Module — Sprint 14</span>
+          <span class="badge badge-red">● Red</span>
+        </div>
+        <div class="project-account">MedTech Corp · PM: Kavya S.</div>
+        <div class="project-metrics">
+          <div class="proj-metric"><span class="proj-metric-label">Velocity</span><span class="proj-metric-value bad">42/58 pts</span></div>
+          <div class="proj-metric"><span class="proj-metric-label">Carry-fwd</span><span class="proj-metric-value bad">27%</span></div>
+          <div class="proj-metric"><span class="proj-metric-label">Defects (P1)</span><span class="proj-metric-value bad">3 open</span></div>
+          <div class="proj-metric"><span class="proj-metric-label">SLA</span><span class="proj-metric-value bad">Breached</span></div>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text-muted);">Customer value: EMR UAT re-run targeted Apr 16 — client milestone at risk</div>
+      </div>
+      <div class="project-card green" onclick="openFlyout('prod2')">
+        <div class="project-card-header">
+          <span class="project-name">Claims Processing — Sprint 9</span>
+          <span class="badge badge-green">● Green</span>
+        </div>
+        <div class="project-account">MedTech Corp · PM: Ravi T.</div>
+        <div class="project-metrics">
+          <div class="proj-metric"><span class="proj-metric-label">Velocity</span><span class="proj-metric-value good">38/40 pts</span></div>
+          <div class="proj-metric"><span class="proj-metric-label">Carry-fwd</span><span class="proj-metric-value good">5%</span></div>
+          <div class="proj-metric"><span class="proj-metric-label">Defects (P3)</span><span class="proj-metric-value good">1 open</span></div>
+          <div class="proj-metric"><span class="proj-metric-label">SLA</span><span class="proj-metric-value good">Met ✓</span></div>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text-muted);">Customer value: All Q2 claims features delivered ahead of schedule</div>
+      </div>
+    </div>
+
+    <div class="project-group-label">HealthFirst US</div>
+    <div class="grid grid-2" style="margin-bottom:4px;">
+      <div class="project-card green" onclick="openFlyout('prod3')">
+        <div class="project-card-header">
+          <span class="project-name">Patient Portal — Sprint 11</span>
+          <span class="badge badge-green">● Green</span>
+        </div>
+        <div class="project-account">HealthFirst US · PM: Deepa M.</div>
+        <div class="project-metrics">
+          <div class="proj-metric"><span class="proj-metric-label">Velocity</span><span class="proj-metric-value good">35/38 pts</span></div>
+          <div class="proj-metric"><span class="proj-metric-label">Carry-fwd</span><span class="proj-metric-value good">8%</span></div>
+          <div class="proj-metric"><span class="proj-metric-label">Defects</span><span class="proj-metric-value good">0 open</span></div>
+          <div class="proj-metric"><span class="proj-metric-label">SLA</span><span class="proj-metric-value good">Met ✓</span></div>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text-muted);">Customer value: Phase 2 on track; client rated Sprint 10 delivery 9.2/10</div>
+      </div>
+    </div>
+
+    <div class="project-group-label">BioSync Labs</div>
+    <div class="grid grid-2" style="margin-bottom:4px;">
+      <div class="project-card amber" onclick="openFlyout('prod4')">
+        <div class="project-card-header">
+          <span class="project-name">Integration Platform — Sprint 6</span>
+          <span class="badge badge-amber">● Amber</span>
+        </div>
+        <div class="project-account">BioSync Labs · PM: Arun K.</div>
+        <div class="project-metrics">
+          <div class="proj-metric"><span class="proj-metric-label">Velocity</span><span class="proj-metric-value warn">22/30 pts</span></div>
+          <div class="proj-metric"><span class="proj-metric-label">Carry-fwd</span><span class="proj-metric-value warn">27%</span></div>
+          <div class="proj-metric"><span class="proj-metric-label">Defects (P2)</span><span class="proj-metric-value warn">2 open</span></div>
+          <div class="proj-metric"><span class="proj-metric-label">SLA</span><span class="proj-metric-value good">Met ✓</span></div>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text-muted);">Customer value: Integration milestone delayed — billing impact documented in PROJ</div>
+      </div>
+    </div>
+
+    <!-- Inline Action Item Form -->
+    <div class="ai-form">
+      <div class="ai-form-title">+ Add Action Item — PROD</div>
+      <div class="ai-form-row">
+        <input type="text" placeholder="Action description…" style="flex:3;">
+        <select><option>Owner: John Doe</option><option>Owner: PM</option><option>Owner: D+AM</option></select>
+        <select><option>D</option><option>AM</option><option>D+AM</option></select>
+        <input type="date" value="2026-04-20" style="flex:0.8;">
+        <button class="btn btn-primary" style="flex-shrink:0;" onclick="alert('Action item saved')">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLYOUT OVERLAY -->
+  <div id="flyout-overlay" class="flyout-overlay" onclick="closeFlyout()"></div>
+
+  <!-- Flyout: EMR Sprint 14 -->
+  <div id="flyout-prod1" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">MedTech Corp / EMR — Sprint 14 Detail</div><div class="flyout-sub">● Red · SLA Breached</div></div>
+      <button class="flyout-close" onclick="closeFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section">
+        <div class="flyout-label">Sprint Breakdown</div>
+        <div class="flyout-row">
+          <div class="flyout-col"><div class="flyout-label">Planned Points</div><div class="flyout-value" style="font-weight:700;font-size:18px;">58</div></div>
+          <div class="flyout-col"><div class="flyout-label">Completed</div><div class="flyout-value" style="font-weight:700;font-size:18px;color:var(--red);">42</div></div>
+          <div class="flyout-col"><div class="flyout-label">Carry-forward</div><div class="flyout-value" style="font-weight:700;font-size:18px;color:var(--red);">16 pts (27%)</div></div>
+        </div>
+      </div>
+      <div class="flyout-section">
+        <div class="flyout-label">Defect List</div>
+        <table class="compact-table" style="margin-top:4px;">
+          <tr><th>ID</th><th>Priority</th><th>Description</th><th>Status</th></tr>
+          <tr><td>EMR-4421</td><td><span class="badge badge-red">P1</span></td><td>Data mapping error in lab results sync</td><td>Open</td></tr>
+          <tr><td>EMR-4398</td><td><span class="badge badge-red">P1</span></td><td>Patient ID collision on bulk import</td><td>In Fix</td></tr>
+          <tr><td>EMR-4356</td><td><span class="badge badge-red">P1</span></td><td>Auth token expiry on mobile client</td><td>Open</td></tr>
+        </table>
+      </div>
+      <div class="flyout-section">
+        <div class="flyout-label">SLA Detail</div>
+        <div class="flyout-value" style="color:var(--red);">Response SLA breached — P1 bug open for 72+ hrs (threshold: 48 hrs)</div>
+      </div>
+      <div class="flyout-section">
+        <div class="flyout-label">4-Sprint Velocity Trend</div>
+        <div style="display:flex;align-items:flex-end;gap:4px;height:40px;margin-top:4px;">
+          <div style="flex:1;background:var(--blue);height:90%;border-radius:3px 3px 0 0;position:relative;"><span style="position:absolute;bottom:-16px;left:0;right:0;text-align:center;font-size:9px;color:var(--text-muted);">S11</span></div>
+          <div style="flex:1;background:var(--blue);height:100%;border-radius:3px 3px 0 0;position:relative;"><span style="position:absolute;bottom:-16px;left:0;right:0;text-align:center;font-size:9px;color:var(--text-muted);">S12</span></div>
+          <div style="flex:1;background:var(--amber);height:85%;border-radius:3px 3px 0 0;position:relative;"><span style="position:absolute;bottom:-16px;left:0;right:0;text-align:center;font-size:9px;color:var(--text-muted);">S13</span></div>
+          <div style="flex:1;background:var(--red);height:72%;border-radius:3px 3px 0 0;position:relative;"><span style="position:absolute;bottom:-16px;left:0;right:0;text-align:center;font-size:9px;color:var(--text-muted);">S14</span></div>
+        </div>
+      </div>
+      <div class="flyout-section" style="margin-top:20px;">
+        <div class="flyout-label">Customer Value Statement</div>
+        <div style="background:#FEF2F2;border-radius:6px;padding:8px 10px;font-size:12px;color:var(--text);">EMR UAT re-run targeted Apr 16 — client milestone at risk if P1s not cleared by Apr 14.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flyout: Claims Sprint 9 -->
+  <div id="flyout-prod2" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">MedTech Corp / Claims — Sprint 9 Detail</div><div class="flyout-sub">● Green · SLA Met</div></div>
+      <button class="flyout-close" onclick="closeFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section">
+        <div class="flyout-row">
+          <div class="flyout-col"><div class="flyout-label">Planned</div><div class="flyout-value" style="font-weight:700;font-size:18px;">40</div></div>
+          <div class="flyout-col"><div class="flyout-label">Completed</div><div class="flyout-value" style="font-weight:700;font-size:18px;color:var(--green);">38</div></div>
+          <div class="flyout-col"><div class="flyout-label">Carry-fwd</div><div class="flyout-value" style="font-weight:700;font-size:18px;color:var(--green);">2 pts (5%)</div></div>
+        </div>
+      </div>
+      <div class="flyout-section"><div class="flyout-label">Open Defects</div><div class="flyout-value">1 P3 — minor UI alignment issue. Not blocking.</div></div>
+      <div class="flyout-section"><div class="flyout-label">Customer Value Statement</div><div class="flyout-value">All Q2 claims processing features delivered ahead of schedule. Client satisfaction high.</div></div>
+    </div>
+  </div>
+
+  <!-- Flyout: HealthFirst Portal -->
+  <div id="flyout-prod3" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">HealthFirst US / Portal — Sprint 11 Detail</div><div class="flyout-sub">● Green · SLA Met</div></div>
+      <button class="flyout-close" onclick="closeFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section">
+        <div class="flyout-row">
+          <div class="flyout-col"><div class="flyout-label">Planned</div><div class="flyout-value" style="font-weight:700;font-size:18px;">38</div></div>
+          <div class="flyout-col"><div class="flyout-label">Completed</div><div class="flyout-value" style="font-weight:700;font-size:18px;color:var(--green);">35</div></div>
+          <div class="flyout-col"><div class="flyout-label">Carry-fwd</div><div class="flyout-value" style="font-weight:700;font-size:18px;color:var(--green);">3 pts (8%)</div></div>
+        </div>
+      </div>
+      <div class="flyout-section"><div class="flyout-label">Open Defects</div><div class="flyout-value">None. Zero open bugs this sprint.</div></div>
+      <div class="flyout-section"><div class="flyout-label">Customer Value Statement</div><div class="flyout-value">Phase 2 portal features on track. Client Sprint 10 rating: 9.2/10. Resourcing gap being managed.</div></div>
+    </div>
+  </div>
+
+  <!-- Flyout: BioSync Integration -->
+  <div id="flyout-prod4" class="flyout">
+    <div class="flyout-header">
+      <div><div class="flyout-title">BioSync Labs / Integration — Sprint 6 Detail</div><div class="flyout-sub">● Amber · SLA Met</div></div>
+      <button class="flyout-close" onclick="closeFlyout()">✕</button>
+    </div>
+    <div class="flyout-body">
+      <div class="flyout-section">
+        <div class="flyout-row">
+          <div class="flyout-col"><div class="flyout-label">Planned</div><div class="flyout-value" style="font-weight:700;font-size:18px;">30</div></div>
+          <div class="flyout-col"><div class="flyout-label">Completed</div><div class="flyout-value" style="font-weight:700;font-size:18px;color:var(--amber);">22</div></div>
+          <div class="flyout-col"><div class="flyout-label">Carry-fwd</div><div class="flyout-value" style="font-weight:700;font-size:18px;color:var(--amber);">8 pts (27%)</div></div>
+        </div>
+      </div>
+      <div class="flyout-section"><div class="flyout-label">Open Defects</div><div class="flyout-value">2 P2 defects — API timeout handling and retry logic. Fix in progress.</div></div>
+      <div class="flyout-section"><div class="flyout-label">Customer Value Statement</div><div class="flyout-value">Integration milestone delayed by 1 sprint. Billing impact documented. Client informed.</div></div>
+    </div>
+  </div>
+
+  <div class="footer-bar"><span class="data-freshness"><span class="dot"></span>BMD v1.0 · Data as of Apr 13, 2026 07:00 IST</span></div>
+  <script>
+    function openFlyout(id) { document.getElementById('flyout-'+id).classList.add('open'); document.getElementById('flyout-overlay').classList.add('open'); }
+    function closeFlyout() { document.querySelectorAll('.flyout').forEach(f=>f.classList.remove('open')); document.getElementById('flyout-overlay').classList.remove('open'); }
+    function toggleNotif() { document.getElementById('notifPanel').classList.toggle('open'); }
+    document.addEventListener('click', function(e) { const p=document.getElementById('notifPanel'); if(!e.target.closest('.alert-bell')&&!p.contains(e.target)) p.classList.remove('open'); });
+  </script>
+  <!-- GLOBAL FOOTER -->
+  <div class="global-footer">Nalashaa &copy; 2026 &nbsp;&middot;&nbsp; All rights reserved</div>
+
+  <script src="shared.js"></script>
+</body>
+</html>

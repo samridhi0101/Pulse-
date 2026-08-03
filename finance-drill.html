@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finance Drill — Nalashaa Business Monitoring</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .compact-table { font-size: 11px; }
+    .compact-table td, .compact-table th { padding: 6px 8px; }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div class="logo">NALASHAA</div>
+    <div class="top-nav-right">
+      <div class="alert-bell">
+        🔔
+        <div class="badge">3</div>
+      </div>
+      <div class="avatar">AM</div>
+    </div>
+  </div>
+
+    <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html" class="active"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+
+    <!-- Nalashaa branding -->
+    <div class="sidebar-brand">
+      <img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo">
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="breadcrumb">
+      <a href="org-pulse.html">Org Pulse</a>
+      <span class="sep">/</span>
+      <a href="finance.html">Finance</a>
+      <span class="sep">/</span>
+      <span>Revenue by Business Unit</span>
+    </div>
+    <div class="page-title">Revenue by Business Unit (YTD)</div>
+    <div class="page-subtitle">Q1 2026 performance across all BUs</div>
+
+    <!-- BU Revenue Table -->
+    <div class="card">
+      <div style="overflow-x: auto;">
+        <table class="compact-table">
+          <thead>
+            <tr>
+              <th>Business Unit</th>
+              <th>Plan (₹)</th>
+              <th>Actual (₹)</th>
+              <th>Variance (₹)</th>
+              <th>Variance %</th>
+              <th>Achievement %</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>NHS (National Healthcare Solutions)</strong></td>
+              <td style="text-align: right;">₹14.2 Cr</td>
+              <td style="text-align: right;">₹14.8 Cr</td>
+              <td style="text-align: right; color: var(--green);">+₹0.6 Cr</td>
+              <td style="text-align: right; color: var(--green);">+4.2%</td>
+              <td style="text-align: right;">104%</td>
+              <td><span class="badge badge-green">✓ Exceeding</span></td>
+            </tr>
+            <tr>
+              <td><strong>ND (National Delivery)</strong></td>
+              <td style="text-align: right;">₹12.8 Cr</td>
+              <td style="text-align: right;">₹12.2 Cr</td>
+              <td style="text-align: right; color: var(--red);">-₹0.6 Cr</td>
+              <td style="text-align: right; color: var(--red);">-4.7%</td>
+              <td style="text-align: right;">95%</td>
+              <td><span class="badge badge-amber">⚠ Below Plan</span></td>
+            </tr>
+            <tr>
+              <td><strong>NES (National Enterprise Services)</strong></td>
+              <td style="text-align: right;">₹6.4 Cr</td>
+              <td style="text-align: right;">₹6.8 Cr</td>
+              <td style="text-align: right; color: var(--green);">+₹0.4 Cr</td>
+              <td style="text-align: right; color: var(--green);">+6.3%</td>
+              <td style="text-align: right;">106%</td>
+              <td><span class="badge badge-green">✓ Exceeding</span></td>
+            </tr>
+            <tr>
+              <td><strong>GLOBAL (International Operations)</strong></td>
+              <td style="text-align: right;">₹2.8 Cr</td>
+              <td style="text-align: right;">₹3.6 Cr</td>
+              <td style="text-align: right; color: var(--green);">+₹0.8 Cr</td>
+              <td style="text-align: right; color: var(--green);">+28.6%</td>
+              <td style="text-align: right;">129%</td>
+              <td><span class="badge badge-green">✓ Outstanding</span></td>
+            </tr>
+            <tr style="font-weight: 700; background: #F0F9FF;">
+              <td><strong>TOTAL</strong></td>
+              <td style="text-align: right;">₹36.2 Cr</td>
+              <td style="text-align: right;">₹37.4 Cr</td>
+              <td style="text-align: right; color: var(--green);">+₹1.2 Cr</td>
+              <td style="text-align: right; color: var(--green);">+3.3%</td>
+              <td style="text-align: right;">103%</td>
+              <td><span class="badge badge-green">✓ On Target</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="data-freshness" style="margin-top: 14px;">
+        <div class="dot"></div>
+        <span>Data as of 27 Mar 2026, 07:45 IST • Finance</span>
+      </div>
+    </div>
+
+    <!-- BU Performance Summary -->
+    <div class="grid grid-2-1">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">BU Performance Ranking</div>
+        </div>
+        <div style="margin: 12px 0;">
+          <div style="margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span style="font-weight: 600; font-size: 12px;">1. GLOBAL</span>
+              <span style="color: var(--green); font-weight: 600;">+28.6%</span>
+            </div>
+            <div class="gauge-bar"><div class="gauge-fill green" style="width: 100%;"></div></div>
+          </div>
+          <div style="margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span style="font-weight: 600; font-size: 12px;">2. NES</span>
+              <span style="color: var(--green); font-weight: 600;">+6.3%</span>
+            </div>
+            <div class="gauge-bar"><div class="gauge-fill green" style="width: 65%;"></div></div>
+          </div>
+          <div style="margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span style="font-weight: 600; font-size: 12px;">3. NHS</span>
+              <span style="color: var(--green); font-weight: 600;">+4.2%</span>
+            </div>
+            <div class="gauge-bar"><div class="gauge-fill green" style="width: 45%;"></div></div>
+          </div>
+          <div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span style="font-weight: 600; font-size: 12px;">4. ND</span>
+              <span style="color: var(--red); font-weight: 600;">-4.7%</span>
+            </div>
+            <div class="gauge-bar"><div class="gauge-fill red" style="width: 25%;"></div></div>
+          </div>
+        </div>
+        <div class="data-freshness">
+          <div class="dot"></div>
+          <span>Data as of 27 Mar 2026, 07:45 IST • Finance</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Key Observations</div>
+        </div>
+        <div style="margin: 12px 0; font-size: 11px; line-height: 1.6; color: var(--text);">
+          <div style="margin-bottom: 8px;">
+            <div style="font-weight: 600; color: var(--green); margin-bottom: 2px;">✓ Org Overall</div>
+            <div>3.3% above plan — delivering strong Q1 performance</div>
+          </div>
+          <div style="margin-bottom: 8px;">
+            <div style="font-weight: 600; color: var(--green); margin-bottom: 2px;">✓ GLOBAL Growth</div>
+            <div>Exceptional growth (+28.6%) driven by new client wins in APAC</div>
+          </div>
+          <div style="margin-bottom: 8px;">
+            <div style="font-weight: 600; color: var(--orange); margin-bottom: 2px;">⚠ ND Shortfall</div>
+            <div>4.7% below plan — key account churn & project delays</div>
+          </div>
+          <div>
+            <div style="font-weight: 600; color: var(--text); margin-bottom: 2px;">→ Action Items</div>
+            <div>ND recovery plan due by 31 Mar; escalation mgmt underway</div>
+          </div>
+        </div>
+        <div class="data-freshness" style="margin-top: 8px;">
+          <div class="dot"></div>
+          <span>Data as of 27 Mar 2026, 07:45 IST • Finance</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Back Button -->
+    <div style="margin-top: 14px;">
+      <a href="finance.html" class="btn btn-secondary">← Back to Finance</a>
+    </div>
+  </div>
+  <!-- GLOBAL FOOTER -->
+  <div class="global-footer">Nalashaa &copy; 2026 &nbsp;&middot;&nbsp; All rights reserved</div>
+
+  <script src="shared.js"></script>
+</body>
+</html>

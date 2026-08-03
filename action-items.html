@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Action Items &amp; Escalations — Pulse · Nalashaa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .ai-tab-bar{display:flex;border-bottom:2px solid var(--border);margin-bottom:16px;}
+    .ai-tab{padding:10px 18px;cursor:pointer;font-size:12px;font-weight:700;color:var(--text-muted);border-bottom:3px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:6px;user-select:none;}
+    .ai-tab.amber.active{color:#92400E;border-bottom-color:#F59E0B;}
+    .ai-tab.red.active{color:#991B1B;border-bottom-color:#DC2626;}
+    .ai-tab:not(.active):hover{color:var(--text);background:var(--bg);}
+    .ai-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px;}
+    .ai-summary-item{background:var(--card);border-radius:8px;padding:12px 14px;border:1px solid var(--border);cursor:pointer;}
+    .ai-summary-label{font-size:10px;text-transform:uppercase;letter-spacing:.3px;color:var(--text-muted);font-weight:600;margin-bottom:4px;}
+    .ai-summary-val{font-size:20px;font-weight:700;color:var(--navy);}
+    .ai-summary-val.red{color:var(--red);} .ai-summary-val.amber{color:var(--amber);} .ai-summary-val.green{color:var(--green);}
+    .ai-pane{display:none;} .ai-pane.active{display:block;}
+    .tbl-wrap{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+    .clickable-row{cursor:pointer;} .clickable-row:hover td{background:#EFF6FF;}
+    .expand-detail{display:none;} .expand-detail.open{display:table-row;}
+    .expand-cell{background:#F8FAFC;padding:10px 14px;font-size:12px;color:var(--text-muted);border-bottom:1px solid var(--border);}
+    .add-row-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:6px;font-size:11px;font-weight:700;border:none;cursor:pointer;}
+    .add-row-btn.amber{background:#FEF3C7;color:#92400E;border:1px solid #F59E0B;}
+    .add-row-btn.amber:hover{background:#F59E0B;color:#fff;}
+    .add-row-btn.red{background:#FEE2E2;color:#991B1B;border:1px solid #DC2626;}
+    .add-row-btn.red:hover{background:#DC2626;color:#fff;}
+    .creator-stamp{font-size:10px;color:var(--text-muted);margin-top:2px;display:flex;align-items:center;gap:3px;}
+    .esc-type-ext{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;background:#FEE2E2;color:#991B1B;}
+    .esc-type-int{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;background:#EDE9FE;color:#5B21B6;}
+    .tbl-section-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+    .filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+    .filter-bar select{font-size:12px;border:1px solid var(--border);border-radius:6px;padding:6px 10px;background:var(--card);color:var(--text);font-family:var(--font);cursor:pointer;}
+
+    th.filterable{cursor:pointer;user-select:none;}
+    th.filterable .cfwrap{display:inline-flex;align-items:center;gap:5px;}
+    th.filterable .cfi{font-size:9px;opacity:.65;}
+    th.filterable.cf-on{background:#1a3a6e !important;}
+    th.filterable.cf-on .cfi{opacity:1;color:#F97316;}
+    .cf-panel{display:none;position:fixed;z-index:9999;background:#fff;border:1px solid #CBD5E1;
+      border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.15);min-width:172px;padding:6px 0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+    .cf-panel.cf-open{display:block;}
+    .cf-panel label{display:flex;align-items:center;gap:8px;padding:6px 14px;font-size:11px;
+      font-weight:500;color:#1E293B !important;cursor:pointer;white-space:nowrap;}
+    .cf-panel label:hover{background:#F1F5F9;}
+    .cf-panel label input[type=checkbox]{accent-color:#002060;width:13px;height:13px;flex-shrink:0;}
+    .cf-panel hr{border:none;border-top:1px solid #E2E8F0;margin:4px 0;}
+    .cf-panel .cf-apply{display:block;margin:5px 10px 3px;padding:5px 0;text-align:center;
+      background:#002060;color:#fff !important;border:none;border-radius:5px;font-size:11px;
+      font-weight:700;cursor:pointer;width:calc(100% - 20px);font-family:inherit;}
+    .cf-panel .cf-apply:hover{background:#1a3a6e;}
+    .cf-panel .cf-clear{display:block;margin:0 10px 5px;padding:4px 0;text-align:center;
+      background:transparent;color:#64748B !important;border:1px solid #CBD5E1;border-radius:5px;
+      font-size:10px;cursor:pointer;width:calc(100% - 20px);font-family:inherit;}
+    .cf-panel .cf-clear:hover{background:#F8FAFC;}
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="hamburger-btn" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+      <div class="pulse-logo">
+        <span class="pulse-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="1" y="3" width="20" height="14" rx="2" stroke="#3B82F6" stroke-width="1.6" fill="none"/><rect x="0" y="16" width="22" height="2.5" rx="1" fill="#3B82F6" opacity="0.25"/><rect x="8" y="18.5" width="6" height="1.5" rx="0.75" fill="#3B82F6"/><polyline points="2,11 5,11 7,6 9,15 11,8 13,13 15,11 20,11" stroke="#3B82F6" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <div style="position:relative;">
+        <button class="theme-btn" onclick="toggleThemePicker()"><i class="bi bi-palette"></i></button>
+        <div class="theme-picker" id="themePicker">
+          <div class="theme-picker-title">Colour Theme</div>
+          <div class="theme-swatches">
+            <div class="theme-swatch blue active" data-theme="blue" onclick="setTheme('blue')"></div>
+            <div class="theme-swatch teal"  data-theme="teal"  onclick="setTheme('teal')"></div>
+            <div class="theme-swatch violet" data-theme="violet" onclick="setTheme('violet')"></div>
+          </div>
+          <div class="theme-divider"></div>
+          <div class="theme-mode-row"><span class="mode-label">Light</span>
+            <div class="theme-toggle" id="modeToggle" onclick="toggleDarkMode()"><div class="theme-toggle-knob"></div></div>
+          </div>
+        </div>
+      </div>
+      <button class="tickets-btn" onclick="toggleTickets()"><i class="bi bi-ticket-perforated"></i><div class="badge">5</div></button>
+      <button class="help-btn" onclick="toggleHelp()">?</button>
+      <div class="alert-bell" onclick="toggleNotif()"><i class="bi bi-bell-fill"></i><div class="badge">4</div></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <div class="help-overlay" id="helpOverlay" onclick="toggleHelp()"></div>
+  <div class="help-panel" id="helpPanel">
+    <div class="help-panel-header"><span class="help-panel-title">Help &amp; Guide</span><span style="cursor:pointer;opacity:.6;font-size:20px;" onclick="toggleHelp()">&#10005;</span></div>
+    <div class="help-panel-body"><div class="help-toc-section"><div class="help-toc-title">This Page</div>
+      <div class="help-toc-item"><span class="help-toc-item-icon">&#x1F7E1;</span><div><div class="help-toc-item-title">Action Items</div><div class="help-toc-item-desc">Tracked tasks. Click &#9663; on column headers to filter.</div></div></div>
+      <div class="help-toc-item"><span class="help-toc-item-icon">&#x1F534;</span><div><div class="help-toc-item-title">Escalations</div><div class="help-toc-item-desc">Logged escalations with department and age filters.</div></div></div>
+    </div></div>
+  </div>
+
+  <div class="tickets-overlay" id="ticketsOverlay" onclick="closeTickets()"></div>
+  <div class="tickets-panel" id="ticketsPanel">
+    <div class="tickets-panel-header"><span class="tickets-panel-title"><i class="bi bi-ticket-perforated"></i> Feature Tickets</span><span onclick="closeTickets()" style="cursor:pointer;opacity:.5;font-size:18px;">&#10005;</span></div>
+    <div class="tickets-panel-body"><div class="ticket-item medium"><div class="ticket-id">BMD-039</div><div class="ticket-desc">Export current view to PDF report</div><div class="ticket-tag medium">Medium</div></div></div>
+  </div>
+
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-header"><span>Notifications</span><div style="display:flex;gap:6px;align-items:center;">
+      <button class="notif-pin-btn" id="notifPinBtn" onclick="pinNotif()"><i class="bi bi-pin-angle"></i></button>
+      <span style="opacity:.5;cursor:pointer;font-size:18px;" onclick="toggleNotif()">&#10005;</span>
+    </div></div>
+    <div class="notif-item"><div class="notif-type" style="color:var(--red);">Overdue</div><div class="notif-text">Action item overdue - Commercial response for BioSync</div><div class="notif-time">Yesterday</div></div>
+  </div>
+
+  <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html" class="active"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+    <div class="sidebar-brand"><img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo"></div>
+  </div>
+
+  <div class="main">
+    <div class="breadcrumb"><span>Action Items &amp; Escalations</span></div>
+    <div class="page-title">Action Items &amp; Escalations</div>
+    <div class="page-subtitle">Organisation-wide register. Click &#9663; on column headers to filter. Each entry bears the creator stamp.</div>
+
+    <div class="ai-tab-bar">
+      <div class="ai-tab amber active" id="tab-actions" onclick="switchTab('actions')">
+        <i class="bi bi-check2-circle"></i> Action Items
+        <span style="background:#FEF3C7;color:#92400E;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:4px;" id="badge-actions">7</span>
+      </div>
+      <div class="ai-tab red" id="tab-escs" onclick="switchTab('escs')">
+        <i class="bi bi-exclamation-octagon-fill"></i> Escalations
+        <span style="background:#FEE2E2;color:#991B1B;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:4px;" id="badge-escs">5</span>
+      </div>
+    </div>
+
+    <div class="ai-pane active" id="pane-actions">
+      <div class="ai-summary">
+        <div class="ai-summary-item" id="tile-all" onclick="filterAI('all',this)" style="border-left:4px solid var(--amber);">
+          <div class="ai-summary-label">Total Open</div><div class="ai-summary-val" id="cnt-all">7</div>
+        </div>
+        <div class="ai-summary-item" id="tile-overdue" onclick="filterAI('overdue',this)">
+          <div class="ai-summary-label">Overdue</div><div class="ai-summary-val red" id="cnt-overdue">2</div>
+        </div>
+        <div class="ai-summary-item" id="tile-week" onclick="filterAI('week',this)">
+          <div class="ai-summary-label">Due This Week</div><div class="ai-summary-val amber" id="cnt-week">3</div>
+        </div>
+        <div class="ai-summary-item" id="tile-inprogress" onclick="filterAI('inprogress',this)">
+          <div class="ai-summary-label">In Progress</div><div class="ai-summary-val amber" id="cnt-inprogress">4</div>
+        </div>
+        <div class="ai-summary-item" id="tile-done" onclick="filterAI('done',this)">
+          <div class="ai-summary-label">Done</div><div class="ai-summary-val green" id="cnt-done">1</div>
+        </div>
+      </div>
+      <div class="tbl-section-hdr">
+        <div class="filter-bar">
+          <select onchange="filterAI(this.value,null)">
+            <option value="all">All open</option><option value="overdue">Overdue</option>
+            <option value="week">Due this week</option><option value="inprogress">In progress</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
+        <button class="add-row-btn amber" onclick="addNewRow()"><i class="bi bi-plus-lg"></i> Add Action Item</button>
+      </div>
+      <div class="tbl-wrap">
+        <table id="ai-table"><thead><tr>
+          <th>Action Item</th>
+          <th class="filterable" id="th-ai-owner" onclick="cfOpen(this)"><span class="cfwrap">Owner <span class="cfi">&#9663;</span></span></th>
+          <th class="filterable" id="th-ai-dept"  onclick="cfOpen(this)" style="width:110px;"><span class="cfwrap">Department <span class="cfi">&#9663;</span></span></th>
+          <th class="filterable" id="th-ai-cat"   onclick="cfOpen(this)" style="width:100px;"><span class="cfwrap">Category <span class="cfi">&#9663;</span></span></th>
+          <th style="width:88px;">Due Date</th>
+          <th style="width:88px;">Done Date</th>
+          <th class="filterable" id="th-ai-status" onclick="cfOpen(this)" style="width:88px;"><span class="cfwrap">Status <span class="cfi">&#9663;</span></span></th>
+          <th class="filterable" id="th-ai-delay"  onclick="cfOpen(this)" style="width:85px;"><span class="cfwrap">Delay <span class="cfi">&#9663;</span></span></th>
+        </tr></thead>
+        <tbody id="ai-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <div class="ai-pane" id="pane-escs">
+      <div class="ai-summary">
+        <div class="ai-summary-item" style="border-left:4px solid var(--red);">
+          <div class="ai-summary-label">Total Open</div><div class="ai-summary-val red">3</div></div>
+        <div class="ai-summary-item"><div class="ai-summary-label">In Progress</div><div class="ai-summary-val amber">1</div></div>
+        <div class="ai-summary-item"><div class="ai-summary-label">Monitoring</div><div class="ai-summary-val" style="color:var(--text-muted);">1</div></div>
+        <div class="ai-summary-item"><div class="ai-summary-label">External</div><div class="ai-summary-val red">3</div></div>
+        <div class="ai-summary-item"><div class="ai-summary-label">Internal</div><div class="ai-summary-val" style="color:#5B21B6;">2</div></div>
+      </div>
+      <div class="tbl-section-hdr">
+        <div class="filter-bar">
+          <select onchange="filterEsc(this.value)">
+            <option value="all">All</option><option value="ext">External only</option>
+            <option value="int">Internal only</option><option value="open">Open</option><option value="mon">Monitoring</option>
+          </select>
+        </div>
+        <button class="add-row-btn red" onclick="addNewEscRow()"><i class="bi bi-plus-lg"></i> Add Escalation</button>
+      </div>
+      <div class="tbl-wrap">
+        <table id="esc-table"><thead><tr>
+          <th>Account / Unit</th>
+          <th class="filterable" id="th-esc-type"   onclick="cfOpen(this)" style="width:88px;"><span class="cfwrap">Type <span class="cfi">&#9663;</span></span></th>
+          <th class="filterable" id="th-esc-cat"    onclick="cfOpen(this)" style="width:148px;"><span class="cfwrap">Category <span class="cfi">&#9663;</span></span></th>
+          <th class="filterable" id="th-esc-owner"  onclick="cfOpen(this)" style="width:115px;"><span class="cfwrap">Owner <span class="cfi">&#9663;</span></span></th>
+          <th class="filterable" id="th-esc-dept"   onclick="cfOpen(this)" style="width:110px;"><span class="cfwrap">Department <span class="cfi">&#9663;</span></span></th>
+          <th style="width:108px;">Resolution Date</th>
+          <th class="filterable" id="th-esc-status" onclick="cfOpen(this)" style="width:98px;"><span class="cfwrap">Status <span class="cfi">&#9663;</span></span></th>
+          <th class="filterable" id="th-esc-age"    onclick="cfOpen(this)" style="width:72px;"><span class="cfwrap">Age <span class="cfi">&#9663;</span></span></th>
+        </tr></thead>
+        <tbody id="esc-tbody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bar"><span class="data-freshness"><span class="dot"></span>BMD v2.3 &middot; Data as of May 19, 2026 07:00 IST</span></div>
+  <div class="global-footer">Nalashaa &copy; 2026 &middot; All rights reserved</div>
+
+  <script>
+
+    /* ═══ COLUMN FILTER ENGINE ════════════════════════════════ */
+    var _cfP=null,_cfTh=null,_cfKey=null,_cfState=null,_cfRender=null,_cfQuick=null,_cfBuckets=null,_cfGetter=null;
+    function _cfPanel(){
+      if(!_cfP){
+        _cfP=document.createElement('div');
+        _cfP.className='cf-panel';
+        document.body.appendChild(_cfP);
+        document.addEventListener('click',function(e){
+          if(!e.target.closest('.cf-panel')&&!e.target.closest('.filterable'))_cfClose();
+        });
+        document.addEventListener('keydown',function(e){if(e.key==='Escape')_cfClose();});
+        window.addEventListener('scroll',_cfClose,true);
+      }
+      return _cfP;
+    }
+    function _cfClose(){var p=_cfPanel();p.classList.remove('cf-open');_cfTh=null;}
+    function cfOpen(th){
+      /* th element carries: data-cfkey, data-cftable */
+      var thId=th.id;
+      if(_cfTh===thId){_cfClose();return;}
+      _cfClose(); _cfTh=thId;
+      _cfKey=th.dataset.cfkey; _cfState=th._cfState; _cfRender=th._cfRender;
+      _cfQuick=th._cfQuick; _cfBuckets=th._cfBuckets; _cfGetter=th._cfGetter;
+      var vals=_cfBuckets||( (function(){var s={},r=[];_cfGetter().forEach(function(v){if(v&&!s[v]){s[v]=1;r.push({val:v,lbl:v});}});return r;})() );
+      var checked=_cfState[_cfKey]||[];
+      var html=vals.map(function(o){
+        var ck=checked.indexOf(o.val)>=0?' checked':'';
+        return '<label><input type="checkbox" value="'+o.val+'"'+ck+'>'+o.lbl+'</label>';
+      }).join('');
+      html+='<hr><button class="cf-apply" onclick="cfApply()">Apply</button><button class="cf-clear" onclick="cfClear()">Clear</button>';
+      var p=_cfPanel(); p.innerHTML=html;
+      var r=th.getBoundingClientRect();
+      p.style.top=(r.bottom+2)+'px'; p.style.left=Math.max(0,r.left)+'px';
+      p.classList.add('cf-open');
+      requestAnimationFrame(function(){var pr=p.getBoundingClientRect();if(pr.right>window.innerWidth-8)p.style.left=(r.right-pr.width)+'px';});
+    }
+    function cfApply(){
+      var checked=Array.from(_cfPanel().querySelectorAll('input:checked')).map(function(i){return i.value;});
+      _cfState[_cfKey]=checked;
+      var th=document.getElementById(_cfTh);
+      if(th)th.classList.toggle('cf-on',checked.length>0);
+      _cfClose(); _cfRender(_cfQuick());
+    }
+    function cfClear(){
+      _cfState[_cfKey]=[];
+      var th=document.getElementById(_cfTh);
+      if(th)th.classList.remove('cf-on');
+      _cfClose(); _cfRender(_cfQuick());
+    }
+    /* wire up th elements after DOM ready */
+    function cfWire(thId,colKey,state,renderFn,quickFn,buckets,getter){
+      var th=document.getElementById(thId);
+      if(!th)return;
+      th.dataset.cfkey=colKey;
+      th._cfState=state; th._cfRender=renderFn; th._cfQuick=quickFn;
+      th._cfBuckets=buckets||null; th._cfGetter=getter||null;
+    }
+    /* ══════════════════════════════════════════════════════════ */
+    var TODAY=new Date('2026-05-19'),CURRENT_USER='John Doe';
+    function daysBetween(a,b){return Math.round((b-a)/86400000);}
+
+    var PAGE_AI=[
+      {id:'ai1',desc:'Commercial response for BioSync Q2 forecast deficit',owner:'Rajesh K.',dept:'Account Mgmt',category:'General',due:'2026-04-07',done:null,status:'Overdue',createdBy:'John Doe',notes:'Agreed in Week 14 review. AM to lead commercial response with DM support.'},
+      {id:'ai2',desc:'Resourcing plan for HealthFirst US - 2 senior exits',owner:'Rajesh K.',dept:'Account Mgmt',category:'General',due:'2026-04-10',done:null,status:'Overdue',createdBy:'Sarah M.',notes:'AM side unconfirmed. Redeployment of 1 resource in progress.'},
+      {id:'ai3',desc:'Clear MedTech EMR P1 defect backlog before Sprint 15',owner:'John D.',dept:'Engineering',category:'General',due:'2026-04-14',done:null,status:'In Progress',createdBy:'John Doe',notes:'Senior devs assigned. Hotfix build Apr 14. On track if no regressions.'},
+      {id:'ai4',desc:'Client comm cadence improvement - BioSync Labs',owner:'Sarah M.',dept:'Account Mgmt',category:'ESC',due:'2026-04-15',done:null,status:'In Progress',createdBy:'John Doe',notes:'Weekly updates resumed Apr 7. Fortnightly exec sync scheduled.'},
+      {id:'ai5',desc:'Complete expansion proposal draft for MedTech Corp',owner:'Sarah M.',dept:'Account Mgmt',category:'Mining',due:'2026-04-16',done:null,status:'In Progress',createdBy:'Sarah M.',notes:'Revised Apr 5 to Apr 16: client requested ROI section addition.'},
+      {id:'ai6',desc:'Identify and deploy bench resources to active projects',owner:'John D.',dept:'Engineering',category:'General',due:'2026-04-20',done:null,status:'Open',createdBy:'John Doe',notes:'Nisha R. (bench 48d) - candidate for HealthFirst US gap.'},
+      {id:'ai7',desc:'Improve Discipline score: Sprint 15 carry-fwd target <=15%',owner:'John D.',dept:'Engineering',category:'General',due:'2026-04-21',done:null,status:'Open',createdBy:'Priya K.',notes:'Sprint 15 planning to cap carry-fwd at 15%.'},
+      {id:'ai8',desc:'Submit renewal SOW for WellnessOne - verbal received',owner:'Priya K.',dept:'Account Mgmt',category:'Mining',due:'2026-04-25',done:'2026-04-23',status:'Done',createdBy:'Priya K.',notes:'Completed 2 days ahead of schedule.'}
+    ];
+    var AI_CF={owner:[],dept:[],cat:[],status:[],delay:[]};
+
+    var ESC_CATS={'External':['Invoices/Payments','Quality of Deliverables','Discipline','Budget'],'Internal':['SDLC Discipline','Mining/Visibility','Resourcing','Communication']};
+    var PAGE_ESC=[
+      {id:'e1',acct:'MedTech Corp',type:'External',cat:'Quality of Deliverables',owner:'Sarah M.',dept:'Account Mgmt',openDate:'2026-04-06',resDate:'Apr 20, 2026',status:'Open',createdBy:'John Doe',desc:'Sprint 14 defect spike - 3 P1 bugs during client UAT. Hotfix in progress.'},
+      {id:'e2',acct:'HealthFirst US',type:'External',cat:'Budget',owner:'Rajesh K.',dept:'Account Mgmt',openDate:'2026-04-11',resDate:'Apr 25, 2026',status:'In Progress',createdBy:'Sarah M.',desc:'Two senior engineers resigned. Team at 78% capacity. Timeline in negotiation.'},
+      {id:'e3',acct:'BioSync Labs',type:'External',cat:'Invoices/Payments',owner:'Sarah M.',dept:'Account Mgmt',openDate:'2026-04-01',resDate:'Apr 15, 2026',status:'Monitoring',createdBy:'John Doe',desc:'Invoice dispute on Q1 milestone - client holding payment pending sign-off.'},
+      {id:'e4',acct:'HLS - MedTech Pod',type:'Internal',cat:'SDLC Discipline',owner:'John Doe',dept:'Engineering',openDate:'2026-04-25',resDate:'May 10, 2026',status:'Open',createdBy:'Priya K.',desc:'Sprint carry-forward >20% for 3 consecutive sprints. Root cause: scope creep.'},
+      {id:'e5',acct:'HLS - HealthFirst',type:'Internal',cat:'Resourcing',owner:'John Doe',dept:'Engineering',openDate:'2026-05-04',resDate:'May 15, 2026',status:'In Progress',createdBy:'John Doe',desc:'2 senior exits not backfilled. Internal mobility request pending approval.'}
+    ];
+    var ESC_CF={type:[],cat:[],owner:[],dept:[],status:[],age:[]};
+
+    function delayBucket(item){
+      var d=daysBetween(new Date(item.due),TODAY);
+      if(item.status==='Done'&&item.done)d=daysBetween(new Date(item.due),new Date(item.done));
+      if(d<=0)return 'ontime';if(d<=7)return '1-7';if(d<=30)return '7-30';return '>30';
+    }
+    function delayLabel(item){
+      if(item.status==='Done'){
+        if(!item.done)return '-';
+        var d=daysBetween(new Date(item.due),new Date(item.done));
+        return d>0?'<span style="color:var(--red);font-weight:700;">+'+d+'d late</span>':d<0?'<span style="color:var(--green);font-weight:700;">'+Math.abs(d)+'d early</span>':'<span style="color:var(--green);">On time</span>';
+      }
+      var d=daysBetween(new Date(item.due),TODAY);
+      if(d>0)return '<span style="color:var(--red);font-weight:700;">+'+d+'d</span>';
+      if(d===0)return '<span style="color:var(--amber);font-weight:700;">Due today</span>';
+      return '<span style="color:var(--text-muted);">'+Math.abs(d)+'d left</span>';
+    }
+    function ageDays(item){return daysBetween(new Date(item.openDate),TODAY);}
+    function ageBucket(item){var d=ageDays(item);return d<7?'<7':d<=30?'7-30':'>30';}
+    function ageLabel(item){var d=ageDays(item);var c=d>30?'color:var(--red);font-weight:700;':d>7?'color:var(--amber);font-weight:700;':'color:var(--text-muted);';return '<span style="'+c+'">'+d+'d</span>';}
+    function statusBadge(s){if(s==='Overdue')return '<span class="badge badge-red">Overdue</span>';if(s==='In Progress')return '<span class="badge badge-amber">In Progress</span>';if(s==='Done')return '<span class="badge badge-green">Done</span>';return '<span class="badge badge-muted">Open</span>';}
+
+    var _curFilter='all';
+    function renderRows(f){
+      if(f!=null)_curFilter=f;else f=_curFilter;
+      var today=TODAY,wEnd=new Date(today);wEnd.setDate(today.getDate()+7);
+      var html='';
+      PAGE_AI.forEach(function(item){
+        var due=new Date(item.due),show=false;
+        if(f==='all')show=item.status!=='Done';
+        else if(f==='overdue')show=item.status==='Overdue'||(item.status!=='Done'&&due<today);
+        else if(f==='week')show=item.status!=='Done'&&due>=today&&due<=wEnd;
+        else if(f==='inprogress')show=item.status==='In Progress';
+        else if(f==='done')show=item.status==='Done';
+        else show=true;
+        if(!show)return;
+        if(AI_CF.owner.length&&AI_CF.owner.indexOf(item.owner)<0)return;
+        if(AI_CF.dept.length&&AI_CF.dept.indexOf(item.dept)<0)return;
+        if(AI_CF.cat.length&&AI_CF.cat.indexOf(item.category)<0)return;
+        if(AI_CF.status.length&&AI_CF.status.indexOf(item.status)<0)return;
+        if(AI_CF.delay.length&&AI_CF.delay.indexOf(delayBucket(item))<0)return;
+        var dd=item.done?item.done.slice(5).replace('-','/'):'<span style="color:var(--text-muted);">-</span>';
+        html+='<tr class="clickable-row" onclick="tgAI(this,\''+item.id+'\')"><td><strong>'+item.desc+'</strong><div class="creator-stamp"><i class="bi bi-person-fill"></i> Created by '+item.createdBy+'</div></td>'
+          +'<td style="font-size:11px;">'+item.owner+'</td>'
+          +'<td><span style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:2px 8px;font-size:11px;">'+item.dept+'</span></td>'
+          +'<td style="font-size:11px;color:var(--text-muted);">'+item.category+'</td>'
+          +'<td style="font-size:12px;">'+item.due.slice(5).replace('-','/')+'</td>'
+          +'<td style="font-size:12px;">'+dd+'</td>'
+          +'<td>'+statusBadge(item.status)+'</td>'
+          +'<td>'+delayLabel(item)+'</td>'
+          +'</tr>'
+          +'<tr id="aid-'+item.id+'" class="expand-detail"><td colspan="8" class="expand-cell"><i class="bi bi-journal-text"></i>&nbsp; '+item.notes+'</td></tr>';
+      });
+      if(!html)html='<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted);font-size:12px;">No items match.</td></tr>';
+      document.getElementById('ai-tbody').innerHTML=html;
+    }
+    function tgAI(row,id){var r=document.getElementById('aid-'+id);if(r)r.classList.toggle('open');}
+    function filterAI(f,el){document.querySelectorAll('.ai-summary-item').forEach(function(t){t.style.borderLeft='';});if(el)el.style.borderLeft='4px solid var(--amber)';renderRows(f);}
+
+    var _escFilter='all';
+    function renderEscRows(f){
+      if(f!=null)_escFilter=f;else f=_escFilter;
+      var html='';
+      PAGE_ESC.forEach(function(item){
+        var show=false;
+        if(f==='all')show=true;else if(f==='ext')show=item.type==='External';else if(f==='int')show=item.type==='Internal';else if(f==='open')show=item.status==='Open';else if(f==='mon')show=item.status==='Monitoring';else show=true;
+        if(!show)return;
+        if(ESC_CF.type.length&&ESC_CF.type.indexOf(item.type)<0)return;
+        if(ESC_CF.cat.length&&ESC_CF.cat.indexOf(item.cat)<0)return;
+        if(ESC_CF.owner.length&&ESC_CF.owner.indexOf(item.owner)<0)return;
+        if(ESC_CF.dept.length&&ESC_CF.dept.indexOf(item.dept)<0)return;
+        if(ESC_CF.status.length&&ESC_CF.status.indexOf(item.status)<0)return;
+        if(ESC_CF.age.length&&ESC_CF.age.indexOf(ageBucket(item))<0)return;
+        var tc=item.type==='External'?'esc-type-ext':'esc-type-int';
+        var sb=item.status==='Open'?'<span class="badge badge-red">Open</span>':item.status==='In Progress'?'<span class="badge badge-amber">In Progress</span>':'<span class="badge badge-muted">Monitoring</span>';
+        html+='<tr class="clickable-row" onclick="tgEsc(this,\''+item.id+'\')"><td><strong>'+item.acct+'</strong><div class="creator-stamp"><i class="bi bi-person-fill"></i> Created by '+item.createdBy+'</div></td>'
+          +'<td><span class="'+tc+'">'+item.type+'</span></td>'
+          +'<td style="font-size:11px;">'+item.cat+'</td>'
+          +'<td style="font-size:11px;">'+item.owner+'</td>'
+          +'<td style="font-size:11px;"><span style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:2px 8px;">'+item.dept+'</span></td>'
+          +'<td style="font-size:11px;">'+item.resDate+'</td>'
+          +'<td>'+sb+'</td>'
+          +'<td>'+ageLabel(item)+'</td>'
+          +'</tr>'
+          +'<tr id="escd-'+item.id+'" class="expand-detail"><td colspan="8" class="expand-cell"><i class="bi bi-journal-text"></i>&nbsp; '+item.desc+'</td></tr>';
+      });
+      if(!html)html='<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted);font-size:12px;">No escalations match.</td></tr>';
+      document.getElementById('esc-tbody').innerHTML=html;
+    }
+    function tgEsc(row,id){var r=document.getElementById('escd-'+id);if(r)r.classList.toggle('open');}
+    function filterEsc(f){renderEscRows(f);}
+
+    var _nR=0;
+    function addNewRow(){
+      _nR++;var id='n'+_nR;
+      var dO=['Engineering','Account Mgmt','HR','PMO','Finance','TA','General'].map(function(d){return '<option>'+d+'</option>';}).join('');
+      var cO=['General','ESC','Mining','HR','Finance','PMO','TA'].map(function(c){return '<option>'+c+'</option>';}).join('');
+      var row=document.createElement('tr');row.id='nr-'+id;row.style.background='rgba(245,158,11,0.05)';
+      row.innerHTML='<td><input type="text" placeholder="Describe the action item..." style="width:100%;border:1px solid #F59E0B;border-radius:4px;padding:4px 8px;font-size:12px;font-family:inherit;background:var(--card);color:var(--text);"><div class="creator-stamp"><i class="bi bi-person-fill"></i> '+CURRENT_USER+'</div></td>'
+        +'<td><input type="text" placeholder="Owner" style="width:100%;border:1px solid var(--border);border-radius:4px;padding:4px 6px;font-size:11px;font-family:inherit;background:var(--card);color:var(--text);"></td>'
+        +'<td><select style="font-size:11px;border:1px solid var(--border);border-radius:4px;padding:4px 6px;font-family:inherit;background:var(--card);color:var(--text);width:100%;">'+dO+'</select></td>'
+        +'<td><select style="font-size:11px;border:1px solid var(--border);border-radius:4px;padding:4px 6px;font-family:inherit;background:var(--card);color:var(--text);width:100%;">'+cO+'</select></td>'
+        +'<td><input type="date" style="width:100%;border:1px solid var(--border);border-radius:4px;padding:4px 6px;font-size:11px;font-family:inherit;background:var(--card);color:var(--text);"></td>'
+        +'<td>-</td><td><span class="badge badge-muted">Open</span></td>'
+        +'<td><button onclick="svR(\''+id+'\')" style="font-size:10px;padding:3px 8px;border-radius:4px;background:var(--amber);color:#fff;border:none;cursor:pointer;font-weight:700;">Save</button>'
+        +' <button onclick="document.getElementById(\'nr-'+id+'\').remove()" style="font-size:10px;padding:3px 8px;border-radius:4px;background:transparent;border:1px solid var(--border);cursor:pointer;">&#10005;</button></td>';
+      var tb=document.getElementById('ai-tbody');tb.insertBefore(row,tb.firstChild);
+    }
+    function svR(id){
+      var row=document.getElementById('nr-'+id),ii=row.querySelectorAll('input[type=text]'),ss=row.querySelectorAll('select');
+      var desc=ii[0]?ii[0].value.trim():'(Untitled)',owner=ii[1]?ii[1].value.trim():'-',dept=ss[0]?ss[0].value:'-',cat=ss[1]?ss[1].value:'-';
+      var due=row.querySelector('input[type=date]')?row.querySelector('input[type=date]').value:'';
+      row.innerHTML='<td><strong>'+(desc||'Untitled')+'</strong><div class="creator-stamp"><i class="bi bi-person-fill"></i> '+CURRENT_USER+'</div></td>'
+        +'<td style="font-size:11px;">'+owner+'</td>'
+        +'<td><span style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:2px 8px;font-size:11px;">'+dept+'</span></td>'
+        +'<td style="font-size:11px;color:var(--text-muted);">'+cat+'</td>'
+        +'<td style="font-size:12px;">'+(due?due.slice(5).replace('-','/'):'--')+'</td>'
+        +'<td>-</td><td><span class="badge badge-muted">Open</span></td><td>-</td>';
+    }
+    var _nE=0;
+    function addNewEscRow(){
+      _nE++;var id='ne'+_nE;
+      var eO=ESC_CATS['External'].map(function(c){return '<option>'+c+'</option>';}).join('');
+      var dO=['Account Mgmt','Engineering','HR','PMO','Finance','TA'].map(function(d){return '<option>'+d+'</option>';}).join('');
+      var row=document.createElement('tr');row.id='er-'+id;row.style.background='rgba(220,38,38,0.04)';
+      row.innerHTML='<td><input type="text" placeholder="Account / Unit..." style="width:100%;border:1px solid #DC2626;border-radius:4px;padding:4px 8px;font-size:12px;font-family:inherit;background:var(--card);color:var(--text);"><div class="creator-stamp"><i class="bi bi-person-fill"></i> '+CURRENT_USER+'</div></td>'
+        +'<td><select id="et-'+id+'" onchange="scCat(\''+id+'\')" style="font-size:11px;border:1px solid var(--border);border-radius:4px;padding:4px 6px;font-family:inherit;background:var(--card);color:var(--text);width:100%;"><option>External</option><option>Internal</option></select></td>'
+        +'<td><select id="ec-'+id+'" style="font-size:11px;border:1px solid var(--border);border-radius:4px;padding:4px 6px;font-family:inherit;background:var(--card);color:var(--text);width:100%;">'+eO+'</select></td>'
+        +'<td><input type="text" placeholder="Owner" style="width:100%;border:1px solid var(--border);border-radius:4px;padding:4px 6px;font-size:11px;font-family:inherit;background:var(--card);color:var(--text);"></td>'
+        +'<td><select style="font-size:11px;border:1px solid var(--border);border-radius:4px;padding:4px 6px;font-family:inherit;background:var(--card);color:var(--text);width:100%;">'+dO+'</select></td>'
+        +'<td><input type="date" style="width:100%;border:1px solid var(--border);border-radius:4px;padding:4px 5px;font-size:11px;font-family:inherit;background:var(--card);color:var(--text);"></td>'
+        +'<td><span class="badge badge-red">Open</span></td>'
+        +'<td><button onclick="svE(\''+id+'\')" style="font-size:10px;padding:3px 8px;border-radius:4px;background:var(--red);color:#fff;border:none;cursor:pointer;font-weight:700;">Save</button>'
+        +' <button onclick="document.getElementById(\'er-'+id+'\').remove()" style="font-size:10px;padding:3px 8px;border-radius:4px;background:transparent;border:1px solid var(--border);cursor:pointer;">&#10005;</button></td>';
+      var tb=document.getElementById('esc-tbody');tb.insertBefore(row,tb.firstChild);
+    }
+    function scCat(id){var t=document.getElementById('et-'+id).value,s=document.getElementById('ec-'+id);s.innerHTML=(ESC_CATS[t]||[]).map(function(c){return '<option>'+c+'</option>';}).join('');}
+    function svE(id){
+      var row=document.getElementById('er-'+id);
+      var acct=row.querySelector('input[type=text]').value.trim()||'(Untitled)';
+      var type=document.getElementById('et-'+id).value,cat=document.getElementById('ec-'+id).value;
+      var owEl=row.querySelectorAll('input[type=text]')[1],ow=owEl?owEl.value.trim():'-';
+      var dptEl=row.querySelectorAll('select')[2],dpt=dptEl?dptEl.value:'-';
+      var dv=row.querySelector('input[type=date]')?row.querySelector('input[type=date]').value:'';
+      var tc=type==='External'?'esc-type-ext':'esc-type-int';
+      row.innerHTML='<td><strong>'+acct+'</strong><div class="creator-stamp"><i class="bi bi-person-fill"></i> '+CURRENT_USER+'</div></td>'
+        +'<td><span class="'+tc+'">'+type+'</span></td><td style="font-size:11px;">'+cat+'</td>'
+        +'<td style="font-size:11px;">'+ow+'</td>'
+        +'<td><span style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:2px 8px;font-size:11px;">'+dpt+'</span></td>'
+        +'<td style="font-size:11px;">'+(dv||'-')+'</td><td><span class="badge badge-red">Open</span></td><td>-</td>';
+    }
+
+    function switchTab(tab){
+      document.querySelectorAll('.ai-tab').forEach(function(t){t.classList.remove('active');});
+      document.querySelectorAll('.ai-pane').forEach(function(p){p.classList.remove('active');});
+      document.getElementById('tab-'+tab).classList.add('active');
+      document.getElementById('pane-'+tab).classList.add('active');
+    }
+    function toggleNotif(){document.getElementById('notifPanel').classList.toggle('open');}
+    function toggleHelp(){document.getElementById('helpPanel').classList.toggle('open');document.getElementById('helpOverlay').classList.toggle('open');}
+    document.addEventListener('click',function(e){var p=document.getElementById('notifPanel');if(!e.target.closest('.alert-bell')&&!p.contains(e.target))p.classList.remove('open');});
+
+    /* Wire up filterable headers after DOM is ready */
+    document.addEventListener('DOMContentLoaded',function(){
+      var DELAY_B=[{val:'ontime',lbl:'On time / Early'},{val:'1-7',lbl:'1-7d late'},{val:'7-30',lbl:'7-30d late'},{val:'>30',lbl:'> 30d late'}];
+      var AGE_B=[{val:'<7',lbl:'< 7 days'},{val:'7-30',lbl:'7-30 days'},{val:'>30',lbl:'> 30 days'}];
+      cfWire('th-ai-owner','owner',AI_CF,renderRows,function(){return _curFilter;},null,function(){return PAGE_AI.map(function(i){return i.owner;});});
+      cfWire('th-ai-dept', 'dept', AI_CF,renderRows,function(){return _curFilter;},null,function(){return PAGE_AI.map(function(i){return i.dept;});});
+      cfWire('th-ai-cat',  'cat',  AI_CF,renderRows,function(){return _curFilter;},null,function(){return PAGE_AI.map(function(i){return i.category;});});
+      cfWire('th-ai-status','status',AI_CF,renderRows,function(){return _curFilter;},null,function(){return PAGE_AI.map(function(i){return i.status;});});
+      cfWire('th-ai-delay','delay',AI_CF,renderRows,function(){return _curFilter;},DELAY_B,null);
+      cfWire('th-esc-type', 'type',  ESC_CF,renderEscRows,function(){return _escFilter;},null,function(){return PAGE_ESC.map(function(i){return i.type;});});
+      cfWire('th-esc-cat',  'cat',   ESC_CF,renderEscRows,function(){return _escFilter;},null,function(){return PAGE_ESC.map(function(i){return i.cat;});});
+      cfWire('th-esc-owner','owner', ESC_CF,renderEscRows,function(){return _escFilter;},null,function(){return PAGE_ESC.map(function(i){return i.owner;});});
+      cfWire('th-esc-dept', 'dept',  ESC_CF,renderEscRows,function(){return _escFilter;},null,function(){return PAGE_ESC.map(function(i){return i.dept;});});
+      cfWire('th-esc-status','status',ESC_CF,renderEscRows,function(){return _escFilter;},null,function(){return PAGE_ESC.map(function(i){return i.status;});});
+      cfWire('th-esc-age',  'age',   ESC_CF,renderEscRows,function(){return _escFilter;},AGE_B,null);
+      renderRows('all');
+      renderEscRows('all');
+    });
+  </script>
+  <script src="shared.js"></script>
+</body>
+</html>

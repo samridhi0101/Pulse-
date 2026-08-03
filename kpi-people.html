@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KPIs &amp; People Ops — John Doe · HLS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    /* ── KPI Tiles area + flyout layout ───────────────────── */
+    .kpi-tiles-area {
+      transition: margin-right 0.3s ease;
+    }
+    .kpi-tiles-area.flyout-active {
+      margin-right: 464px;
+    }
+
+    /* ── 3×2 tile grid ─────────────────────────────────────── */
+    .kpi-grid-32 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .kpi-tile-32 {
+      border-radius: 10px;
+      padding: 16px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: box-shadow 0.15s, border-color 0.15s, transform 0.1s;
+      position: relative;
+    }
+    .kpi-tile-32:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); transform: translateY(-1px); }
+    .kpi-tile-32.green  { background: #f0fdf4; border-left: 4px solid var(--green); }
+    .kpi-tile-32.amber  { background: #fffbeb; border-left: 4px solid var(--amber); }
+    .kpi-tile-32.red    { background: #fff1f2; border-left: 4px solid var(--red); }
+    .kpi-tile-32.selected { border-color: var(--blue) !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.18); }
+
+    .kpi-tile-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 6px; }
+    .kpi-tile-val   { font-size: 26px; font-weight: 800; color: var(--navy); line-height: 1.1; }
+    .kpi-tile-val.red   { color: var(--red); }
+    .kpi-tile-val.amber { color: var(--amber); }
+    .kpi-tile-val.green { color: var(--green); }
+    .kpi-tile-sub2  { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .kpi-tile-split { font-size: 13px; font-weight: 700; color: var(--navy); margin-top: 4px; }
+    .kpi-tile-split .sep { color: var(--text-muted); margin: 0 4px; }
+    .kpi-tile-split .val-amber { color: var(--amber); }
+    .kpi-tile-split .val-red   { color: var(--red); }
+    .kpi-tile-badge { display: inline-block; margin-top: 8px; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+    .kpi-tile-badge.green  { background: #d1fae5; color: #065f46; }
+    .kpi-tile-badge.amber  { background: #fef3c7; color: #92400e; }
+    .kpi-tile-badge.red    { background: #fee2e2; color: #991b1b; }
+
+    /* ── Right flyout panel ────────────────────────────────── */
+    .kpi-flyout {
+      position: fixed;
+      top: 56px;
+      right: -480px;
+      width: 450px;
+      bottom: 40px;
+      background: var(--card);
+      border-left: 1px solid var(--border);
+      box-shadow: -4px 0 24px rgba(0,0,0,0.10);
+      display: flex;
+      flex-direction: column;
+      transition: right 0.3s ease;
+      z-index: 200;
+      overflow: hidden;
+    }
+    .kpi-flyout.open { right: 0; }
+
+    .kpi-flyout-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+      flex-shrink: 0;
+    }
+    .kpi-flyout-title { font-size: 14px; font-weight: 700; color: var(--navy); }
+    .kpi-flyout-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted); padding: 0 4px; line-height: 1; }
+    .kpi-flyout-close:hover { color: var(--navy); }
+
+    .kpi-flyout-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .detail-section { margin-bottom: 16px; }
+    .detail-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 8px; }
+
+    .emp-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+    .emp-row:last-child { border-bottom: none; }
+    .emp-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--blue); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+
+    .insight-box { background: #eff6ff; border-left: 3px solid var(--blue); border-radius: 4px; padding: 8px 10px; font-size: 11px; color: var(--navy); margin-top: 10px; line-height: 1.5; }
+
+    /* Compact table inside flyout */
+    .flyout-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .flyout-table th { background: var(--section); color: var(--text-muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; padding: 6px 8px; text-align: center; }
+    .flyout-table th:first-child { text-align: left; }
+    .flyout-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: center; }
+    .flyout-table td:first-child { text-align: left; font-weight: 600; }
+    .flyout-table td.num { text-align: right; }
+  </style>
+</head>
+<body>
+  <!-- TOP NAV -->
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="hamburger-btn" onclick="toggleSidebar()" title="Toggle menu">
+        <i class="bi bi-list"></i>
+      </button>
+      <div class="pulse-logo">
+        <span class="pulse-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="3" width="20" height="14" rx="2" stroke="#3B82F6" stroke-width="1.6" fill="none"/>
+            <rect x="0" y="16" width="22" height="2.5" rx="1" fill="#3B82F6" opacity="0.25"/>
+            <rect x="8" y="18.5" width="6" height="1.5" rx="0.75" fill="#3B82F6"/>
+            <polyline points="2,11 5,11 7,6 9,15 11,8 13,13 15,11 20,11" stroke="#3B82F6" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <!-- Theme Picker -->
+      <div style="position:relative;">
+        <button class="theme-btn" onclick="toggleThemePicker()" title="Theme">
+          <i class="bi bi-palette"></i>
+        </button>
+        <div class="theme-picker" id="themePicker">
+          <div class="theme-picker-title">Colour Theme</div>
+          <div class="theme-swatches">
+            <div class="theme-swatch blue active" data-theme="blue" onclick="setTheme('blue')" title="Blue"></div>
+            <div class="theme-swatch teal" data-theme="teal" onclick="setTheme('teal')" title="Teal"></div>
+            <div class="theme-swatch violet" data-theme="violet" onclick="setTheme('violet')" title="Violet"></div>
+          </div>
+          <div class="theme-divider"></div>
+          <div class="theme-mode-row">
+            <span class="mode-label">Light</span>
+            <div class="theme-toggle" id="modeToggle" onclick="toggleDarkMode()"><div class="theme-toggle-knob"></div></div>
+          </div>
+        </div>
+      </div>
+      <!-- Feature Tickets -->
+      <button class="tickets-btn" onclick="toggleTickets()" title="Feature Tickets">
+        <i class="bi bi-ticket-perforated"></i>
+        <div class="badge">5</div>
+      </button>
+      <button class="help-btn" onclick="toggleHelp()" title="Help">?</button>
+      <div class="alert-bell" onclick="toggleNotif()">
+        <i class="bi bi-bell-fill"></i>
+        <div class="badge">4</div>
+      </div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <!-- TICKETS PANEL -->
+  <div class="tickets-overlay" id="ticketsOverlay" onclick="closeTickets()"></div>
+  <div class="tickets-panel" id="ticketsPanel">
+    <div class="tickets-panel-header">
+      <span class="tickets-panel-title"><i class="bi bi-ticket-perforated"></i> Feature Tickets</span>
+      <span onclick="closeTickets()" style="cursor:pointer;opacity:0.5;font-size:18px;">✕</span>
+    </div>
+    <div class="tickets-panel-body">
+      <div class="ticket-item urgent"><div class="ticket-id">BMD-041</div><div class="ticket-desc">Keka API timeout on large unit data pull</div><div class="ticket-tag urgent">Urgent</div></div>
+      <div class="ticket-item medium"><div class="ticket-id">BMD-038</div><div class="ticket-desc">Add succession export to PDF</div><div class="ticket-tag medium">Medium</div></div>
+      <div class="ticket-item low"><div class="ticket-id">BMD-035</div><div class="ticket-desc">Training hours auto-populate from LMS</div><div class="ticket-tag low">Low</div></div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS PANEL -->
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-header">
+      <span>Notifications</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button class="notif-pin-btn" id="notifPinBtn" onclick="pinNotif()" title="Pin panel">
+          <i class="bi bi-pin-angle"></i>
+        </button>
+        <span style="opacity:0.5;cursor:pointer;font-size:18px;" onclick="toggleNotif()">✕</span>
+      </div>
+    </div>
+    <div class="notif-item"><div class="notif-type" style="color:var(--amber);">Attrition</div><div class="notif-text">1 resignation — HLS Unit (Nisha Rao)</div><div class="notif-time">3 days ago</div></div>
+    <div class="notif-item"><div class="notif-type" style="color:var(--amber);">Hiring</div><div class="notif-text">Offer deadline Apr 16 — Sr. Engineer (HealthFirst)</div><div class="notif-time">Today</div></div>
+    <div class="notif-item"><div class="notif-type" style="color:var(--red);">Bench</div><div class="notif-text">Nisha Rao on bench 48 days — threshold exceeded</div><div class="notif-time">Today</div></div>
+    <div class="notif-item"><div class="notif-type" style="color:var(--amber);">Appraisal</div><div class="notif-text">2 managers overdue for appraisal cycle</div><div class="notif-time">Yesterday</div></div>
+  </div>
+
+  <!-- HELP PANEL -->
+  <div class="help-overlay" id="helpOverlay" onclick="toggleHelp()"></div>
+  <div class="help-panel" id="helpPanel">
+    <div class="help-panel-header"><span class="help-panel-title">Help &amp; Guide</span><span style="cursor:pointer;opacity:0.6;font-size:20px;" onclick="toggleHelp()">✕</span></div>
+    <div class="help-panel-body">
+      <div class="help-toc-section">
+        <div class="help-toc-title">KPI Tiles</div>
+        <div class="help-toc-item"><span class="help-toc-item-icon">🟩</span><div><div class="help-toc-item-title">Click any tile</div><div class="help-toc-item-desc">Opens a detail flyout on the right with full breakdown and insights.</div></div></div>
+        <div class="help-toc-item"><span class="help-toc-item-icon">↔</span><div><div class="help-toc-item-title">Flyout layout</div><div class="help-toc-item-desc">The tile grid narrows to accommodate the flyout. Close flyout to restore full width.</div></div></div>
+      </div>
+      <div class="help-toc-section">
+        <div class="help-toc-title">RAG Status</div>
+        <div class="help-toc-item"><span class="help-toc-item-icon">🔴</span><div><div class="help-toc-item-title">Red — Critical</div><div class="help-toc-item-desc">KPI breach requiring immediate action.</div></div></div>
+        <div class="help-toc-item"><span class="help-toc-item-icon">🟡</span><div><div class="help-toc-item-title">Amber — At Risk</div><div class="help-toc-item-desc">KPI approaching threshold. Monitor closely.</div></div></div>
+        <div class="help-toc-item"><span class="help-toc-item-icon">🟢</span><div><div class="help-toc-item-title">Green — On Track</div><div class="help-toc-item-desc">All KPIs healthy.</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+    <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html" class="active"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+
+    <!-- Nalashaa branding -->
+    <div class="sidebar-brand">
+      <img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo">
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="breadcrumb">
+      <a href="dm-home.html">Engineering Dashboard</a><span class="sep">/</span>
+      <a href="dm-home.html">John Doe</a><span class="sep">/</span>
+      <span>KPIs &amp; People Ops</span>
+    </div>
+    <div class="page-title">KPIs &amp; People Operations</div>
+    <div class="page-subtitle">Unit-level people and operations health · Click any tile to view detail · Sources: Keka · BMS · Tara · HR SharePoint</div>
+
+    <!-- Alert Banner -->
+    <div class="alert-banner">
+      <div class="alert-icon">⚠</div>
+      <span><strong>2 KPIs at risk</strong> — Bench above threshold · Offer deadline Apr 16</span>
+      <a href="alerts.html">View alerts →</a>
+    </div>
+
+    <!-- KPI TILES AREA (reflows when flyout opens) -->
+    <div class="kpi-tiles-area" id="kpiTilesArea">
+      <div class="kpi-grid-32">
+
+        <!-- Tile 1: Golden Ratio -->
+        <div class="kpi-tile-32 amber" id="tile-gr" onclick="openFlyout('gr')">
+          <div class="kpi-tile-label">Golden Ratio</div>
+          <div class="kpi-tile-val amber">1 : 7.2</div>
+          <div class="kpi-tile-sub2">Leader : Reportee avg</div>
+          <div class="kpi-tile-badge amber">2 managers at 1:8</div>
+        </div>
+
+        <!-- Tile 2: Bench -->
+        <div class="kpi-tile-32 red" id="tile-bench" onclick="openFlyout('bench')">
+          <div class="kpi-tile-label">Bench</div>
+          <div class="kpi-tile-val red">3 staff</div>
+          <div class="kpi-tile-sub2">12% of unit · Avg 34 days</div>
+          <div class="kpi-tile-badge red">Threshold &gt;10% ⚠</div>
+        </div>
+
+        <!-- Tile 3: Hiring & Attrition (merged) -->
+        <div class="kpi-tile-32 amber" id="tile-ha" onclick="openFlyout('ha')">
+          <div class="kpi-tile-label">Hiring &amp; Attrition</div>
+          <div class="kpi-tile-split">
+            <span class="val-amber">2 Open</span>
+            <span class="sep">/</span>
+            <span class="val-red">1 Exit</span>
+          </div>
+          <div class="kpi-tile-sub2">Offer exp. Apr 16 · 1 at-risk flagged</div>
+          <div class="kpi-tile-badge amber">Oldest JD: 47 days</div>
+        </div>
+
+        <!-- Tile 4: Attendance -->
+        <div class="kpi-tile-32 green" id="tile-att" onclick="openFlyout('att')">
+          <div class="kpi-tile-label">Attendance</div>
+          <div class="kpi-tile-val green">96.2%</div>
+          <div class="kpi-tile-sub2">This week · 1 WFH flag</div>
+          <div class="kpi-tile-badge green">On Track ≥95%</div>
+        </div>
+
+        <!-- Tile 5: Appraisals -->
+        <div class="kpi-tile-32 amber" id="tile-appr" onclick="openFlyout('appr')">
+          <div class="kpi-tile-label">Appraisals</div>
+          <div class="kpi-tile-val amber">78%</div>
+          <div class="kpi-tile-sub2">Cycle complete · 2 mgrs overdue</div>
+          <div class="kpi-tile-badge amber">Target ≥90%</div>
+        </div>
+
+        <!-- Tile 6: Succession -->
+        <div class="kpi-tile-32 amber" id="tile-succ" onclick="openFlyout('succ')">
+          <div class="kpi-tile-label">Succession</div>
+          <div class="kpi-tile-val amber">1 gap</div>
+          <div class="kpi-tile-sub2">Tech Lead · MedTech Corp</div>
+          <div class="kpi-tile-badge amber">4 of 5 roles covered</div>
+        </div>
+
+      </div><!-- /kpi-grid-32 -->
+
+      <!-- Inline Action Item Form -->
+      <div class="ai-form" style="margin-top:14px;">
+        <div class="ai-form-title">+ Add Action Item — KPI</div>
+        <div class="ai-form-row">
+          <input type="text" placeholder="Action description…" style="flex:3;">
+          <select><option>Owner: John Doe</option><option>Owner: HR</option><option>Owner: DM</option></select>
+          <select><option>DM</option><option>AM</option><option>DM+AM</option></select>
+          <input type="date" value="2026-04-20" style="flex:0.8;">
+          <button class="btn btn-primary" style="flex-shrink:0;" onclick="alert('Action item saved')">Save</button>
+        </div>
+      </div>
+
+    </div><!-- /kpi-tiles-area -->
+  </div><!-- /main -->
+
+  <!-- RIGHT FLYOUT PANEL -->
+  <div class="kpi-flyout" id="kpiFlyout">
+    <div class="kpi-flyout-header">
+      <span class="kpi-flyout-title" id="flyoutTitle">Detail</span>
+      <button class="kpi-flyout-close" onclick="closeFlyout()">✕</button>
+    </div>
+    <div class="kpi-flyout-body" id="flyoutBody">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+  <!-- GLOBAL FOOTER -->
+  <div class="global-footer">Nalashaa &copy; 2026 &nbsp;·&nbsp; All rights reserved</div>
+
+  <script src="shared.js"></script>
+  <script>
+    /* ── Flyout content definitions ─────────────────────────── */
+    var FLYOUT_DATA = {
+      gr: {
+        title: 'Golden Ratio — Manager : Reportee',
+        html: `
+          <div class="detail-section">
+            <div class="detail-section-title">Breakdown by Manager</div>
+            <table class="flyout-table">
+              <thead><tr><th>Manager</th><th>Reportees</th><th>Ratio</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Kavya Sharma</td><td class="num">8</td><td>1:8</td><td><span class="badge badge-amber">Amber</span></td></tr>
+                <tr><td>Ravi Tiwari</td><td class="num">8</td><td>1:8</td><td><span class="badge badge-amber">Amber</span></td></tr>
+                <tr><td>Deepa Menon</td><td class="num">6</td><td>1:6</td><td><span class="badge badge-green">Green</span></td></tr>
+                <tr><td>Arun Kumar</td><td class="num">6</td><td>1:6</td><td><span class="badge badge-green">Green</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="insight-box">Two team leads at 1:8 exceed the 1:7 threshold. Hiring pipeline should target senior engineers or an additional TL role.</div>
+          <div class="detail-section" style="margin-top:14px;">
+            <div class="detail-section-title">Source</div>
+            <a href="#" style="font-size:11px;color:var(--blue);">Open BMS SharePoint →</a>
+          </div>`
+      },
+      bench: {
+        title: 'Bench — Employee List',
+        html: `
+          <div class="detail-section">
+            <div class="detail-section-title">Currently on Bench</div>
+            <div class="emp-row">
+              <div class="emp-avatar">NK</div>
+              <div style="flex:1;"><strong>Nisha Rao</strong> · Sr. Engineer<br><span style="font-size:10px;color:var(--text-muted);">Last: MedTech EMR</span></div>
+              <span style="color:var(--red);font-weight:700;font-size:11px;">48 days</span>
+            </div>
+            <div class="emp-row">
+              <div class="emp-avatar">SP</div>
+              <div style="flex:1;"><strong>Suresh Pillai</strong> · QA Lead<br><span style="font-size:10px;color:var(--text-muted);">Last: HealthFirst Portal</span></div>
+              <span style="color:var(--red);font-weight:700;font-size:11px;">32 days</span>
+            </div>
+            <div class="emp-row">
+              <div class="emp-avatar">AJ</div>
+              <div style="flex:1;"><strong>Anita Joshi</strong> · Engineer<br><span style="font-size:10px;color:var(--text-muted);">Last: BioSync Integration</span></div>
+              <span style="color:var(--amber);font-weight:700;font-size:11px;">21 days</span>
+            </div>
+          </div>
+          <div class="insight-box">Unit size: 28 · 3 on bench = 10.7% (threshold &gt;10%). Nisha Rao available immediately — consider for HealthFirst resource gap.</div>
+          <div class="detail-section" style="margin-top:14px;">
+            <div class="detail-section-title">Source</div>
+            <a href="#" style="font-size:11px;color:var(--blue);">Open PMO SharePoint →</a>
+          </div>`
+      },
+      ha: {
+        title: 'Hiring &amp; Attrition',
+        html: `
+          <div class="detail-section">
+            <div class="detail-section-title">Open Roles</div>
+            <table class="flyout-table">
+              <thead><tr><th>Role</th><th>Days Open</th><th>Stage</th><th>ETA</th></tr></thead>
+              <tbody>
+                <tr><td>Sr. Engineer (HealthFirst)</td><td class="num" style="color:var(--amber);font-weight:700;">47</td><td>Offer Extended</td><td style="color:var(--red);font-size:10px;">May 1 ⚠ exp Apr 16</td></tr>
+                <tr><td>Sr. Engineer (MedTech EMR)</td><td class="num">29</td><td>L2 Interview</td><td>May 15</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="detail-section" style="margin-top:14px;">
+            <div class="detail-section-title">Attrition — March &amp; At-Risk</div>
+            <div class="emp-row">
+              <div class="emp-avatar" style="background:var(--red);">NR</div>
+              <div style="flex:1;"><strong>Nisha Rao</strong> · Sr. Engineer<br><span style="font-size:10px;color:var(--text-muted);">LWD: Mar 28 · Voluntary</span></div>
+              <span class="badge badge-muted">Resigned</span>
+            </div>
+            <div style="margin-top:10px;font-size:11px;font-weight:700;color:var(--navy);">At-Risk Flag</div>
+            <div class="emp-row">
+              <div class="emp-avatar" style="background:var(--amber);">SP</div>
+              <div style="flex:1;"><strong>Suresh Pillai</strong> · QA Lead<br><span style="font-size:10px;color:var(--text-muted);">Exit portal: dissatisfied with bench duration</span></div>
+              <span class="badge badge-amber">At-Risk</span>
+            </div>
+          </div>
+          <div class="insight-box">Bench duration is the most common exit reason — prioritize billable deployment of bench resources.</div>
+          <div class="detail-section" style="margin-top:14px;">
+            <div class="detail-section-title">Sources</div>
+            <a href="#" style="font-size:11px;color:var(--blue);">Open Tara ATS →</a> &nbsp;
+            <a href="#" style="font-size:11px;color:var(--blue);">Open Keka →</a>
+          </div>`
+      },
+      att: {
+        title: 'Attendance — This Week',
+        html: `
+          <div class="detail-section">
+            <div style="font-size:13px;margin-bottom:10px;">Unit average: <strong style="color:var(--green);">96.2%</strong> · 1 employee with WFH flag (3rd consecutive week)</div>
+            <div class="detail-section-title">Flagged Employees</div>
+            <div class="emp-row">
+              <div class="emp-avatar" style="background:var(--amber);">PK</div>
+              <div style="flex:1;"><strong>Pavan Kumar</strong> · Engineer<br><span style="font-size:10px;color:var(--text-muted);">BioSync Integration · WFH 3 wks · Mon absent</span></div>
+              <span class="badge badge-amber">WFH Flag</span>
+            </div>
+          </div>
+          <div class="insight-box">All other team members within threshold. No chronic absenteeism flags this week.</div>
+          <div class="detail-section" style="margin-top:14px;">
+            <div class="detail-section-title">Source</div>
+            <a href="#" style="font-size:11px;color:var(--blue);">Open Keka →</a>
+          </div>`
+      },
+      appr: {
+        title: 'Appraisals — Cycle Status',
+        html: `
+          <div class="detail-section">
+            <div class="detail-section-title">Manager Completion</div>
+            <table class="flyout-table">
+              <thead><tr><th>Manager</th><th>% Appraised</th><th>Overdue</th><th>Disputes</th></tr></thead>
+              <tbody>
+                <tr><td>Kavya Sharma</td><td style="color:var(--red);font-weight:700;">55%</td><td><span class="badge badge-red">Yes</span></td><td class="num">0</td></tr>
+                <tr><td>Ravi Tiwari</td><td style="color:var(--amber);font-weight:700;">70%</td><td><span class="badge badge-amber">Yes</span></td><td class="num">1</td></tr>
+                <tr><td>Deepa Menon</td><td style="color:var(--green);font-weight:700;">100%</td><td><span class="badge badge-green">No</span></td><td class="num">0</td></tr>
+                <tr><td>Arun Kumar</td><td style="color:var(--green);font-weight:700;">95%</td><td><span class="badge badge-green">No</span></td><td class="num">0</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="insight-box">Kavya Sharma at 55% — follow up required before Apr 20 cycle close date.</div>
+          <div class="detail-section" style="margin-top:14px;">
+            <div class="detail-section-title">Source</div>
+            <a href="#" style="font-size:11px;color:var(--blue);">Open HR Portal →</a>
+          </div>`
+      },
+      succ: {
+        title: 'Succession — Key Role Coverage',
+        html: `
+          <div class="detail-section">
+            <div class="detail-section-title">Role Coverage Map</div>
+            <table class="flyout-table">
+              <thead><tr><th>Key Role</th><th>Holder</th><th>Backup</th><th>Reviewed</th></tr></thead>
+              <tbody>
+                <tr><td>Tech Lead — MedTech</td><td>Kavya Sharma</td><td><span class="badge badge-red">No backup</span></td><td>Oct '25</td></tr>
+                <tr><td>QA Lead — HealthFirst</td><td>Suresh Pillai</td><td><span class="badge badge-amber">At-risk</span></td><td>Jan '26</td></tr>
+                <tr><td>Sr. Eng — BioSync</td><td>Arun Kumar</td><td><span class="badge badge-green">Anita Joshi</span></td><td>Mar '26</td></tr>
+                <tr><td>PM — MedTech Claims</td><td>Ravi Tiwari</td><td><span class="badge badge-green">Deepa Menon</span></td><td>Feb '26</td></tr>
+                <tr><td>PM — HealthFirst</td><td>Deepa Menon</td><td><span class="badge badge-green">Kavya Sharma</span></td><td>Feb '26</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="insight-box">Tech Lead — MedTech Corp has no named backup. With Suresh Pillai at-risk, the QA Lead succession is also vulnerable.</div>
+          <div class="detail-section" style="margin-top:14px;">
+            <div class="detail-section-title">Source</div>
+            <a href="#" style="font-size:11px;color:var(--blue);">Open HR Portal / BMS →</a>
+          </div>`
+      }
+    };
+
+    var currentTile = null;
+
+    function openFlyout(id) {
+      // Deselect all
+      document.querySelectorAll('.kpi-tile-32').forEach(function(t) { t.classList.remove('selected'); });
+      // Select clicked tile
+      document.getElementById('tile-' + id).classList.add('selected');
+      // Populate flyout
+      var data = FLYOUT_DATA[id];
+      document.getElementById('flyoutTitle').innerHTML = data.title;
+      document.getElementById('flyoutBody').innerHTML = data.html;
+      // Open flyout
+      document.getElementById('kpiFlyout').classList.add('open');
+      document.getElementById('kpiTilesArea').classList.add('flyout-active');
+      currentTile = id;
+    }
+
+    function closeFlyout() {
+      document.getElementById('kpiFlyout').classList.remove('open');
+      document.getElementById('kpiTilesArea').classList.remove('flyout-active');
+      if (currentTile) {
+        document.getElementById('tile-' + currentTile).classList.remove('selected');
+        currentTile = null;
+      }
+    }
+
+    function toggleHelp() {
+      document.getElementById('helpPanel').classList.toggle('open');
+      document.getElementById('helpOverlay').classList.toggle('open');
+    }
+  </script>
+</body>
+</html>

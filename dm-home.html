@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="blue">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">Engineering — DM Dashboard · Pulse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <style>
+    /* Rich DM banner — restored from v1 */
+    .dm-ribbon { background: linear-gradient(95deg, var(--navy) 0%, #0F2449 60%, #14274D 100%); color: #fff; border-radius: 12px; padding: 16px 22px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; position: relative; overflow: hidden; }
+    .dm-ribbon::before { content: ''; position: absolute; top: 0; right: 0; width: 200px; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,153,51,0.08)); }
+    .dm-ribbon-left { display: flex; align-items: center; gap: 16px; z-index: 2; }
+    .dm-avatar-big { width: 56px; height: 56px; border-radius: 50%; background: var(--orange); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; box-shadow: 0 4px 12px rgba(255,153,51,0.35); }
+    .dm-ribbon-name { font-size: 18px; font-weight: 800; line-height: 1.1; }
+    .dm-ribbon-unit { font-size: 11px; opacity: 0.65; margin-top: 3px; }
+    .dm-ribbon-meta { display: flex; gap: 16px; font-size: 11px; opacity: 0.85; margin-top: 6px; }
+    .dm-ribbon-meta span { display: inline-flex; align-items: center; gap: 4px; }
+    .dm-ribbon-back { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 11px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.08); display: inline-flex; align-items: center; gap: 4px; transition: background 0.15s; }
+    .dm-ribbon-back:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    .dm-ribbon-stats { display: flex; gap: 22px; z-index: 2; }
+    .dm-rs-val { font-size: 18px; font-weight: 800; }
+    .dm-rs-val.red { color: #F87171; } .dm-rs-val.amber { color: #FCD34D; } .dm-rs-val.green { color: #4ADE80; }
+    .dm-rs-lbl { font-size: 9px; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+
+    .tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 16px; }
+    .tab { padding: 11px 16px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-muted); border-bottom: 3px solid transparent; margin-bottom: -2px; display: flex; align-items: center; gap: 6px; }
+    .tab.active { color: var(--navy); border-bottom-color: var(--orange); }
+    [data-mode="dark"] .tab.active { color: #fff; }
+    .tab .badge { font-size: 9px; padding: 1px 6px; border-radius: 4px; font-weight: 700; }
+    .tab .badge.red { background: #FEE2E2; color: #991B1B; }
+    .tab .badge.amber { background: #FEF3C7; color: #92400E; }
+    .pane { display: none; } .pane.active { display: block; }
+
+    .kgrid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px; }
+    .kc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; border-left: 4px solid transparent; cursor: pointer; transition: all 0.15s; }
+    .kc:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+    .kc.green { border-left-color: var(--green); } .kc.amber { border-left-color: var(--amber); } .kc.red { border-left-color: var(--red); }
+    .klbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; }
+    .kval { font-size: 22px; font-weight: 800; color: var(--navy); }
+    [data-mode="dark"] .kval { color: #fff; }
+    .ksub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .stitle { font-size: 13px; font-weight: 700; color: var(--navy); margin: 14px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    [data-mode="dark"] .stitle { color: #fff; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .card-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    .data-fresh { font-size: 10px; color: var(--text-muted); margin-bottom: 10px; }
+    .tbl { width: 100%; font-size: 12px; border-collapse: collapse; }
+    .tbl th { padding: 8px 10px; background: var(--navy); color: #fff; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .tbl td { padding: 8px 10px; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .tbl tr:hover td { background: var(--bg); }
+    .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+    .badge.green { background: #D1FAE5; color: #065F46; }
+    .badge.amber { background: #FEF3C7; color: #92400E; }
+    .badge.red { background: #FEE2E2; color: #991B1B; }
+
+    /* Sprint tile grid (project tiles) */
+    .sprint-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+    .sprint-tile { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; cursor: pointer; position: relative; transition: all 0.15s; border-top: 3px solid transparent; }
+    .sprint-tile:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+    .sprint-tile.green { border-top-color: var(--green); }
+    .sprint-tile.amber { border-top-color: var(--amber); }
+    .sprint-tile.red { border-top-color: var(--red); }
+    .sprint-account { font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+    [data-mode="dark"] .sprint-account { color: #fff; }
+    .sprint-num { font-size: 9px; color: var(--text-muted); }
+    .sprint-pct { font-size: 22px; font-weight: 800; color: var(--navy); margin: 6px 0; }
+    [data-mode="dark"] .sprint-pct { color: #fff; }
+    .sprint-bar { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+    .sprint-bar-fill { height: 100%; background: linear-gradient(90deg, var(--orange), var(--blue)); }
+    .sprint-meta { font-size: 9px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .sprint-meta .sprint-cd { display: flex; gap: 8px; }
+    .sprint-meta .sprint-pm { font-weight: 700; color: var(--navy); white-space: nowrap; }
+    [data-mode="dark"] .sprint-meta .sprint-pm { color: #fff; }
+    .sprint-blocker-badge { position: absolute; top: 8px; right: 8px; background: var(--red); color: #fff; font-size: 10px; font-weight: 800; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+    /* Mining + Escalations swimlane (restored from v1) */
+    .swim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .swim-col { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    .swim-title { font-size: 13px; font-weight: 700; padding: 8px 10px; border-radius: 6px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .swim-title.mining { background: #D1FAE5; color: #065F46; }
+    .swim-title.escal { background: #FEE2E2; color: #991B1B; }
+    .swim-totals { font-size: 10px; opacity: 0.8; }
+    .swim-totals span { padding: 2px 6px; border-radius: 4px; font-weight: 700; margin-left: 4px; }
+    .swim-totals .late { background: #FEE2E2; color: #991B1B; }
+    .swim-totals .risk { background: #FEF3C7; color: #92400E; }
+    .swim-totals .ok { background: #D1FAE5; color: #065F46; }
+    .swim-row { padding: 9px 12px; border-radius: 8px; margin-bottom: 6px; font-size: 12px; cursor: pointer; border-left: 3px solid var(--border); transition: all 0.15s; background: var(--bg); }
+    .swim-row:hover { transform: translateX(2px); }
+    .swim-row.late { border-left-color: var(--red); }
+    .swim-row.risk { border-left-color: var(--amber); }
+    .swim-row.track { border-left-color: var(--green); }
+    .swim-row strong { font-size: 12px; }
+
+    /* P360 tiles 3-per-row · compact (so full pill labels fit) */
+    .p360-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .p360-tile { background: var(--card); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.15s; }
+    .p360-tile:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+
+    /* People & Resource 3x2 tile grid */
+    .pp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .pp-tile { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; cursor: pointer; border-left: 4px solid transparent; transition: all 0.15s; }
+    .pp-tile.green { border-left-color: var(--green); }
+    .pp-tile.amber { border-left-color: var(--amber); }
+    .pp-tile.red { border-left-color: var(--red); }
+    .pp-tile:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+    .pp-name { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.4px; margin-bottom: 6px; }
+    .pp-val { font-size: 22px; font-weight: 800; color: var(--navy); }
+    [data-mode="dark"] .pp-val { color: #fff; }
+    .pp-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+    /* Financials per-account billing rows */
+    .billing-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .billing-row:hover { background: var(--bg); }
+    .billing-acct { width: 140px; font-weight: 700; font-size: 12px; }
+    .billing-bar-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; position: relative; overflow: hidden; }
+    .billing-bar-fill { height: 100%; border-radius: 4px; }
+    .billing-bar-fill.green { background: var(--green); }
+    .billing-bar-fill.amber { background: var(--amber); }
+    .billing-bar-fill.red { background: var(--red); }
+    .billing-amount { width: 100px; text-align: right; font-size: 12px; font-weight: 700; }
+    .billing-fcst { width: 130px; text-align: right; font-size: 11px; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:0;">
+      <button class="hamburger-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <div class="pulse-logo">
+        <span class="pulse-icon"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="2" width="25" height="17" rx="2.5" stroke="#FF9933" stroke-width="1.5"/><line x1="14" y1="19" x2="14" y2="23.5" stroke="#FF9933" stroke-width="1.5"/><line x1="9" y1="23.5" x2="19" y2="23.5" stroke="#FF9933" stroke-width="1.8" stroke-linecap="round"/><polyline points="4,10.5 7,10.5 8.5,6.5 10,14.5 11.5,10.5 13,10.5 14,8 15,13 16.5,10.5 18,10.5 24,10.5" stroke="#FF9933" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg></span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <button class="help-btn">?</button>
+      <div class="alert-bell"><i class="bi bi-bell-fill" style="font-size:16px;"></i></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html" class="active"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+    <div class="sidebar-brand"><img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo"></div>
+  </div>
+
+  <div class="main" style="padding:18px 28px;">
+    <div class="dm-ribbon">
+      <div class="dm-ribbon-left">
+        <div class="dm-avatar-big" id="dmAvatarBig">JD</div>
+        <div>
+          <div class="dm-ribbon-name" id="dmRibbonName">John Doe</div>
+          <div class="dm-ribbon-unit" id="dmRibbonUnit">Healthcare &amp; Life Sciences · Delivery Manager</div>
+          <div class="dm-ribbon-meta">
+            <span><i class="bi bi-briefcase-fill"></i> <span id="dmAccts">4 accounts</span></span>
+            <span><i class="bi bi-people-fill"></i> <span id="dmEng">84 engineers</span></span>
+            <a href="engineering.html" class="dm-ribbon-back"><i class="bi bi-arrow-left"></i> All DMs</a>
+          </div>
+        </div>
+      </div>
+      <div class="dm-ribbon-stats-rich">
+        <div class="dm-ribbon-stat"><div class="dm-ribbon-stat-val red" id="dmRedItems">3</div><div class="dm-ribbon-stat-lbl">Red Items</div></div>
+        <div class="dm-ribbon-pipe"></div>
+        <div class="dm-ribbon-stat"><div class="dm-ribbon-stat-val amber" id="dmAmberItems">7</div><div class="dm-ribbon-stat-lbl">At Risk</div></div>
+        <div class="dm-ribbon-pipe"></div>
+        <div class="dm-ribbon-stat"><div class="dm-ribbon-stat-val green" id="dmGreenItems">14</div><div class="dm-ribbon-stat-lbl">On Track</div></div>
+        <div class="dm-ribbon-pipe"></div>
+        <div class="dm-ribbon-stat"><div class="dm-ribbon-stat-val" id="dmYTDStat">$5.0M</div><div class="dm-ribbon-stat-lbl">YTD Billing</div></div>
+        <div class="dm-ribbon-pipe"></div>
+        <div class="dm-ribbon-stat"><div class="dm-ribbon-stat-val amber" id="dmP360">7.1</div><div class="dm-ribbon-stat-lbl">Avg P360</div></div>
+        <div class="dm-ribbon-pipe"></div>
+        <div class="dm-ribbon-stat"><div class="dm-ribbon-stat-val" id="dmSprint">78%</div><div class="dm-ribbon-stat-lbl">Sprint Avg</div></div>
+        <div class="dm-ribbon-pipe"></div>
+        <div class="dm-ribbon-stat"><div class="dm-ribbon-stat-val" id="dmHires">3</div><div class="dm-ribbon-stat-lbl">Hires 30d</div></div>
+      </div>
+    </div>
+    <div class="data-fresh"><i class="bi bi-clock"></i> Data as of 2026-05-05 09:14 · Source: Jira + project actuals</div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('pp', this)"><i class="bi bi-kanban-fill"></i> Project Progress <span class="badge red" id="tabBlockerBadge">12 blockers</span></div>
+      <div class="tab" onclick="showTab('fin', this)"><i class="bi bi-cash-stack"></i> Financials</div>
+      <div class="tab" onclick="showTab('mn', this)"><i class="bi bi-bullseye"></i> Mining &amp; Escalations <span class="badge red">2 critical</span></div>
+      <div class="tab" onclick="showTab('p3', this)"><i class="bi bi-bar-chart-line-fill"></i> P360 <span class="badge amber">1 red</span></div>
+      <div class="tab" onclick="showTab('pe', this)"><i class="bi bi-heart-pulse-fill"></i> Workforce Health</div>
+    </div>
+
+    <!-- TAB 1: PROJECT PROGRESS -->
+    <div class="pane active" id="pane-pp">
+      <div class="kgrid">
+        <div class="kc amber" onclick="openSprintHealthFlyout()"><div class="klbl">Sprint Health (Avg)</div><div class="kval">78%</div><div class="ksub">Completion · 4 active sprints</div></div>
+        <div class="kc red" onclick="openBlockersList()"><div class="klbl">Active Blockers</div><div class="kval">12</div><div class="ksub">3 P1 · 6 P2 · 3 P3</div></div>
+        <div class="kc green" onclick="openVelocityFlyout()"><div class="klbl">Velocity (4-sprint avg)</div><div class="kval">82 SP</div><div class="ksub">↗ stable · target 80</div></div>
+        <div class="kc amber" onclick="openCarryoverFlyout()"><div class="klbl">Story Carryover</div><div class="kval">18%</div><div class="ksub">Target ≤ 10%</div></div>
+      </div>
+
+      <div class="stitle">Per-Project Sprint Tiles · click any tile for SDLC + sprint detail</div>
+      <div class="sprint-grid">
+        <div class="sprint-tile amber" onclick="openProjectSprint('MedTech Corp')"><div class="sprint-account">MedTech Corp</div><div class="sprint-num">Sprint 18 · Day 6 of 10</div><div class="sprint-pct">78%</div><div class="sprint-bar"><div class="sprint-bar-fill" style="width:78%;"></div></div><div class="sprint-meta"><div class="sprint-cd"><span>C: 24</span><span>D: 19</span></div><div class="sprint-pm">PM: Priya M.</div></div><div class="sprint-blocker-badge">2</div></div>
+        <div class="sprint-tile red" onclick="openProjectSprint('BioGen Labs')"><div class="sprint-account">BioGen Labs</div><div class="sprint-num">Sprint 12 · Day 7 of 10</div><div class="sprint-pct">52%</div><div class="sprint-bar"><div class="sprint-bar-fill" style="width:52%;"></div></div><div class="sprint-meta"><div class="sprint-cd"><span>C: 28</span><span>D: 14</span></div><div class="sprint-pm">PM: D. Patel</div></div><div class="sprint-blocker-badge">5</div></div>
+        <div class="sprint-tile green" onclick="openProjectSprint('HealthFirst Inc')"><div class="sprint-account">HealthFirst Inc</div><div class="sprint-num">Sprint 24 · Day 5 of 10</div><div class="sprint-pct">92%</div><div class="sprint-bar"><div class="sprint-bar-fill" style="width:92%;"></div></div><div class="sprint-meta"><div class="sprint-cd"><span>C: 22</span><span>D: 20</span></div><div class="sprint-pm">PM: Vikram J.</div></div></div>
+        <div class="sprint-tile amber" onclick="openProjectSprint('PharmCare')"><div class="sprint-account">PharmCare</div><div class="sprint-num">Sprint 09 · Day 8 of 10</div><div class="sprint-pct">70%</div><div class="sprint-bar"><div class="sprint-bar-fill" style="width:70%;"></div></div><div class="sprint-meta"><div class="sprint-cd"><span>C: 26</span><span>D: 18</span></div><div class="sprint-pm">PM: Arjun N.</div></div><div class="sprint-blocker-badge">3</div></div>
+      </div>
+
+      <div class="stitle">Velocity Trend (Last 4 Sprints, Unit-wide)</div>
+      <div class="card-box"><div id="velChart" style="height:220px;"></div></div>
+    </div>
+
+    <!-- TAB 2: FINANCIALS — restored layout with M+1/M+2 below YTD -->
+    <div class="pane" id="pane-fin">
+      <div class="kgrid">
+        <div class="kc green static-tile"><div class="klbl">YTD Billing</div><div class="kval">$3.0M</div><div class="ksub">96% of plan</div></div>
+        <div class="kc amber static-tile"><div class="klbl">M+1 Forecast</div><div class="kval">$0.62M</div><div class="ksub">88% confidence</div></div>
+        <div class="kc green static-tile"><div class="klbl">M+2 Forecast</div><div class="kval">$0.65M</div><div class="ksub">76% confidence</div></div>
+        <div class="kc amber static-tile"><div class="klbl">M+3 Forecast</div><div class="kval">$0.68M</div><div class="ksub">62% confidence</div></div>
+      </div>
+
+      <div class="stitle">YTD Billing per Account + Forward Outlook</div>
+      <div class="card-box">
+        <div class="tbl-scroll" style="max-height:340px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;">
+          <div class="billing-row" onclick="openAccountBilling('MedTech Corp')"><div class="billing-acct">MedTech Corp</div><div class="billing-bar-track"><div class="billing-bar-fill amber" style="width:92%;"></div></div><div class="billing-amount">$1.44M</div><div class="billing-fcst">M+1 $0.14M</div></div>
+          <div class="billing-row" onclick="openAccountBilling('HealthFirst Inc')"><div class="billing-acct">HealthFirst Inc</div><div class="billing-bar-track"><div class="billing-bar-fill green" style="width:104%;"></div></div><div class="billing-amount">$1.25M</div><div class="billing-fcst">M+1 $0.12M</div></div>
+          <div class="billing-row" onclick="openAccountBilling('BioGen Labs')"><div class="billing-acct">BioGen Labs</div><div class="billing-bar-track"><div class="billing-bar-fill red" style="width:82%;"></div></div><div class="billing-amount">$0.98M</div><div class="billing-fcst">M+1 $0.10M</div></div>
+          <div class="billing-row" onclick="openAccountBilling('PharmCare')"><div class="billing-acct">PharmCare</div><div class="billing-bar-track"><div class="billing-bar-fill green" style="width:104%;"></div></div><div class="billing-amount">$1.37M</div><div class="billing-fcst">M+1 $0.14M</div></div>
+          <div class="billing-row" onclick="openAccountBilling('WellnessOne')"><div class="billing-acct">WellnessOne</div><div class="billing-bar-track"><div class="billing-bar-fill green" style="width:96%;"></div></div><div class="billing-amount">$0.72M</div><div class="billing-fcst">M+1 $0.08M</div></div>
+          <div class="billing-row" onclick="openAccountBilling('NeuroLab')"><div class="billing-acct">NeuroLab</div><div class="billing-bar-track"><div class="billing-bar-fill amber" style="width:88%;"></div></div><div class="billing-amount">$0.62M</div><div class="billing-fcst">M+1 $0.07M</div></div>
+          <div class="billing-row" onclick="openAccountBilling('CardioTech')"><div class="billing-acct">CardioTech</div><div class="billing-bar-track"><div class="billing-bar-fill green" style="width:102%;"></div></div><div class="billing-amount">$0.84M</div><div class="billing-fcst">M+1 $0.09M</div></div>
+          <div class="billing-row" onclick="openAccountBilling('PediaCare')"><div class="billing-acct">PediaCare</div><div class="billing-bar-track"><div class="billing-bar-fill amber" style="width:78%;"></div></div><div class="billing-amount">$0.42M</div><div class="billing-fcst">M+1 $0.05M</div></div>
+        </div>
+        </div>
+      </div>
+
+      <div class="stitle">Portfolio Forecast · YTD + M+1 / M+2 / M+3</div>
+      <div class="card-box" style="padding:0;overflow:hidden;">
+      <table class="tbl">
+        <thead><tr><th>Account</th><th>AM</th><th>PM</th><th>YTD Plan</th><th>YTD Actual</th><th>YTD Variance</th><th>M+1 (F)</th><th>M+2 (F)</th><th>M+3 (F)</th></tr></thead>
+        <tbody>
+          <tr onclick="openFlyout({title:'MedTech · Forecast',sub:'Phase 2 expansion drives M+3 uptick',body:'<p>Phase 2 expansion drives M+3 uptick. Renewal due Q3 2026.</p><p style=\'margin-top:8px;font-size:11px;color:#64748B;\'>AM: Sarah M. &nbsp;·&nbsp; PM: Vikram S.</p>'})"><td><strong>MedTech Corp</strong></td><td style="font-size:11px;color:var(--text-muted);">Sarah M.</td><td style="font-size:11px;color:var(--text-muted);">Vikram S.</td><td>$1.50M</td><td>$1.44M</td><td><span style="color:var(--amber);font-weight:700;">-$0.06M</span></td><td>$0.14M</td><td>$0.15M</td><td>$0.16M</td></tr>
+          <tr onclick="openFlyout({title:'HealthFirst · Forecast',sub:'Renewal locked · Mobile App in mining',body:'<p>Renewal locked. Mobile App in mining ($0.10M).</p><p style=\'margin-top:8px;font-size:11px;color:#64748B;\'>AM: Sarah M. &nbsp;·&nbsp; PM: Anita M.</p>'})"><td><strong>HealthFirst Inc</strong></td><td style="font-size:11px;color:var(--text-muted);">Sarah M.</td><td style="font-size:11px;color:var(--text-muted);">Anita M.</td><td>$1.20M</td><td>$1.25M</td><td><span style="color:var(--green);font-weight:700;">+$0.05M</span></td><td>$0.12M</td><td>$0.13M</td><td>$0.13M</td></tr>
+          <tr onclick="openFlyout({title:'BioGen · Forecast',sub:'Phase 2 conflict unresolved · M+3 confidence low',body:'<p>Phase 2 scope conflict unresolved · M+3 confidence low.</p><p style=\'margin-top:8px;font-size:11px;color:#64748B;\'>AM: Ravi S. &nbsp;·&nbsp; PM: Karthik R.</p>'})"><td><strong>BioGen Labs</strong></td><td style="font-size:11px;color:var(--text-muted);">Ravi S.</td><td style="font-size:11px;color:var(--text-muted);">Karthik R.</td><td>$1.20M</td><td>$0.98M</td><td><span style="color:var(--red);font-weight:700;">-$0.22M</span></td><td>$0.10M</td><td>$0.11M</td><td>$0.12M</td></tr>
+          <tr onclick="openFlyout({title:'PharmCare · Forecast',sub:'Add-on hires drove overrun · stable outlook',body:'<p>Stable forecast. Add-on hires drove overrun.</p><p style=\'margin-top:8px;font-size:11px;color:#64748B;\'>AM: Ravi S. &nbsp;·&nbsp; PM: Vikram S.</p>'})"><td><strong>PharmCare</strong></td><td style="font-size:11px;color:var(--text-muted);">Ravi S.</td><td style="font-size:11px;color:var(--text-muted);">Vikram S.</td><td>$1.32M</td><td>$1.37M</td><td><span style="color:var(--green);font-weight:700;">+$0.05M</span></td><td>$0.14M</td><td>$0.14M</td><td>$0.14M</td></tr>
+          <tr onclick="openFlyout({title:'WellnessOne · Forecast',sub:'Renewal verbal received · expansion in mining',body:'<p>Renewal verbal received. Expansion in mining.</p><p style=\'margin-top:8px;font-size:11px;color:#64748B;\'>AM: Priya K. &nbsp;·&nbsp; PM: Anita M.</p>'})"><td><strong>WellnessOne</strong></td><td style="font-size:11px;color:var(--text-muted);">Priya K.</td><td style="font-size:11px;color:var(--text-muted);">Anita M.</td><td>$0.75M</td><td>$0.72M</td><td><span style="color:var(--amber);font-weight:700;">-$0.03M</span></td><td>$0.08M</td><td>$0.08M</td><td>$0.09M</td></tr>
+          <tr onclick="openFlyout({title:'NeuroLab · Forecast',sub:'Imaging integration ramping steadily',body:'<p>Imaging integration project ramping.</p><p style=\'margin-top:8px;font-size:11px;color:#64748B;\'>AM: Priya K. &nbsp;·&nbsp; PM: Karthik R.</p>'})"><td><strong>NeuroLab</strong></td><td style="font-size:11px;color:var(--text-muted);">Priya K.</td><td style="font-size:11px;color:var(--text-muted);">Karthik R.</td><td>$0.70M</td><td>$0.62M</td><td><span style="color:var(--amber);font-weight:700;">-$0.08M</span></td><td>$0.07M</td><td>$0.07M</td><td>$0.07M</td></tr>
+          <tr onclick="openFlyout({title:'CardioTech · Forecast',sub:'Healthy growth · custom dashboard on track',body:'<p>Healthy growth. Custom dashboard project.</p><p style=\'margin-top:8px;font-size:11px;color:#64748B;\'>AM: Priya K. &nbsp;·&nbsp; PM: Vikram S.</p>'})"><td><strong>CardioTech</strong></td><td style="font-size:11px;color:var(--text-muted);">Priya K.</td><td style="font-size:11px;color:var(--text-muted);">Vikram S.</td><td>$0.82M</td><td>$0.84M</td><td><span style="color:var(--green);font-weight:700;">+$0.02M</span></td><td>$0.09M</td><td>$0.09M</td><td>$0.10M</td></tr>
+          <tr onclick="openFlyout({title:'PediaCare · Forecast',sub:'Platform license negotiation pending',body:'<p>Platform license negotiation pending.</p><p style=\'margin-top:8px;font-size:11px;color:#64748B;\'>AM: Sarah M. &nbsp;·&nbsp; PM: Anita M.</p>'})"><td><strong>PediaCare</strong></td><td style="font-size:11px;color:var(--text-muted);">Sarah M.</td><td style="font-size:11px;color:var(--text-muted);">Anita M.</td><td>$0.54M</td><td>$0.42M</td><td><span style="color:var(--red);font-weight:700;">-$0.12M</span></td><td>$0.05M</td><td>$0.05M</td><td>$0.06M</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: MINING & ESCALATIONS — vertical swimlane + escalation table -->
+    <div class="pane" id="pane-mn">
+      <div class="kgrid">
+        <div class="kc green static-tile"><div class="klbl">Mining Threads</div><div class="kval">8</div><div class="ksub">4 on track · 2 risk · 2 late</div></div>
+        <div class="kc red static-tile"><div class="klbl">Escalations</div><div class="kval">7</div><div class="ksub">2 critical · 5 high</div></div>
+        <div class="kc green static-tile"><div class="klbl">Mining Pipeline Value</div><div class="kval">$0.74M</div><div class="ksub">In motion</div></div>
+        <div class="kc amber static-tile"><div class="klbl">At-Risk Threads</div><div class="kval">2</div><div class="ksub">BioGen Phase 2 · HealthFirst Mobile</div></div>
+      </div>
+
+      <div class="stitle"><span><i class="bi bi-bullseye"></i> Mining Threads · Swimlane by Status</span><span style="font-size:11px;font-weight:600;"><span style="color:var(--green);">● Track 4</span>  ·  <span style="color:var(--amber);">● Risk 2</span>  ·  <span style="color:var(--red);">● Late 2</span></span></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.5px;padding-bottom:8px;border-bottom:2px solid #D1FAE5;margin-bottom:10px;">On Track · 4</div>
+          <div class="swim-row track" onclick="openMiningThread('MedTech Corp · Module Demo')"><strong>MedTech · Module Demo</strong><br><span style="font-size:10px;">$0.25M · Demo May 12</span></div>
+          <div class="swim-row track" onclick="openMiningThread('HealthFirst · DR Setup')"><strong>HealthFirst · DR Setup</strong><br><span style="font-size:10px;">$0.10M · SOW review</span></div>
+          <div class="swim-row track" onclick="openMiningThread('PharmCare · UAT Phase 2')"><strong>PharmCare · UAT Phase 2</strong><br><span style="font-size:10px;">$0.06M</span></div>
+          <div class="swim-row track" onclick="openMiningThread('MedTech · DevOps add-on')"><strong>MedTech · DevOps add-on</strong><br><span style="font-size:10px;">$0.04M</span></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:0.5px;padding-bottom:8px;border-bottom:2px solid #FEF3C7;margin-bottom:10px;">At Risk · 2</div>
+          <div class="swim-row risk" onclick="openMiningThread('BioGen · Phase 2')"><strong>BioGen · Phase 2</strong><br><span style="font-size:10px;">$0.17M · Stakeholder turnover</span></div>
+          <div class="swim-row risk" onclick="openMiningThread('HealthFirst · Mobile App')"><strong>HealthFirst · Mobile App</strong><br><span style="font-size:10px;">$0.12M · Roadmap conflict</span></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:0.5px;padding-bottom:8px;border-bottom:2px solid #FEE2E2;margin-bottom:10px;">Late · 2</div>
+          <div class="swim-row late" onclick="openMiningThread('PharmCare · Analytics POC')"><strong>PharmCare · Analytics POC</strong><br><span style="font-size:10px;">$0.07M · POC reset</span></div>
+          <div class="swim-row late" onclick="openMiningThread('BioGen · BI Dashboard')"><strong>BioGen · BI Dashboard</strong><br><span style="font-size:10px;">$0.06M · Spec stalled</span></div>
+        </div>
+      </div>
+
+      <div class="stitle"><span><i class="bi bi-exclamation-octagon-fill"></i> Account Escalations Register</span></div>
+      <div class="card-box" style="padding:0;overflow:hidden;">
+      <table class="tbl" style="width:100%;font-size:12px;">
+        <thead><tr><th>Account</th><th>PM</th><th>Escalation</th><th>Severity</th><th>Age</th><th>Last Update</th><th>Next Action</th></tr></thead>
+        <tbody>
+          <tr onclick="openEscalation('MedTech UAT Slip')"><td><strong>MedTech Corp</strong></td><td>Priya M.</td><td>UAT Window Slip</td><td>Critical</td><td>14d</td><td>Apr 22</td><td>Align UAT window May 8</td></tr>
+          <tr onclick="openEscalation('BioGen Scope Conflict')"><td><strong>BioGen Labs</strong></td><td>D. Patel</td><td>Phase 2 Scope Conflict</td><td>Critical</td><td>9d</td><td>Apr 26</td><td>CIO alignment</td></tr>
+          <tr onclick="openEscalation('PharmCare QA')"><td><strong>PharmCare</strong></td><td>Arjun N.</td><td>QA Regression</td><td>High</td><td>5d</td><td>May 2</td><td>Run regression May 9</td></tr>
+          <tr onclick="openEscalation('HealthFirst Capacity')"><td><strong>HealthFirst Inc</strong></td><td>Vikram J.</td><td>Capacity Gap</td><td>High</td><td>11d</td><td>Apr 24</td><td>Onboard 2 hires by May 20</td></tr>
+          <tr onclick="openEscalation('MedTech Perf')"><td><strong>MedTech Corp</strong></td><td>Priya M.</td><td>Perf Regression</td><td>High</td><td>3d</td><td>May 2</td><td>Hotfix deploy May 7</td></tr>
+          <tr onclick="openEscalation('BioGen Test Env')"><td><strong>BioGen Labs</strong></td><td>D. Patel</td><td>Test Env Capacity</td><td>High</td><td>4d</td><td>May 1</td><td>Scale env by May 6</td></tr>
+          <tr onclick="openEscalation('PharmCare Backlog')"><td><strong>PharmCare</strong></td><td>Arjun N.</td><td>Backlog Grooming</td><td>High</td><td>5d</td><td>May 3</td><td>Weekly cadence</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <!-- TAB 4: P360 — 3x2 grid + radar flyout -->
+    <div class="pane" id="pane-p3">
+      <div class="kgrid">
+        <div class="kc amber" onclick="openP360Avg()"><div class="klbl">P360 Avg</div><div class="kval">7.1</div><div class="ksub">↓ 0.3 MoM</div></div>
+        <div class="kc red" onclick="openP360Reds()"><div class="klbl">Red Projects</div><div class="kval">1</div><div class="ksub">BioGen at 5.4</div></div>
+        <div class="kc green" onclick="openP360Best()"><div class="klbl">Best Project</div><div class="kval">8.7</div><div class="ksub">HealthFirst</div></div>
+        <div class="kc amber" onclick="openP360Trend()"><div class="klbl">Trend Direction</div><div class="kval">Mixed</div><div class="ksub">2↑ · 1= · 1↓</div></div>
+      </div>
+      <div class="stitle">Per-Project P360 · click any tile for scorecard, action items, observations</div>
+      <div class="p360-grid-wrap">
+        <div class="p360-grid" id="p360Grid">
+        <div class="p360-tile red" onclick="openP360('BioGen Labs', 5.4, [4.8, 5.6, 5.2, 5.0, 6.4])">
+          <div class="p360-tile-head">
+            <div class="p360-tile-score red">5.4</div>
+            <div class="p360-tile-info">
+              <div class="p360-tile-title">BioGen Labs</div>
+              <div class="p360-tile-sub">PM: Karthik R. · 8 engineers</div>
+            </div>
+          </div>
+          <div class="p360-tile-pills">
+            <span class="p360-pill red">Discipline 5.6</span>
+            <span class="p360-pill red">Quality 5.2</span>
+            <span class="p360-pill red">Budget 5.0</span>
+            <span class="p360-pill amber">Visibility 6.4</span>
+            <span class="p360-pill red">Competence 4.8</span>
+          </div>
+        </div><div class="p360-tile amber" onclick="openP360('MedTech Corp', 6.8, [7.0, 7.2, 6.4, 6.2, 7.4])">
+          <div class="p360-tile-head">
+            <div class="p360-tile-score amber">6.8</div>
+            <div class="p360-tile-info">
+              <div class="p360-tile-title">MedTech Corp</div>
+              <div class="p360-tile-sub">PM: Vikram S. · 12 engineers</div>
+            </div>
+          </div>
+          <div class="p360-tile-pills">
+            <span class="p360-pill amber">Discipline 7.2</span>
+            <span class="p360-pill amber">Quality 6.4</span>
+            <span class="p360-pill amber">Budget 6.2</span>
+            <span class="p360-pill amber">Visibility 7.4</span>
+            <span class="p360-pill amber">Competence 7.0</span>
+          </div>
+        </div><div class="p360-tile amber" onclick="openP360('PharmCare', 7.4, [7.2, 7.6, 6.8, 7.4, 7.8])">
+          <div class="p360-tile-head">
+            <div class="p360-tile-score amber">7.4</div>
+            <div class="p360-tile-info">
+              <div class="p360-tile-title">PharmCare</div>
+              <div class="p360-tile-sub">PM: Suresh K. · 9 engineers</div>
+            </div>
+          </div>
+          <div class="p360-tile-pills">
+            <span class="p360-pill green">Discipline 7.6</span>
+            <span class="p360-pill amber">Quality 6.8</span>
+            <span class="p360-pill amber">Budget 7.4</span>
+            <span class="p360-pill green">Visibility 7.8</span>
+            <span class="p360-pill amber">Competence 7.2</span>
+          </div>
+        </div><div class="p360-tile green" onclick="openP360('HealthFirst Inc', 8.7, [8.8, 9.0, 8.4, 8.6, 9.2])">
+          <div class="p360-tile-head">
+            <div class="p360-tile-score green">8.7</div>
+            <div class="p360-tile-info">
+              <div class="p360-tile-title">HealthFirst Inc</div>
+              <div class="p360-tile-sub">PM: Anita M. · 11 engineers</div>
+            </div>
+          </div>
+          <div class="p360-tile-pills">
+            <span class="p360-pill green">Discipline 9.0</span>
+            <span class="p360-pill green">Quality 8.4</span>
+            <span class="p360-pill green">Budget 8.6</span>
+            <span class="p360-pill green">Visibility 9.2</span>
+            <span class="p360-pill green">Competence 8.8</span>
+          </div>
+        </div><div class="p360-tile green" onclick="openP360('WellnessOne', 8.2, [8.2, 8.4, 8.0, 8.0, 8.6])">
+          <div class="p360-tile-head">
+            <div class="p360-tile-score green">8.2</div>
+            <div class="p360-tile-info">
+              <div class="p360-tile-title">WellnessOne</div>
+              <div class="p360-tile-sub">PM: Meera P. · 7 engineers</div>
+            </div>
+          </div>
+          <div class="p360-tile-pills">
+            <span class="p360-pill green">Discipline 8.4</span>
+            <span class="p360-pill green">Quality 8.0</span>
+            <span class="p360-pill green">Budget 8.0</span>
+            <span class="p360-pill green">Visibility 8.6</span>
+            <span class="p360-pill green">Competence 8.2</span>
+          </div>
+        </div><div class="p360-tile amber" onclick="openP360('NeuroLab', 7.0, [7.0, 7.2, 6.8, 6.6, 7.4])">
+          <div class="p360-tile-head">
+            <div class="p360-tile-score amber">7.0</div>
+            <div class="p360-tile-info">
+              <div class="p360-tile-title">NeuroLab</div>
+              <div class="p360-tile-sub">PM: Arjun N. · 8 engineers</div>
+            </div>
+          </div>
+          <div class="p360-tile-pills">
+            <span class="p360-pill amber">Discipline 7.2</span>
+            <span class="p360-pill amber">Quality 6.8</span>
+            <span class="p360-pill amber">Budget 6.6</span>
+            <span class="p360-pill amber">Visibility 7.4</span>
+            <span class="p360-pill amber">Competence 7.0</span>
+          </div>
+        </div><div class="p360-tile green" onclick="openP360('CardioTech', 7.8, [7.8, 8.0, 7.6, 7.4, 8.2])">
+          <div class="p360-tile-head">
+            <div class="p360-tile-score green">7.8</div>
+            <div class="p360-tile-info">
+              <div class="p360-tile-title">CardioTech</div>
+              <div class="p360-tile-sub">PM: Divya L. · 9 engineers</div>
+            </div>
+          </div>
+          <div class="p360-tile-pills">
+            <span class="p360-pill green">Discipline 8.0</span>
+            <span class="p360-pill green">Quality 7.6</span>
+            <span class="p360-pill amber">Budget 7.4</span>
+            <span class="p360-pill green">Visibility 8.2</span>
+            <span class="p360-pill green">Competence 7.8</span>
+          </div>
+        </div><div class="p360-tile amber" onclick="openP360('PediaCare', 6.4, [6.4, 6.6, 6.2, 5.8, 7.0])">
+          <div class="p360-tile-head">
+            <div class="p360-tile-score amber">6.4</div>
+            <div class="p360-tile-info">
+              <div class="p360-tile-title">PediaCare</div>
+              <div class="p360-tile-sub">PM: Rohan T. · 7 engineers</div>
+            </div>
+          </div>
+          <div class="p360-tile-pills">
+            <span class="p360-pill amber">Discipline 6.6</span>
+            <span class="p360-pill amber">Quality 6.2</span>
+            <span class="p360-pill red">Budget 5.8</span>
+            <span class="p360-pill amber">Visibility 7.0</span>
+            <span class="p360-pill amber">Competence 6.4</span>
+          </div>
+        </div><div class="p360-tile red" onclick="openP360('OncoSys', 5.8, [5.6, 6.0, 5.4, 5.2, 6.8])">
+          <div class="p360-tile-head">
+            <div class="p360-tile-score red">5.8</div>
+            <div class="p360-tile-info">
+              <div class="p360-tile-title">OncoSys</div>
+              <div class="p360-tile-sub">PM: Rajesh K. · 10 engineers</div>
+            </div>
+          </div>
+          <div class="p360-tile-pills">
+            <span class="p360-pill amber">Discipline 6.0</span>
+            <span class="p360-pill red">Quality 5.4</span>
+            <span class="p360-pill red">Budget 5.2</span>
+            <span class="p360-pill amber">Visibility 6.8</span>
+            <span class="p360-pill red">Competence 5.6</span>
+          </div>
+        </div><div class="p360-tile amber" onclick="openP360('OrthoFix', 7.2, [7.2, 7.4, 6.8, 6.8, 7.6])">
+          <div class="p360-tile-head">
+            <div class="p360-tile-score amber">7.2</div>
+            <div class="p360-tile-info">
+              <div class="p360-tile-title">OrthoFix</div>
+              <div class="p360-tile-sub">PM: Kiran R. · 6 engineers</div>
+            </div>
+          </div>
+          <div class="p360-tile-pills">
+            <span class="p360-pill amber">Discipline 7.4</span>
+            <span class="p360-pill amber">Quality 6.8</span>
+            <span class="p360-pill amber">Budget 6.8</span>
+            <span class="p360-pill green">Visibility 7.6</span>
+            <span class="p360-pill amber">Competence 7.2</span>
+          </div>
+        </div><div class="p360-tile green" onclick="openP360('DermaPlus', 8.0, [8.0, 8.2, 7.8, 7.6, 8.4])">
+          <div class="p360-tile-head">
+            <div class="p360-tile-score green">8.0</div>
+            <div class="p360-tile-info">
+              <div class="p360-tile-title">DermaPlus</div>
+              <div class="p360-tile-sub">PM: Anita M. · 8 engineers</div>
+            </div>
+          </div>
+          <div class="p360-tile-pills">
+            <span class="p360-pill green">Discipline 8.2</span>
+            <span class="p360-pill green">Quality 7.8</span>
+            <span class="p360-pill green">Budget 7.6</span>
+            <span class="p360-pill green">Visibility 8.4</span>
+            <span class="p360-pill green">Competence 8.0</span>
+          </div>
+        </div><div class="p360-tile amber" onclick="openP360('OptiCare', 6.6, [6.6, 6.8, 6.4, 6.2, 7.0])">
+          <div class="p360-tile-head">
+            <div class="p360-tile-score amber">6.6</div>
+            <div class="p360-tile-info">
+              <div class="p360-tile-title">OptiCare</div>
+              <div class="p360-tile-sub">PM: Anita M. · 7 engineers</div>
+            </div>
+          </div>
+          <div class="p360-tile-pills">
+            <span class="p360-pill amber">Discipline 6.8</span>
+            <span class="p360-pill amber">Quality 6.4</span>
+            <span class="p360-pill amber">Budget 6.2</span>
+            <span class="p360-pill amber">Visibility 7.0</span>
+            <span class="p360-pill amber">Competence 6.6</span>
+          </div>
+        </div>
+        </div>
+        <a href="#" class="p360-full-link" onclick="event.preventDefault();alert('Opens full-page P360 view');">Full P360 Screen →</a>
+      </div>
+    </div>
+
+    <!-- TAB 5: WORKFORCE HEALTH — tile-as-tab + shared table -->
+    <div class="pane" id="pane-pe">
+      <div class="kgrid" style="grid-template-columns:repeat(6,1fr);">
+        <div class="kc green active" id="pe-tile-gr" onclick="showPE('gr', this)"><div class="klbl">Golden Ratio</div><div class="kval">1:7.2</div><div class="ksub">Click for detail</div></div>
+        <div class="kc amber" id="pe-tile-util" onclick="showPE('util', this)"><div class="klbl">Utilization</div><div class="kval"><span style="color:var(--amber);">4</span> / <span style="color:var(--green);">78</span> / <span style="color:var(--red);">2</span></div><div class="ksub">Bench / Util / Over</div></div>
+        <div class="kc amber" id="pe-tile-ha" onclick="showPE('ha', this)"><div class="klbl">Hiring &amp; Attrition</div><div class="kval"><span style="color:var(--green);">3↑</span> / <span style="color:var(--red);">2↓</span></div><div class="ksub">2 at-risk</div></div>
+        <div class="kc red" id="pe-tile-att" onclick="showPE('att', this)"><div class="klbl">Attendance</div><div class="kval">93.4%</div><div class="ksub">3 flagged</div></div>
+        <div class="kc green" id="pe-tile-succ" onclick="showPE('succ', this)"><div class="klbl">Succession</div><div class="kval">2/2</div><div class="ksub">Critical roles</div></div>
+        <div class="kc amber" id="pe-tile-appr" onclick="showPE('appr', this)"><div class="klbl">Appraisals</div><div class="kval">72%</div><div class="ksub">Q1 · 4 delayed</div></div>
+      </div>
+      <div class="card-box" style="padding:14px;">
+        <div id="pe-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script src="dm-flyouts.js"></script>
+  <script>
+    // Read ?dm= param and update banner
+    const params = new URLSearchParams(window.location.search);
+    const dmKey = params.get('dm') || 'john';
+    const DMS = {
+      john:   { name:'John Doe',   avatar:'JD', avBg:'#FF9933', unit:'Healthcare &amp; Life Sciences · Delivery Manager', accts:'4 accounts', eng:'75 engineers', ytd:'$3.0M', red:3, amber:7, green:14, p360:'7.1', p360cls:'amber', sprint:'78%', hires:'2' },
+      sarah:  { name:'Sarah Patel',avatar:'SP', avBg:'#16A34A', unit:'NHS Direct · Delivery Manager',                  accts:'3 accounts', eng:'80 engineers', ytd:'$3.2M', red:0, amber:4, green:18, p360:'8.4', p360cls:'green', sprint:'92%', hires:'2' },
+      rajesh: { name:'Rajesh Kumar',avatar:'RK',avBg:'#DC2626', unit:'Common Platform · Delivery Manager',             accts:'2 accounts', eng:'50 engineers', ytd:'$2.0M', red:5, amber:6, green:8,  p360:'5.8', p360cls:'red',   sprint:'62%', hires:'1' },
+      anita:  { name:'Anita Mehta',avatar:'AM', avBg:'#F59E0B', unit:'HLS-2 · Delivery Manager',                       accts:'3 accounts', eng:'65 engineers', ytd:'$2.8M', red:1, amber:8, green:14, p360:'7.6', p360cls:'green', sprint:'82%', hires:'2' }
+    };
+    const dm = DMS[dmKey] || DMS.john;
+    document.getElementById('dmAvatarBig').textContent = dm.avatar;
+    document.getElementById('dmAvatarBig').style.background = dm.avBg;
+    document.getElementById('dmRibbonName').textContent = dm.name;
+    document.getElementById('dmRibbonUnit').innerHTML = dm.unit;
+    document.getElementById('dmAccts').textContent = dm.accts;
+    document.getElementById('dmEng').textContent = dm.eng;
+    document.getElementById('dmYTDStat').textContent = dm.ytd;
+    document.getElementById('dmP360').textContent = dm.p360;
+    document.getElementById('dmP360').className = 'dm-ribbon-stat-val ' + dm.p360cls;
+    document.getElementById('dmSprint').textContent = dm.sprint;
+    document.getElementById('dmHires').textContent = dm.hires;
+    document.getElementById('dmRedItems').textContent = dm.red;
+    document.getElementById('dmAmberItems').textContent = dm.amber;
+    document.getElementById('dmGreenItems').textContent = dm.green;
+    document.getElementById('pageTitle').textContent = 'Engineering — ' + dm.name + ' · Pulse';
+    document.getElementById('avatarBadge').textContent = dm.avatar;
+
+    function showTab(t, el) {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.pane').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('pane-' + t).classList.add('active');
+      if (t === 'pp') setTimeout(drawVel, 50);
+      if (t === 'fin') setTimeout(drawBill, 50);
+      if (t === 'pe') setTimeout(() => showPE('gr', document.getElementById('pe-tile-gr')), 30);
+    }
+    function toggleSidebar() { var sb=document.querySelector('.sidebar'); if(sb) sb.classList.toggle('collapsed'); document.body.classList.toggle('sidebar-collapsed'); }
+    setTimeout(drawVel, 100);
+
+    // === People & Resource — tile-as-tab, shared table area (DM unit context) ===
+    function showPE(view, el) {
+      document.querySelectorAll('#pane-pe .kc').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      const c = document.getElementById('pe-content');
+      if (view === 'gr')        c.innerHTML = peGR();
+      else if (view === 'util') c.innerHTML = peUtil();
+      else if (view === 'ha')   c.innerHTML = peHA();
+      else if (view === 'att')  c.innerHTML = peAtt();
+      else if (view === 'succ') c.innerHTML = peSucc();
+      else if (view === 'appr') c.innerHTML = peAppr();
+    }
+    function peGR() {
+      return `<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;">Golden Ratio · Span of Control by Lead · click row for org tree</div>
+      <table class="tbl"><thead><tr><th>Lead</th><th>Pod</th><th>Reports</th><th>Span (1:N)</th><th>RAG</th></tr></thead><tbody>
+      <tr onclick="openGoldenRatio()"><td><strong>Kavya Sharma</strong></td><td>Sprint Pod</td><td>18</td><td>1:6.8</td><td><span class="badge amber">Watch</span></td></tr>
+      <tr onclick="openGoldenRatio()"><td><strong>Rajesh K.</strong></td><td>QA Pod</td><td>14</td><td>1:7.0</td><td><span class="badge amber">Watch</span></td></tr>
+      <tr onclick="openGoldenRatio()"><td><strong>Priya M.</strong></td><td>Platform</td><td>22</td><td>1:7.5</td><td><span class="badge green">Healthy</span></td></tr>
+      <tr onclick="openGoldenRatio()"><td><strong>Vikram J.</strong></td><td>Web</td><td>18</td><td>1:7.9</td><td><span class="badge green">Healthy</span></td></tr>
+      <tr onclick="openGoldenRatio()"><td><strong>Maya R.</strong></td><td>Mobile</td><td>12</td><td>1:6.2</td><td><span class="badge amber">Watch</span></td></tr>
+      </tbody></table>`;
+    }
+    // Utilization — pillbox segment switcher
+    const PE_UTIL_DATA = {
+      bench: [
+        { n:'A. Rao', skill:'Java', dur:'14d', notes:'Awaiting MedTech ramp' },
+        { n:'C. Iyer', skill:'React', dur:'8d', notes:'Coming off PharmCare' },
+        { n:'F. Nair', skill:'Data Eng', dur:'22d', notes:'Specialty mismatch — long bench' },
+        { n:'G. Sen', skill:'UX', dur:'5d', notes:'Awaiting BioGen Phase 2' }
+      ],
+      ok: [
+        { n:'Kavya Sharma', skill:'Tech Lead', dur:'92%', notes:'MedTech sprint pod' },
+        { n:'B. Kumar', skill:'Java Sr.', dur:'95%', notes:'MedTech' },
+        { n:'D. Patel', skill:'QA Lead', dur:'88%', notes:'BioGen' },
+        { n:'E. Singh', skill:'QA', dur:'90%', notes:'BioGen' },
+        { n:'Priya M.', skill:'Platform Lead', dur:'94%', notes:'Cross-account' },
+        { n:'Vikram J.', skill:'Web Lead', dur:'92%', notes:'HealthFirst' },
+        { n:'Maya R.', skill:'Mobile Lead', dur:'90%', notes:'HealthFirst' }
+      ],
+      over: [
+        { n:'Rajesh K.', skill:'QA Pod Mgr', dur:'118%', notes:'Covering 2 projects · burnout risk' },
+        { n:'H. Sharma', skill:'DevOps Sr.', dur:'124%', notes:'Sole DevOps · backfill needed' }
+      ]
+    };
+    function peUtil() {
+      const seg = window._peUtilSeg || 'bench';
+      const dlbl = seg === 'bench' ? 'Days on Bench' : 'Utilization';
+      const rows = PE_UTIL_DATA[seg].map(d => `<tr><td><strong>${d.n}</strong></td><td>${d.skill}</td><td>${d.dur}</td><td>${d.notes}</td></tr>`).join('');
+      return `<div class="seg-tabs">
+        <span class="seg-tab amber ${seg==='bench'?'active':''}" onclick="setPeUtilSeg('bench')">On Bench (4)</span>
+        <span class="seg-tab green ${seg==='ok'?'active':''}" onclick="setPeUtilSeg('ok')">Utilized (78)</span>
+        <span class="seg-tab red ${seg==='over'?'active':''}" onclick="setPeUtilSeg('over')">Over-utilized (2)</span>
+      </div>
+      <table class="tbl"><thead><tr><th>Engineer</th><th>Skill</th><th>${dlbl}</th><th>Notes</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    window.setPeUtilSeg = function(s) { window._peUtilSeg = s; document.getElementById('pe-content').innerHTML = peUtil(); };
+
+    const PE_HA_DATA = {
+      hires: { cols:['Name','Role','Start Date','Source'], rows:[['L. Krishnan','Senior Java','Apr 22','Referral'],['M. Joshi','QA Engineer','Apr 28','Inbound'],['N. Pillai','DevOps','May 4','Outbound']]},
+      exits: { cols:['Name','Role','Last Day','Reason'], rows:[['O. Khan','Senior React','Apr 18','Comp'],['P. Naidu','Platform Eng','Apr 30','Career growth']]},
+      open:  { cols:['Role','Days Open','Pipeline','Hiring Manager'], rows:[['Senior Java','9d','12 in funnel','John Doe'],['Data Eng','22d','8 in funnel','John Doe'],['QA Lead','8d','6 in funnel','Sarah Patel']]},
+      risk:  { cols:['Name','Role','Risk Score','Driver'], rows:[['K. Sharma','Tech Lead','<span class="badge red">8.2/10</span>','Comp gap'],['M. Verma','Senior Java','<span class="badge amber">7.6/10</span>','Engagement drop']]}
+    };
+    function peHA() {
+      const seg = window._peHASeg || 'hires';
+      const d = PE_HA_DATA[seg];
+      const rows = d.rows.map(r => `<tr>${r.map((c,i) => `<td${i===0?'><strong>'+c+'</strong>':'>'+c}</td>`).join('')}</tr>`).join('');
+      return `<div class="seg-tabs">
+        <span class="seg-tab green ${seg==='hires'?'active':''}" onclick="setPeHASeg('hires')">Hires (3)</span>
+        <span class="seg-tab red ${seg==='exits'?'active':''}" onclick="setPeHASeg('exits')">Exits (2)</span>
+        <span class="seg-tab amber ${seg==='open'?'active':''}" onclick="setPeHASeg('open')">Open Positions (3)</span>
+        <span class="seg-tab amber ${seg==='risk'?'active':''}" onclick="setPeHASeg('risk')">At Risk (2)</span>
+      </div>
+      <table class="tbl"><thead><tr>${d.cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    window.setPeHASeg = function(s) { window._peHASeg = s; document.getElementById('pe-content').innerHTML = peHA(); };
+
+    const PE_ATT_DATA = [
+      { n:'K. Sharma',  mgr:'Kavya Sharma', buhr:'Anita Mehta', pct:'88%', wfh:'46%', exc:4, anom:'Late logins 4× · short Fridays' },
+      { n:'M. Verma',   mgr:'Rajesh K.',    buhr:'Anita Mehta', pct:'86%', wfh:'42%', exc:6, anom:'6 unplanned absences in 30d' },
+      { n:'R. Pillai',  mgr:'Maya R.',      buhr:'Anita Mehta', pct:'92%', wfh:'38%', exc:3, anom:'Pattern: short Fridays' }
+    ];
+    function peAtt() {
+      const rows = PE_ATT_DATA.map(p => `<tr onclick="openPersonAttendance('${p.n}')"><td><strong>${p.n}</strong></td><td>${p.mgr}</td><td>${p.buhr}</td><td>${p.pct}</td><td>${p.wfh}</td><td>${p.exc}</td><td>${p.anom}</td></tr>`).join('');
+      return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:10px;">
+        <div style="font-size:13px;font-weight:700;color:var(--navy);">Attendance · 3 employees flagged · click row for monthly heatmap</div>
+        <div style="font-size:11px;color:var(--text-muted);">Unit avg 93.4% · WFH 42% · 6 exceptions in 30d</div>
+      </div>
+      <table class="tbl"><thead><tr><th>Employee</th><th>Reporting Manager</th><th>BUHR</th><th>Attendance %</th><th>WFH %</th><th>Exceptions</th><th>Why flagged</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    window._attCurrent = { name: null, monthsShown: 2 };
+    function buildAttMonthBlock(name, year, month) {
+      const label = new Date(year, month, 1).toLocaleString('en', {month:'long', year:'numeric'});
+      const firstDay = new Date(year, month, 1);
+      const firstIdx = (firstDay.getDay() + 6) % 7;
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      let cells = '';
+      ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d => cells += `<div class="att-cal-hdr">${d}</div>`);
+      for (let i = 0; i < firstIdx; i++) cells += `<div class="att-cal-cell empty"></div>`;
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dow = (firstIdx + d - 1) % 7;
+        let cls;
+        if (dow === 5 || dow === 6) cls = 'weekend';
+        else {
+          const seed = (name.charCodeAt(0) + month * 31 + d * 7) % 100;
+          if (seed < 50) cls = 'present';
+          else if (seed < 78) cls = 'wfh';
+          else if (seed < 86) cls = 'leave';
+          else if (seed < 94) cls = 'absent';
+          else cls = 'exception';
+        }
+        cells += `<div class="att-cal-cell ${cls}" title="${label} · Day ${d}: ${cls}">${d}</div>`;
+      }
+      return `<div class="cal-month-block"><div class="cal-month-label">${label}</div><div class="att-cal">${cells}</div></div>`;
+    }
+    function buildAttCalScroll(name, monthsShown) {
+      const today = new Date();
+      let blocks = '';
+      for (let i = 0; i < monthsShown; i++) {
+        const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        blocks += buildAttMonthBlock(name, d.getFullYear(), d.getMonth());
+      }
+      return `<div class="cal-scroll">${blocks}<div class="cal-load-more"><button onclick="loadMoreAttMonths()">Load earlier month</button></div></div>
+      <div class="att-legend">
+        <span><span class="dot" style="background:rgba(22,163,74,0.5);"></span>Present</span>
+        <span><span class="dot" style="background:rgba(0,176,240,0.5);"></span>WFH</span>
+        <span><span class="dot" style="background:rgba(245,158,11,0.5);"></span>Absent</span>
+        <span><span class="dot" style="background:rgba(148,163,184,0.5);"></span>Leave</span>
+        <span><span class="dot" style="background:rgba(220,38,38,0.5);"></span>Exception</span>
+        <span><span class="dot" style="background:var(--bg);"></span>Weekend</span>
+      </div>`;
+    }
+    window.openPersonAttendance = function(name) {
+      window._attCurrent = { name: name, monthsShown: 2 };
+      const p = PE_ATT_DATA.find(x => x.n === name) || {pct:'92%', wfh:'40%', exc:3, anom:'Flagged'};
+      openFlyoutPinned({ title: name + ' · Attendance', sub: `${p.pct} attendance · ${p.wfh} WFH · ${p.exc} exceptions · scroll up to view earlier`, pinned: `<div class="fly-insight"><strong>Pattern:</strong> ${p.anom}</div>`, body: buildAttCalScroll(name, 2) });
+    };
+    window.loadMoreAttMonths = function() {
+      const a = window._attCurrent; if (!a || !a.name) return;
+      a.monthsShown += 1;
+      const body = document.getElementById('gFlyBody');
+      if (body) body.innerHTML = buildAttCalScroll(a.name, a.monthsShown);
+    };
+
+    function peSucc() {
+      const seg = window._peSuccSeg || 'critical';
+      let rows, cols;
+      if (seg === 'critical') {
+        cols = ['Role','Incumbent','Successor','Readiness'];
+        rows = [['Tech Lead · Sprint Pod','Kavya Sharma','Priya M.','<span class="badge amber">82%</span>'],['QA Pod Mgr','Rajesh K.','D. Patel','<span class="badge amber">68%</span>']];
+      } else {
+        cols = ['Successor','Target Role','Readiness','Gap'];
+        rows = [['Priya M.','Tech Lead · Sprint Pod','<span class="badge amber">82%</span>','Strategic planning'],['D. Patel','QA Pod Mgr','<span class="badge amber">68%</span>','People mgmt + budgeting']];
+      }
+      const body = rows.map(r => `<tr><td><strong>${r[0]}</strong></td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('');
+      return `<div class="seg-tabs">
+        <span class="seg-tab ${seg==='critical'?'active':''}" onclick="setPeSuccSeg('critical')">Critical Roles (2)</span>
+        <span class="seg-tab ${seg==='readiness'?'active':''}" onclick="setPeSuccSeg('readiness')">Successor Readiness</span>
+      </div>
+      <table class="tbl"><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table>`;
+    }
+    window.setPeSuccSeg = function(s) { window._peSuccSeg = s; document.getElementById('pe-content').innerHTML = peSucc(); };
+
+    const PE_APPR_DATA = {
+      done: [['A. Rao','Java Eng','4 of 5','Apr 22'],['B. Kumar','Senior Java','5 of 5','Apr 28'],['C. Iyer','React','3 of 5','Apr 30'],['D. Patel','QA','4 of 5','May 2'],['E. Singh','QA','4 of 5','May 3']],
+      upcoming: [['F. Nair','Data Eng','-','May 8'],['G. Sen','UX','-','May 10'],['H. Sharma','DevOps','-','May 12'],['I. Joshi','Mobile','-','May 14']],
+      delayed: [['J. Khan','Tech Lead','-','12d late'],['K. Verma','Senior QA','-','8d late'],['L. Pillai','DevOps','-','5d late']]
+    };
+    function peAppr() {
+      const seg = window._peApprSeg || 'done';
+      const lblDate = seg === 'done' ? 'Completed' : 'Status';
+      const rows = PE_APPR_DATA[seg].map(r => `<tr><td><strong>${r[0]}</strong></td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('');
+      return `<div class="seg-tabs">
+        <span class="seg-tab green ${seg==='done'?'active':''}" onclick="setPeApprSeg('done')">Done (62)</span>
+        <span class="seg-tab amber ${seg==='upcoming'?'active':''}" onclick="setPeApprSeg('upcoming')">Upcoming (14)</span>
+        <span class="seg-tab red ${seg==='delayed'?'active':''}" onclick="setPeApprSeg('delayed')">Delayed (8)</span>
+      </div>
+      <table class="tbl"><thead><tr><th>Name</th><th>Role</th><th>Rating</th><th>${lblDate}</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    window.setPeApprSeg = function(s) { window._peApprSeg = s; document.getElementById('pe-content').innerHTML = peAppr(); };
+
+    // Velocity chart
+    let velRange = '4w';
+    function drawVel() {
+      const el = document.getElementById('velChart'); if (!el) return;
+      const ch = el._ch || (el._ch = echarts.init(el));
+      const data4w = { x:['S15','S16','S17','S18'], commit:[24,26,24,28], done:[22,24,21,25] };
+      const data12w = { x:['S7','S8','S9','S10','S11','S12','S13','S14','S15','S16','S17','S18'], commit:[22,24,23,25,24,26,25,26,24,26,24,28], done:[20,22,22,24,22,24,23,24,22,24,21,25] };
+      const d = velRange === '12w' ? data12w : data4w;
+      ch.setOption({
+        grid: { left: 40, right: 20, top: 44, bottom: 30 },
+        tooltip: { trigger: 'axis' },
+        legend: { top: 6, right: 10, textStyle: { fontSize: 10 } },
+        xAxis: { type: 'category', data: d.x },
+        yAxis: { type: 'value', name: 'SP' },
+        series: [
+          { name: 'Committed', type: 'bar', data: d.commit, itemStyle: { color: '#94A3B8' } },
+          { name: 'Done', type: 'bar', data: d.done, itemStyle: { color: '#FF9933' } }
+        ]
+      });
+    }
+    // Billing chart
+    let billRange = '1M';
+    function drawBill() {
+      const el = document.getElementById('billChart'); if (!el) return;
+      const ch = el._ch || (el._ch = echarts.init(el));
+      const dataM = { x:['Jan','Feb','Mar','Apr','May'], plan:[0.62,0.62,0.64,0.64,0.66], actual:[0.60,0.63,0.62,0.63,null] };
+      const dataQ = { x:['Q1','Q2','Q3','Q4'], plan:[1.88,1.92,2.0,2.1], actual:[1.85,1.26,null,null] };
+      const d = billRange === '1Q' ? dataQ : dataM;
+      ch.setOption({
+        grid: { left: 50, right: 20, top: 44, bottom: 30 },
+        tooltip: { trigger: 'axis' },
+        legend: { top: 6, right: 10, textStyle: { fontSize: 10 } },
+        xAxis: { type: 'category', data: d.x },
+        yAxis: { type: 'value', name: '$ M' },
+        series: [
+          { name: 'Plan', type: 'line', data: d.plan, lineStyle: { color: '#94A3B8', type: 'dashed' }, symbol: 'circle' },
+          { name: 'Actual', type: 'line', data: d.actual, lineStyle: { color: '#FF9933', width: 3 }, symbol: 'circle', areaStyle: { color: 'rgba(255,153,51,0.10)' } }
+        ]
+      });
+    }
+    window.setBillRange = function(r, btn) {
+      billRange = r;
+      btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      drawBill();
+    };
+  </script>
+</body>
+</html>

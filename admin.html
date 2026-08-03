@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="blue">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Console — Pulse · Nalashaa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .admin-tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 18px; }
+    .admin-tab { padding: 10px 16px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-muted); border-bottom: 3px solid transparent; margin-bottom: -2px; }
+    .admin-tab.active { color: var(--navy); border-bottom-color: var(--orange); }
+    [data-mode="dark"] .admin-tab.active { color: #fff; }
+    .admin-pane { display: none; }
+    .admin-pane.active { display: block; }
+    .admin-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 14px; }
+    .admin-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .admin-tbl th { padding: 9px 10px; text-align: left; font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 2px solid var(--border); font-weight: 700; }
+    .admin-tbl td { padding: 9px 10px; border-bottom: 1px solid var(--border); }
+    .admin-tbl tr:hover td { background: var(--bg); }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+    .pill.green { background: #D1FAE5; color: #065F46; }
+    .pill.red { background: #FEE2E2; color: #991B1B; }
+    .pill.amber { background: #FEF3C7; color: #92400E; }
+    .pill.grey { background: #F1F5F9; color: #475569; }
+    .role-matrix { width: 100%; font-size: 11px; border-collapse: collapse; }
+    .role-matrix th, .role-matrix td { padding: 6px 8px; border: 1px solid var(--border); text-align: center; }
+    .role-matrix th:first-child, .role-matrix td:first-child { text-align: left; font-weight: 600; background: var(--bg); }
+    .role-matrix input[type="checkbox"] { accent-color: var(--orange); }
+    .audit-row { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 11px; display: grid; grid-template-columns: 130px 90px 130px 1fr 80px; gap: 10px; align-items: center; }
+    .audit-time { color: var(--text-muted); font-family: monospace; font-size: 10px; }
+    .audit-actor { font-weight: 700; color: var(--navy); }
+    [data-mode="dark"] .audit-actor { color: #fff; }
+    .audit-action { font-size: 10px; padding: 2px 6px; background: var(--border); border-radius: 4px; }
+    .integration-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+    .integration-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    .integration-name { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+    [data-mode="dark"] .integration-name { color: #fff; }
+    .btn { padding: 6px 12px; border-radius: 6px; border: none; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+    .btn.primary { background: var(--orange); color: #fff; }
+    .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn:hover { transform: translateY(-1px); }
+  </style>
+</head>
+<body>
+
+  <!-- TOP NAV -->
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:0;">
+      <button class="hamburger-btn" onclick="toggleSidebar()" title="Toggle menu"><span></span><span></span><span></span></button>
+      <div class="pulse-logo">
+        <span class="pulse-icon">
+          <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1.5" y="2" width="25" height="17" rx="2.5" stroke="#FF9933" stroke-width="1.5"/>
+            <line x1="14" y1="19" x2="14" y2="23.5" stroke="#FF9933" stroke-width="1.5"/>
+            <line x1="9" y1="23.5" x2="19" y2="23.5" stroke="#FF9933" stroke-width="1.8" stroke-linecap="round"/>
+            <polyline points="4,10.5 7,10.5 8.5,6.5 10,14.5 11.5,10.5 13,10.5 14,8 15,13 16.5,10.5 18,10.5 24,10.5" stroke="#FF9933" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <button class="help-btn" title="Help">?</button>
+      <div class="alert-bell"><i class="bi bi-bell-fill" style="font-size:16px;"></i></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html" class="active"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+    <div class="sidebar-brand"><img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo"></div>
+  </div>
+
+  <div class="main" style="padding:18px 28px;">
+    <div class="page-title">Admin Console <span class="info-i" data-tip-title="Admin Console" data-tip="Manage users, roles, audit trail, org-wide defaults, and external integrations. Privileged actions logged to audit trail.">i</span></div>
+    <div class="page-sub" style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Users · Roles · Audit · Org Defaults · Integrations &amp; SSO</div>
+
+    <div class="admin-tabs">
+      <div class="admin-tab active" onclick="showAdminTab('users')">Users</div>
+      <div class="admin-tab" onclick="showAdminTab('roles')">Roles &amp; Permissions</div>
+      <div class="admin-tab" onclick="showAdminTab('audit')">Audit Log</div>
+      <div class="admin-tab" onclick="showAdminTab('defaults')">Org Defaults</div>
+      <div class="admin-tab" onclick="showAdminTab('integ')">Integrations &amp; SSO</div>
+    </div>
+
+    <!-- USERS -->
+    <div class="admin-pane active" id="pane-users">
+      <div class="admin-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-weight:700;font-size:14px;color:var(--navy);">All Users (24)</div>
+          <div style="display:flex;gap:8px;"><button class="btn ghost"><i class="bi bi-download"></i> Export</button><button class="btn primary"><i class="bi bi-plus-lg"></i> Add user</button></div>
+        </div>
+        <table class="admin-tbl">
+          <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Departments</th><th>Last login</th><th>MFA</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><strong>John Doe</strong></td><td>john.doe@nalashaa.com</td><td>Admin</td><td>All</td><td>now</td><td><span class="pill green">On</span></td><td><span class="pill green">Active</span></td><td>•••</td></tr>
+            <tr><td>Sarah Patel</td><td>sarah.p@nalashaa.com</td><td>President</td><td>All</td><td>2h ago</td><td><span class="pill green">On</span></td><td><span class="pill green">Active</span></td><td>•••</td></tr>
+            <tr><td>Rajesh Kumar</td><td>rajesh.k@nalashaa.com</td><td>Delivery Manager</td><td>HLS</td><td>11m ago</td><td><span class="pill green">On</span></td><td><span class="pill green">Active</span></td><td>•••</td></tr>
+            <tr><td>Anita Mehta</td><td>anita.m@nalashaa.com</td><td>HR Head</td><td>HR · L&amp;D</td><td>3h ago</td><td><span class="pill green">On</span></td><td><span class="pill green">Active</span></td><td>•••</td></tr>
+            <tr><td>Vikram Shah</td><td>vikram.s@nalashaa.com</td><td>Sales Head</td><td>Sales · BD</td><td>yesterday</td><td><span class="pill amber">Setup</span></td><td><span class="pill green">Active</span></td><td>•••</td></tr>
+            <tr><td>Priya Menon</td><td>priya.m@nalashaa.com</td><td>TA Head</td><td>TA</td><td>5h ago</td><td><span class="pill green">On</span></td><td><span class="pill green">Active</span></td><td>•••</td></tr>
+            <tr><td>Karthik R.</td><td>karthik.r@nalashaa.com</td><td>PMO Head</td><td>PMO · All</td><td>1d ago</td><td><span class="pill green">On</span></td><td><span class="pill green">Active</span></td><td>•••</td></tr>
+            <tr><td>Sunita Rao</td><td>sunita.r@nalashaa.com</td><td>Finance Head</td><td>Finance</td><td>4h ago</td><td><span class="pill green">On</span></td><td><span class="pill green">Active</span></td><td>•••</td></tr>
+            <tr><td>Mohit Singh</td><td>mohit.s@nalashaa.com</td><td>Analyst</td><td>All (read-only)</td><td>30m ago</td><td><span class="pill green">On</span></td><td><span class="pill green">Active</span></td><td>•••</td></tr>
+            <tr><td>Test User</td><td>test@nalashaa.com</td><td>Delivery Manager</td><td>HLS</td><td>—</td><td><span class="pill grey">Off</span></td><td><span class="pill amber">Invited</span></td><td>•••</td></tr>
+            <tr><td>Old Admin</td><td>old.admin@nalashaa.com</td><td>Admin</td><td>—</td><td>14d ago</td><td><span class="pill grey">Off</span></td><td><span class="pill red">Disabled</span></td><td>•••</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ROLES -->
+    <div class="admin-pane" id="pane-roles">
+      <div class="admin-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-weight:700;font-size:14px;color:var(--navy);">Permission Matrix</div>
+          <button class="btn primary"><i class="bi bi-plus-lg"></i> New role</button>
+        </div>
+        <table class="role-matrix">
+          <thead><tr><th>Page / Action</th><th>President</th><th>DM</th><th>Sales Head</th><th>HR Head</th><th>TA Head</th><th>PMO Head</th><th>Finance Head</th><th>Analyst</th><th>Admin</th></tr></thead>
+          <tbody>
+            <tr><td>Org Pulse — View</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+            <tr><td>Sales — View</td><td>✓</td><td>—</td><td>✓</td><td>—</td><td>—</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+            <tr><td>Sales — Edit</td><td>—</td><td>—</td><td>✓</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+            <tr><td>HR — View</td><td>✓</td><td>—</td><td>—</td><td>✓</td><td>—</td><td>✓</td><td>—</td><td>✓</td><td>✓</td></tr>
+            <tr><td>HR — Edit</td><td>—</td><td>—</td><td>—</td><td>✓</td><td>—</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+            <tr><td>TA — View</td><td>✓</td><td>—</td><td>—</td><td>✓</td><td>✓</td><td>—</td><td>—</td><td>✓</td><td>✓</td></tr>
+            <tr><td>PMO — View</td><td>✓</td><td>✓</td><td>—</td><td>—</td><td>—</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+            <tr><td>Finance — View</td><td>✓</td><td>—</td><td>—</td><td>—</td><td>—</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+            <tr><td>KPI Thresholds — Configure</td><td>✓</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+            <tr><td>Admin Console — Access</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+            <tr><td>Export — Page (PDF/Excel)</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>—</td><td>✓</td></tr>
+            <tr><td>Export — PII data</td><td>✓</td><td>—</td><td>—</td><td>✓</td><td>✓</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+          </tbody>
+        </table>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:10px;">✓ = granted · — = denied. Edits to this matrix require step-up MFA and a second admin approval.</div>
+      </div>
+    </div>
+
+    <!-- AUDIT -->
+    <div class="admin-pane" id="pane-audit">
+      <div class="admin-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;">
+          <div style="font-weight:700;font-size:14px;color:var(--navy);">Audit Log — Last 24 hours</div>
+          <div style="display:flex;gap:6px;">
+            <input type="text" placeholder="Search…" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);font-size:11px;background:var(--bg);color:var(--text);">
+            <button class="btn ghost"><i class="bi bi-funnel"></i> Filter</button>
+            <button class="btn ghost"><i class="bi bi-download"></i> CSV</button>
+          </div>
+        </div>
+        <div class="audit-row" style="font-weight:700;background:var(--bg);"><div>Timestamp</div><div>Actor</div><div>Action</div><div>Target</div><div>IP</div></div>
+        <div class="audit-row"><div class="audit-time">2026-05-05 09:14:22</div><div class="audit-actor">john.doe</div><div><span class="audit-action">login</span></div><div>Successful authentication via SSO (Microsoft)</div><div style="font-size:10px;color:var(--text-muted);">10.0.4.14</div></div>
+        <div class="audit-row"><div class="audit-time">2026-05-05 09:11:08</div><div class="audit-actor">karthik.r</div><div><span class="audit-action">threshold.change</span></div><div>P360 Composite — Amber 6.5→6.8</div><div style="font-size:10px;color:var(--text-muted);">10.0.4.22</div></div>
+        <div class="audit-row"><div class="audit-time">2026-05-05 08:42:11</div><div class="audit-actor">sarah.p</div><div><span class="audit-action">export.pdf</span></div><div>Org Pulse — Weekly board pack</div><div style="font-size:10px;color:var(--text-muted);">10.0.4.7</div></div>
+        <div class="audit-row"><div class="audit-time">2026-05-04 18:33:04</div><div class="audit-actor">john.doe</div><div><span class="audit-action">user.disable</span></div><div>old.admin@nalashaa.com</div><div style="font-size:10px;color:var(--text-muted);">10.0.4.14</div></div>
+        <div class="audit-row"><div class="audit-time">2026-05-04 17:12:55</div><div class="audit-actor">anita.m</div><div><span class="audit-action">data.export</span></div><div>HR Roster — 270 rows</div><div style="font-size:10px;color:var(--text-muted);">10.0.4.31</div></div>
+        <div class="audit-row"><div class="audit-time">2026-05-04 14:22:09</div><div class="audit-actor">john.doe</div><div><span class="audit-action">role.permission.update</span></div><div>Analyst — added Export PII (auto-rejected, requires 2nd approver)</div><div style="font-size:10px;color:var(--text-muted);">10.0.4.14</div></div>
+        <div class="audit-row"><div class="audit-time">2026-05-04 11:08:44</div><div class="audit-actor">vikram.s</div><div><span class="audit-action">login.failed</span></div><div>Wrong password (attempt 2 of 5)</div><div style="font-size:10px;color:var(--text-muted);">122.171.x.x</div></div>
+        <div class="audit-row"><div class="audit-time">2026-05-04 09:55:31</div><div class="audit-actor">john.doe</div><div><span class="audit-action">integration.test</span></div><div>Keka HRMS — connection healthy (148ms)</div><div style="font-size:10px;color:var(--text-muted);">10.0.4.14</div></div>
+      </div>
+    </div>
+
+    <!-- ORG DEFAULTS -->
+    <div class="admin-pane" id="pane-defaults">
+      <div class="admin-card">
+        <div style="font-weight:700;font-size:14px;color:var(--navy);margin-bottom:12px;">Organization-wide Defaults</div>
+        <table class="admin-tbl">
+          <tr><td><strong>Default landing page</strong> <span class="info-i" data-tip="Where users land after login if they have not set a personal default in their Settings.">i</span></td><td><select class="apple" style="padding:5px 8px;border-radius:5px;border:1px solid var(--border);background:var(--bg);color:var(--text);"><option>Org Pulse</option><option>DM Home</option><option>Role-default</option></select></td></tr>
+          <tr><td><strong>Auto-refresh interval</strong></td><td><select class="apple" style="padding:5px 8px;border-radius:5px;border:1px solid var(--border);background:var(--bg);color:var(--text);"><option>Off</option><option>30 seconds</option><option selected>5 minutes</option><option>15 minutes</option></select></td></tr>
+          <tr><td><strong>Default theme</strong></td><td><select class="apple" style="padding:5px 8px;border-radius:5px;border:1px solid var(--border);background:var(--bg);color:var(--text);"><option selected>Classic + Light</option><option>Classic + Dark</option><option>Modern + Light</option><option>Modern + Dark</option></select></td></tr>
+          <tr><td><strong>Fiscal year start</strong></td><td><select class="apple" style="padding:5px 8px;border-radius:5px;border:1px solid var(--border);background:var(--bg);color:var(--text);"><option selected>April</option><option>January</option></select></td></tr>
+          <tr><td><strong>Currency</strong></td><td><select class="apple" style="padding:5px 8px;border-radius:5px;border:1px solid var(--border);background:var(--bg);color:var(--text);"><option selected>INR</option><option>USD</option><option>EUR</option></select></td></tr>
+          <tr><td><strong>Locale</strong></td><td><select class="apple" style="padding:5px 8px;border-radius:5px;border:1px solid var(--border);background:var(--bg);color:var(--text);"><option selected>en-IN</option><option>en-US</option></select></td></tr>
+          <tr><td><strong>Audit retention</strong></td><td>7 years (rolling)</td></tr>
+          <tr><td><strong>Session timeout</strong></td><td>30 minutes inactivity</td></tr>
+          <tr><td><strong>Org logo</strong></td><td><img src="nalashaa-logo.png" alt="logo" style="height:30px;"></td></tr>
+        </table>
+        <div style="margin-top:12px;"><button class="btn primary">Save defaults</button></div>
+      </div>
+    </div>
+
+    <!-- INTEGRATIONS -->
+    <div class="admin-pane" id="pane-integ">
+      <div class="admin-card">
+        <div style="font-weight:700;font-size:14px;color:var(--navy);margin-bottom:12px;">Connected Systems</div>
+        <div class="integration-grid">
+          <div class="integration-card"><div class="integration-name"><i class="bi bi-people-fill"></i> Keka — HRMS</div><div style="font-size:11px;margin-bottom:8px;color:var(--text-muted);">Last sync 12 minutes ago · Pulling 270 employees</div><div><span class="pill green">Connected</span> <button class="btn ghost" style="margin-left:6px;">Test</button></div></div>
+          <div class="integration-card"><div class="integration-name"><i class="bi bi-cash-stack"></i> HubSpot — CRM</div><div style="font-size:11px;margin-bottom:8px;color:var(--text-muted);">Last sync 28 minutes ago · 412 deals</div><div><span class="pill green">Connected</span> <button class="btn ghost" style="margin-left:6px;">Test</button></div></div>
+          <div class="integration-card"><div class="integration-name"><i class="bi bi-graph-up"></i> Tally — Finance</div><div style="font-size:11px;margin-bottom:8px;color:var(--text-muted);">Last sync 4 hours ago · YTD revenue $11.0M</div><div><span class="pill amber">Stale</span> <button class="btn ghost" style="margin-left:6px;">Test</button></div></div>
+          <div class="integration-card"><div class="integration-name"><i class="bi bi-person-plus-fill"></i> Lever — ATS</div><div style="font-size:11px;margin-bottom:8px;color:var(--text-muted);">Last sync — never connected</div><div><span class="pill grey">Not connected</span> <button class="btn primary" style="margin-left:6px;">Connect</button></div></div>
+          <div class="integration-card"><div class="integration-name"><i class="bi bi-kanban-fill"></i> Jira — Engineering</div><div style="font-size:11px;margin-bottom:8px;color:var(--text-muted);">Last sync 6 minutes ago · 18 active sprints</div><div><span class="pill green">Connected</span> <button class="btn ghost" style="margin-left:6px;">Test</button></div></div>
+          <div class="integration-card"><div class="integration-name"><i class="bi bi-stars"></i> Claude — AI Brief</div><div style="font-size:11px;margin-bottom:8px;color:var(--text-muted);">Endpoint: http://localhost:8080/v1/brief · 142ms p95</div><div><span class="pill green">Healthy</span> <button class="btn ghost" style="margin-left:6px;">Test</button></div></div>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <div style="font-weight:700;font-size:14px;color:var(--navy);margin-bottom:12px;">SSO Configuration</div>
+        <table class="admin-tbl">
+          <tr><td><strong>Identity Provider</strong></td><td><select class="apple" style="padding:5px 8px;border-radius:5px;border:1px solid var(--border);background:var(--bg);color:var(--text);"><option selected>Microsoft Entra ID</option><option>Google Workspace</option><option>Okta</option><option>Generic SAML</option></select></td></tr>
+          <tr><td><strong>Tenant ID</strong></td><td><code style="font-size:11px;">a4bf1c32-9e8d-4f62-8b21-9c4f2e1a7b3d</code></td></tr>
+          <tr><td><strong>Email attribute</strong></td><td><code style="font-size:11px;">email</code></td></tr>
+          <tr><td><strong>Role claim</strong></td><td><code style="font-size:11px;">roles</code></td></tr>
+          <tr><td><strong>Certificate</strong></td><td>Expires 2027-08-14 · <span class="pill green">Valid</span></td></tr>
+          <tr><td><strong>Test SSO</strong></td><td><button class="btn ghost"><i class="bi bi-shield-check"></i> Run test flow</button></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    function showAdminTab(t) {
+      document.querySelectorAll('.admin-tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.admin-pane').forEach(x => x.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      document.getElementById('pane-' + t).classList.add('active');
+    }
+    function toggleSidebar() { var sb=document.querySelector('.sidebar'); if(sb) sb.classList.toggle('collapsed'); document.body.classList.toggle('sidebar-collapsed'); }
+  </script>
+</body>
+</html>

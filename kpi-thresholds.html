@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="blue">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KPI Thresholds — Pulse · Nalashaa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .thr-actions { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
+    .thr-actions .spacer { flex: 1; }
+    .btn { padding: 7px 14px; border-radius: 6px; border: none; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+    .btn.primary { background: var(--orange); color: #fff; }
+    .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .pending-badge { background: #FEF3C7; color: #92400E; padding: 4px 10px; border-radius: 14px; font-size: 11px; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:0;">
+      <button class="hamburger-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <div class="pulse-logo">
+        <span class="pulse-icon"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="2" width="25" height="17" rx="2.5" stroke="#FF9933" stroke-width="1.5"/><line x1="14" y1="19" x2="14" y2="23.5" stroke="#FF9933" stroke-width="1.5"/><line x1="9" y1="23.5" x2="19" y2="23.5" stroke="#FF9933" stroke-width="1.8" stroke-linecap="round"/><polyline points="4,10.5 7,10.5 8.5,6.5 10,14.5 11.5,10.5 13,10.5 14,8 15,13 16.5,10.5 18,10.5 24,10.5" stroke="#FF9933" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg></span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <button class="help-btn">?</button>
+      <div class="alert-bell"><i class="bi bi-bell-fill" style="font-size:16px;"></i></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html" class="active"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+    <div class="sidebar-brand"><img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo"></div>
+  </div>
+
+  <div class="main" style="padding:18px 28px;">
+    <div class="page-title">KPI Threshold Manager <span class="info-i" data-tip-title="Threshold Manager" data-tip="Configure RAG breakpoints per department-specific KPI. Section background tints reflect current observed band.">i</span></div>
+    <div class="page-sub" style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Drag handles to set Green→Amber→Red breakpoints. Different departments show different KPIs.</div>
+
+    <div class="thr-actions">
+      <button class="btn ghost"><i class="bi bi-clipboard"></i> Copy from another dept</button>
+      <button class="btn ghost"><i class="bi bi-upload"></i> Import CSV</button>
+      <button class="btn ghost"><i class="bi bi-download"></i> Export</button>
+      <button class="btn ghost"><i class="bi bi-arrow-counterclockwise"></i> Reset to defaults</button>
+      <div class="spacer"></div>
+      <span class="pending-badge"><i class="bi bi-pencil-fill"></i> 3 pending changes</span>
+      <button class="btn primary"><i class="bi bi-graph-up"></i> Preview impact</button>
+      <button class="btn primary" style="background:var(--green);"><i class="bi bi-check-lg"></i> Submit for approval</button>
+    </div>
+
+    <div class="kpi-thr-row">
+      <div class="kpi-thr-rail">
+        <div class="kpi-thr-rail-item active" onclick="loadDept('eng', this)">Engineering <span class="kpi-thr-rail-count">8</span></div>
+        <div class="kpi-thr-rail-item" onclick="loadDept('sales', this)">Sales <span class="kpi-thr-rail-count">7</span></div>
+        <div class="kpi-thr-rail-item" onclick="loadDept('hr', this)">HR <span class="kpi-thr-rail-count">10</span></div>
+        <div class="kpi-thr-rail-item" onclick="loadDept('ta', this)">Talent Acquisition <span class="kpi-thr-rail-count">9</span></div>
+        <div class="kpi-thr-rail-item" onclick="loadDept('pmo', this)">PMO <span class="kpi-thr-rail-count">8</span></div>
+        <div class="kpi-thr-rail-item" onclick="loadDept('fin', this)">Finance <span class="kpi-thr-rail-count">6</span></div>
+        <div class="kpi-thr-rail-item" onclick="loadDept('org', this)">Org Pulse <span class="kpi-thr-rail-count">4</span></div>
+      </div>
+
+      <div class="kpi-thr-pane" id="kpiPane"></div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    // Per-department KPI definitions
+    const DEPT_KPIS = {
+      eng: [
+        { name:'Sprint Health', dir:'higher', bandG:30, bandA:60, ticks:['0%','60%','85%','100%'], cur:78, band:'amber', value:'78%', owner:'Engineering', esc:'2 days', freq:'Weekly' },
+        { name:'Active Blockers', dir:'lower', bandG:30, bandA:60, ticks:['0','3','6','15+'], cur:12, band:'red', value:'12 open', owner:'Engineering', esc:'1 day', freq:'Real-time' },
+        { name:'Story Carryover', dir:'lower', bandG:30, bandA:60, ticks:['0%','10%','20%','40%'], cur:18, band:'amber', value:'18%', owner:'Engineering', esc:'7 days', freq:'Weekly' },
+        { name:'Velocity (4-sprint)', dir:'higher', bandG:30, bandA:60, ticks:['0','60','80','120'], cur:82, band:'green', value:'82 SP', owner:'Engineering', esc:'14 days', freq:'Weekly' },
+        { name:'YTD Billing (DM View)', dir:'higher', bandG:30, bandA:60, ticks:['0%','85%','95%','120%'], cur:96, band:'green', value:'96%', owner:'PMO', esc:'3 days', freq:'Daily' },
+        { name:'P360 Composite', dir:'higher', bandG:30, bandA:60, ticks:['0','6.0','7.5','10'], cur:71, band:'amber', value:'7.1', owner:'Engineering', esc:'7 days', freq:'Monthly' },
+        { name:'Golden Ratio', dir:'higher', bandG:30, bandA:60, ticks:['1:1','1:5','1:7','1:10+'], cur:72, band:'green', value:'1:7.2', owner:'HR', esc:'14 days', freq:'Monthly' },
+        { name:'Bench Days (avg)', dir:'lower', bandG:30, bandA:60, ticks:['0d','14d','30d','60d+'], cur:18, band:'amber', value:'18 days', owner:'PMO', esc:'7 days', freq:'Weekly' }
+      ],
+      sales: [
+        { name:'Pipeline Velocity', dir:'lower', bandG:30, bandA:60, ticks:['0d','30d','45d','90d'], cur:42, band:'amber', value:'38d', owner:'Sales', esc:'7 days', freq:'Weekly' },
+        { name:'Win Rate', dir:'higher', bandG:30, bandA:60, ticks:['0%','25%','35%','60%'], cur:31, band:'amber', value:'28%', owner:'Sales', esc:'30 days', freq:'Monthly' },
+        { name:'BOFU Duration', dir:'lower', bandG:30, bandA:60, ticks:['0d','7d','14d','30d'], cur:50, band:'amber', value:'12 days', owner:'Sales', esc:'7 days', freq:'Weekly' },
+        { name:'Battle Card Coverage', dir:'higher', bandG:30, bandA:60, ticks:['0%','70%','90%','100%'], cur:35, band:'red', value:'68%', owner:'Sales', esc:'1 day', freq:'Daily' },
+        { name:'Avg Call Score', dir:'higher', bandG:30, bandA:60, ticks:['0','7.0','8.0','10'], cur:50, band:'amber', value:'7.4', owner:'Sales', esc:'14 days', freq:'Weekly' },
+        { name:'TOFU Conversion', dir:'higher', bandG:30, bandA:60, ticks:['0%','15%','25%','50%'], cur:45, band:'amber', value:'22%', owner:'Sales', esc:'30 days', freq:'Monthly' },
+        { name:'Cold Aging > 60d', dir:'lower', bandG:30, bandA:60, ticks:['0','5','10','30+'], cur:80, band:'red', value:'14 deals', owner:'Sales', esc:'7 days', freq:'Weekly' }
+      ],
+      hr: [
+        { name:'Attrition (12m)', dir:'lower', bandG:30, bandA:60, ticks:['0%','15%','20%','40%'], cur:55, band:'amber', value:'18.4%', owner:'HR', esc:'30 days', freq:'Monthly' },
+        { name:'1-on-1 Adherence', dir:'higher', bandG:30, bandA:60, ticks:['0%','75%','85%','100%'], cur:55, band:'amber', value:'78%', owner:'HR', esc:'14 days', freq:'Weekly' },
+        { name:'Onboarding Completion', dir:'higher', bandG:30, bandA:60, ticks:['0%','75%','90%','100%'], cur:65, band:'amber', value:'82%', owner:'HR', esc:'7 days', freq:'Weekly' },
+        { name:'BGV Pending', dir:'lower', bandG:30, bandA:60, ticks:['0','2','5','15'], cur:75, band:'red', value:'4 pending', owner:'Talent Acquisition', esc:'7 days', freq:'Real-time' },
+        { name:'L&D Mandatory', dir:'higher', bandG:30, bandA:60, ticks:['0%','80%','95%','100%'], cur:50, band:'amber', value:'76%', owner:'HR', esc:'30 days', freq:'Monthly' },
+        { name:'Engagement Score', dir:'higher', bandG:30, bandA:60, ticks:['0','6.0','7.5','10'], cur:65, band:'green', value:'7.6', owner:'HR', esc:'90 days', freq:'Quarterly' },
+        { name:'Skip-level Coverage', dir:'higher', bandG:30, bandA:60, ticks:['0%','60%','80%','100%'], cur:35, band:'red', value:'42%', owner:'HR', esc:'30 days', freq:'Monthly' },
+        { name:'eNPS', dir:'higher', bandG:30, bandA:60, ticks:['-30','+10','+25','+60'], cur:55, band:'amber', value:'+18', owner:'HR', esc:'90 days', freq:'Quarterly' },
+        { name:'Comp Band Adherence', dir:'higher', bandG:30, bandA:60, ticks:['0%','85%','95%','100%'], cur:80, band:'green', value:'94%', owner:'HR', esc:'30 days', freq:'Monthly' },
+        { name:'Appraisal Completion', dir:'higher', bandG:30, bandA:60, ticks:['0%','85%','95%','100%'], cur:35, band:'red', value:'68%', owner:'HR', esc:'14 days', freq:'Weekly' }
+      ],
+      ta: [
+        { name:'JR Approval TAT', dir:'lower', bandG:30, bandA:60, ticks:['0d','3d','5d','15d'], cur:75, band:'red', value:'5.8 days', owner:'Talent Acquisition', esc:'2 days', freq:'Daily' },
+        { name:'Time to Hire', dir:'lower', bandG:30, bandA:60, ticks:['0d','30d','45d','90d'], cur:60, band:'amber', value:'42 days', owner:'Talent Acquisition', esc:'7 days', freq:'Weekly' },
+        { name:'Slip Through Rate', dir:'lower', bandG:30, bandA:60, ticks:['0%','5%','10%','25%'], cur:60, band:'red', value:'8%', owner:'Talent Acquisition', esc:'30 days', freq:'Monthly' },
+        { name:'Offer Acceptance', dir:'higher', bandG:30, bandA:60, ticks:['0%','60%','75%','100%'], cur:75, band:'green', value:'78%', owner:'Talent Acquisition', esc:'14 days', freq:'Weekly' },
+        { name:'Screening-to-Schedule', dir:'higher', bandG:30, bandA:60, ticks:['0%','20%','30%','60%'], cur:35, band:'amber', value:'22%', owner:'Talent Acquisition', esc:'7 days', freq:'Weekly' },
+        { name:'Call Quality Score', dir:'higher', bandG:30, bandA:60, ticks:['0','7.0','8.0','10'], cur:50, band:'amber', value:'7.4', owner:'Talent Acquisition', esc:'14 days', freq:'Weekly' },
+        { name:'Interview Velocity', dir:'lower', bandG:30, bandA:60, ticks:['0d','3d','5d','14d'], cur:65, band:'amber', value:'4.2 days', owner:'Talent Acquisition', esc:'7 days', freq:'Weekly' },
+        { name:'Hiring Velocity', dir:'higher', bandG:30, bandA:60, ticks:['0/wk','12/wk','16/wk','25/wk'], cur:60, band:'amber', value:'11/wk', owner:'Talent Acquisition', esc:'7 days', freq:'Weekly' },
+        { name:'Stuck Candidates', dir:'lower', bandG:30, bandA:60, ticks:['0','5','10','25'], cur:75, band:'red', value:'14 stuck', owner:'Talent Acquisition', esc:'3 days', freq:'Daily' }
+      ],
+      pmo: [
+        { name:'P360 Portfolio', dir:'higher', bandG:30, bandA:60, ticks:['0','6.0','7.5','10'], cur:65, band:'amber', value:'7.1', owner:'PMO', esc:'14 days', freq:'Monthly' },
+        { name:'At-Risk Accounts', dir:'lower', bandG:30, bandA:60, ticks:['0','3','7','15'], cur:65, band:'red', value:'5 of 23', owner:'PMO', esc:'3 days', freq:'Daily' },
+        { name:'CSAT Overdue', dir:'lower', bandG:30, bandA:60, ticks:['0','3','8','20'], cur:50, band:'amber', value:'8 overdue', owner:'PMO', esc:'7 days', freq:'Weekly' },
+        { name:'SOW Coverage', dir:'higher', bandG:30, bandA:60, ticks:['0%','85%','95%','100%'], cur:90, band:'green', value:'94%', owner:'PMO', esc:'30 days', freq:'Monthly' },
+        { name:'Open Esc. Age', dir:'lower', bandG:30, bandA:60, ticks:['0d','5d','10d','30d'], cur:60, band:'amber', value:'7.4 days', owner:'PMO', esc:'3 days', freq:'Daily' },
+        { name:'Billing Accuracy', dir:'higher', bandG:30, bandA:60, ticks:['0%','95%','99%','100%'], cur:55, band:'amber', value:'97%', owner:'PMO', esc:'7 days', freq:'Monthly' },
+        { name:'Bench Heatmap Hot', dir:'lower', bandG:30, bandA:60, ticks:['0','5','10','25'], cur:80, band:'red', value:'12 long bench', owner:'PMO', esc:'14 days', freq:'Weekly' },
+        { name:'Roll-offs 30d', dir:'lower', bandG:30, bandA:60, ticks:['0','8','15','30'], cur:80, band:'red', value:'14 roll-offs', owner:'PMO', esc:'14 days', freq:'Weekly' }
+      ],
+      fin: [
+        { name:'Revenue vs Plan YTD', dir:'higher', bandG:30, bandA:60, ticks:['0%','95%','100%','120%'], cur:50, band:'amber', value:'98%', owner:'Finance', esc:'7 days', freq:'Daily' },
+        { name:'OpEx vs Budget', dir:'lower', bandG:30, bandA:60, ticks:['80%','95%','105%','130%'], cur:60, band:'amber', value:'102%', owner:'Finance', esc:'14 days', freq:'Monthly' },
+        { name:'Gross Margin', dir:'higher', bandG:30, bandA:60, ticks:['0%','22%','28%','40%'], cur:75, band:'green', value:'28%', owner:'Finance', esc:'30 days', freq:'Monthly' },
+        { name:'AR Total', dir:'lower', bandG:30, bandA:60, ticks:['$0M','$3M','$5M','$10M'], cur:80, band:'red', value:'$4.6M', owner:'Finance', esc:'7 days', freq:'Daily' },
+        { name:'90+ Days Overdue', dir:'lower', bandG:30, bandA:60, ticks:['$0','$0.2M','$0.5M','$2M'], cur:85, band:'red', value:'$0.5M', owner:'Finance', esc:'3 days', freq:'Daily' },
+        { name:'Collection Rate (30d)', dir:'higher', bandG:30, bandA:60, ticks:['0%','85%','92%','100%'], cur:55, band:'amber', value:'88%', owner:'Finance', esc:'7 days', freq:'Weekly' }
+      ],
+      org: [
+        { name:'Org Health Composite', dir:'higher', bandG:30, bandA:60, ticks:['0','6.0','7.5','10'], cur:60, band:'amber', value:'7.0', owner:'CEO', esc:'30 days', freq:'Monthly' },
+        { name:'Total Critical Items', dir:'lower', bandG:30, bandA:60, ticks:['0','3','7','20'], cur:50, band:'amber', value:'4 critical', owner:'CEO', esc:'1 day', freq:'Real-time' },
+        { name:'Total At-Risk Items', dir:'lower', bandG:30, bandA:60, ticks:['0','5','12','30'], cur:55, band:'amber', value:'12 at-risk', owner:'CEO', esc:'7 days', freq:'Weekly' },
+        { name:'YTD Org Revenue', dir:'higher', bandG:30, bandA:60, ticks:['0%','95%','100%','120%'], cur:50, band:'amber', value:'98%', owner:'CFO', esc:'7 days', freq:'Daily' }
+      ]
+    };
+
+    function bandClass(b) { return b === 'red' ? 'is-red' : (b === 'amber' ? 'is-amber' : 'is-green'); }
+    function pillClass(b) { return b; }
+
+    function renderDept(dept) {
+      const kpis = DEPT_KPIS[dept] || [];
+      const html = kpis.map(k => {
+        const dirSlider = k.dir === 'higher'
+          ? 'background:linear-gradient(90deg,#DC2626 0%,#DC2626 30%,#F59E0B 30%,#F59E0B 60%,#16A34A 60%,#16A34A 100%);'
+          : 'background:linear-gradient(90deg,#16A34A 0%,#16A34A 30%,#F59E0B 30%,#F59E0B 60%,#DC2626 60%,#DC2626 100%);';
+        return `
+        <div class="kpi-thr-card ${bandClass(k.band)}">
+          <div class="kpi-thr-card-head">
+            <div>
+              <div class="kpi-thr-name">${k.name} <span class="info-i" data-tip="${k.dir === 'higher' ? 'Higher is better' : 'Lower is better'}. Updated ${k.freq.toLowerCase()}.">i</span></div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${k.dir === 'higher' ? 'Higher is better' : 'Lower is better'} · ${k.freq}</div>
+            </div>
+            <div><span class="kpi-thr-pill ${pillClass(k.band)}">${k.band.toUpperCase()} · ${k.value}</span></div>
+          </div>
+          <div class="kpi-thr-slider" data-dir="${k.dir}" style="${dirSlider}">
+            <div class="kpi-thr-handle" style="left:30%;"></div>
+            <div class="kpi-thr-handle" style="left:60%;"></div>
+            <div class="kpi-thr-tick" style="left:0%;">${k.ticks[0]}</div>
+            <div class="kpi-thr-tick" style="left:30%;">${k.ticks[1]}</div>
+            <div class="kpi-thr-tick" style="left:60%;">${k.ticks[2]}</div>
+            <div class="kpi-thr-tick" style="left:100%;">${k.ticks[3]}</div>
+          </div>
+          <div class="kpi-thr-meta">
+            <div><div class="kpi-thr-meta-label">Owner</div><div class="kpi-thr-meta-val">${k.owner}</div></div>
+            <div><div class="kpi-thr-meta-label">Escalation</div><div class="kpi-thr-meta-val">Notify after ${k.esc}</div></div>
+            <div><div class="kpi-thr-meta-label">Frequency</div><div class="kpi-thr-meta-val">${k.freq}</div></div>
+          </div>
+        </div>`;
+      }).join('');
+      document.getElementById('kpiPane').innerHTML = html || '<div style="padding:40px;text-align:center;color:var(--text-muted);">No KPIs configured for this department yet.</div>';
+    }
+    function loadDept(d, el) {
+      document.querySelectorAll('.kpi-thr-rail-item').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      renderDept(d);
+    }
+    function toggleSidebar() { var sb=document.querySelector('.sidebar'); if(sb) sb.classList.toggle('collapsed'); document.body.classList.toggle('sidebar-collapsed'); }
+    renderDept('eng');
+  
+    // Drag handlers for KPI threshold sliders
+    function _kpiBuildSliderBg(low, high, dir) {
+      // low% and high% are positions of 2 handles. Bar shows R/A/G or G/A/R based on dir
+      const colors = dir === 'higher' ? ['#DC2626','#F59E0B','#16A34A'] : ['#16A34A','#F59E0B','#DC2626'];
+      return `linear-gradient(90deg, ${colors[0]} 0%, ${colors[0]} ${low}%, ${colors[1]} ${low}%, ${colors[1]} ${high}%, ${colors[2]} ${high}%, ${colors[2]} 100%)`;
+    }
+    function _kpiAttachSliders() {
+      document.querySelectorAll('.kpi-thr-slider').forEach(slider => {
+        const handles = slider.querySelectorAll('.kpi-thr-handle');
+        if (handles.length !== 2) return;
+        const dir = slider.getAttribute('data-dir') || 'higher';
+        let active = null;
+        handles.forEach(h => {
+          h.addEventListener('mousedown', (e) => { active = h; e.preventDefault(); });
+        });
+        document.addEventListener('mousemove', (e) => {
+          if (!active) return;
+          const rect = slider.getBoundingClientRect();
+          let pct = ((e.clientX - rect.left) / rect.width) * 100;
+          pct = Math.max(0, Math.min(100, pct));
+          const idx = Array.from(handles).indexOf(active);
+          // Constrain so handle 0 < handle 1
+          const other = handles[1 - idx];
+          const otherPct = parseFloat(other.style.left);
+          if (idx === 0) pct = Math.min(pct, otherPct - 2);
+          else pct = Math.max(pct, otherPct + 2);
+          active.style.left = pct + '%';
+          // Update bar gradient
+          const low = parseFloat(handles[0].style.left);
+          const high = parseFloat(handles[1].style.left);
+          slider.style.background = _kpiBuildSliderBg(low, high, dir);
+          // Update tick labels
+          const ticks = slider.querySelectorAll('.kpi-thr-tick');
+          if (ticks[1]) { ticks[1].style.left = low + '%'; ticks[1].textContent = Math.round(low) + '%'; }
+          if (ticks[2]) { ticks[2].style.left = high + '%'; ticks[2].textContent = Math.round(high) + '%'; }
+        });
+        document.addEventListener('mouseup', () => { active = null; });
+      });
+    }
+    // Re-attach after each renderDept
+    const _origRender = renderDept;
+    renderDept = function(d) { _origRender(d); setTimeout(_kpiAttachSliders, 50); };
+    setTimeout(_kpiAttachSliders, 100);
+
+  </script>
+</body>
+</html>

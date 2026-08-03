@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="blue">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Engineering — Pulse · Nalashaa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <style>
+    /* Rich banner — v1 style: pipe-separated · center-aligned · breathable */
+    .eng-banner { background: linear-gradient(95deg, var(--navy) 0%, #0F2449 60%, #14274D 100%); color: #fff; border-radius: 12px; padding: 18px 28px; margin-bottom: 18px; position: relative; overflow: hidden; }
+    .eng-banner::before { content: ''; position: absolute; top: 0; right: 0; width: 240px; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,153,51,0.06)); }
+    .eng-banner-row1 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; position: relative; z-index: 2; }
+    .eng-banner-title { font-size: 18px; font-weight: 800; }
+    .eng-banner-sub { font-size: 12px; opacity: 0.65; margin-top: 4px; }
+    .eng-banner-stats { display: flex; align-items: center; gap: 24px; position: relative; z-index: 2; }
+    .eng-banner-stat { text-align: center; min-width: 80px; }
+    .eng-banner-stat-val { font-size: 22px; font-weight: 800; line-height: 1.1; }
+    .eng-banner-stat-val.red { color: #F87171; } .eng-banner-stat-val.amber { color: #FCD34D; } .eng-banner-stat-val.green { color: #4ADE80; }
+    .eng-banner-stat-lbl { font-size: 9px; opacity: 0.65; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+    .eng-banner-pipe { width: 1px; background: rgba(255,255,255,0.22); height: 42px; align-self: center; }
+
+    /* DM card — 4x1 stacked, vertical-line RAG only */
+    .dm-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+    .dm-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 22px; cursor: pointer; transition: all 0.18s; border-left: 4px solid transparent; text-decoration: none; color: inherit; display: flex; align-items: center; gap: 18px; }
+    .dm-card.green { border-left-color: var(--green); }
+    .dm-card.amber { border-left-color: var(--amber); }
+    .dm-card.red { border-left-color: var(--red); }
+    .dm-card:hover { transform: translateX(2px); box-shadow: 0 6px 18px rgba(0,32,96,0.10); }
+    .dm-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--orange); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; flex-shrink: 0; }
+    .dm-mid { flex: 1; min-width: 0; }
+    .dm-name-row { display: flex; align-items: baseline; gap: 12px; }
+    .dm-name { font-size: 15px; font-weight: 700; color: var(--navy); }
+    [data-mode="dark"] .dm-name { color: #fff; }
+    .dm-unit { font-size: 11px; color: var(--text-muted); }
+    .dm-rag-pill { font-size: 9px; padding: 3px 9px; border-radius: 10px; font-weight: 700; }
+    .dm-rag-pill.green { background: #D1FAE5; color: #065F46; } .dm-rag-pill.amber { background: #FEF3C7; color: #92400E; } .dm-rag-pill.red { background: #FEE2E2; color: #991B1B; }
+    .dm-accts { font-size: 12px; color: var(--text); margin-top: 6px; font-weight: 500; }
+    .dm-accts strong { color: var(--text-muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 700; margin-right: 6px; }
+    .dm-pipe { color: #CBD5E1; margin: 0 8px; }
+
+    /* Capsules (small inline KPI pills) */
+    .dm-caps { display: flex; gap: 6px; flex-wrap: wrap; flex-shrink: 0; }
+    .cap { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 14px; background: var(--bg); border: 1px solid var(--border); font-size: 11px; font-weight: 700; }
+    .cap i { font-size: 12px; }
+    .cap.green { color: var(--green); border-color: rgba(22,163,74,0.25); background: rgba(22,163,74,0.06); }
+    .cap.amber { color: var(--amber); border-color: rgba(245,158,11,0.25); background: rgba(245,158,11,0.06); }
+    .cap.red { color: var(--red); border-color: rgba(220,38,38,0.25); background: rgba(220,38,38,0.06); }
+    .cap.navy { color: var(--navy); border-color: rgba(0,32,96,0.18); }
+    [data-mode="dark"] .cap.navy { color: #fff; }
+
+    /* Section separator */
+    .section-sep { height: 1px; background: var(--border); margin: 24px 0 18px; }
+    .page-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin: 0 0 12px; }
+
+    /* Overdue action items table */
+    .ai-tbl { width: 100%; font-size: 12px; border-collapse: collapse; }
+    .ai-tbl th { padding: 9px 10px; background: var(--navy); color: #fff; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 700; }
+    .ai-tbl td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text); cursor: pointer; }
+    .ai-tbl tr:hover td { background: var(--bg); }
+    .ai-tbl td:first-child { text-align: left; }
+    .ai-mini-avatar { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; color: #fff; font-size: 9px; font-weight: 800; margin-right: 6px; vertical-align: middle; }
+
+    /* Department insights */
+    .insight-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 6px; }
+    .insight-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+    .insight-card-title { font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    [data-mode="dark"] .insight-card-title { color: #fff; }
+    .insight-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; font-size: 12px; color: var(--text); border-bottom: 1px dashed var(--border); }
+    .insight-row:last-child { border-bottom: none; }
+    .insight-avatar { width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 800; flex-shrink: 0; }
+
+    /* YTD revenue chart card */
+    .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-top: 4px; }
+    .chart-card-title { font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+    [data-mode="dark"] .chart-card-title { color: #fff; }
+
+    .data-fresh { font-size: 10px; color: var(--text-muted); margin-bottom: 14px; }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:0;">
+      <button class="hamburger-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <div class="pulse-logo">
+        <span class="pulse-icon"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="2" width="25" height="17" rx="2.5" stroke="#FF9933" stroke-width="1.5"/><line x1="14" y1="19" x2="14" y2="23.5" stroke="#FF9933" stroke-width="1.5"/><line x1="9" y1="23.5" x2="19" y2="23.5" stroke="#FF9933" stroke-width="1.8" stroke-linecap="round"/><polyline points="4,10.5 7,10.5 8.5,6.5 10,14.5 11.5,10.5 13,10.5 14,8 15,13 16.5,10.5 18,10.5 24,10.5" stroke="#FF9933" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg></span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <button class="help-btn">?</button>
+      <div class="alert-bell"><i class="bi bi-bell-fill" style="font-size:16px;"></i></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html" class="active"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+    <div class="sidebar-brand"><img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo"></div>
+  </div>
+
+  <div class="main" style="padding:18px 28px;">
+    <div class="dept-meta-above"><i class="bi bi-clock"></i> Data as of 2026-05-05 09:14 · Source: Jira + project actuals</div>
+    <div class="dept-banner">
+      <div class="dept-banner-top">
+        <div class="dept-banner-titleblock">
+          <div class="dept-banner-title">Engineering <span class="info-i" data-tip-title="Engineering" data-tip="Department-level view of Delivery Managers and their account portfolios.">i</span></div>
+          <div class="dept-banner-sub">4 Delivery Managers · 12 active accounts · 270 engineers</div>
+        </div>
+        <div class="dept-banner-stats">
+          <div class="dept-banner-stat"><div class="dept-banner-stat-val red">3</div><div class="dept-banner-stat-lbl">Red Items</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">8</div><div class="dept-banner-stat-lbl">At Risk</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val green">42</div><div class="dept-banner-stat-lbl">On Track</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val">$11.0M</div><div class="dept-banner-stat-lbl">YTD Billing</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">7.1</div><div class="dept-banner-stat-lbl">Avg P360</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val">12</div><div class="dept-banner-stat-lbl">Active Projects</div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div class="page-section-title">Delivery Managers · Click a row for the full dashboard</div>
+    <div class="dm-list-h">
+      <a href="dm-home.html?dm=john" class="dm-card-h amber">
+        <div class="head"><div class="av" style="background:#FF9933;">JD</div><div><div class="nm">John Doe</div><div class="un">HLS · 4 accts · 75 eng</div></div></div>
+        <div class="accts"><strong>Accounts</strong>MedTech · HealthFirst · BioGen · PharmCare</div>
+        <div class="caps-h"><span class="pill-h amber"><i class="bi bi-speedometer2"></i> 78%</span><span class="pill-h red"><i class="bi bi-octagon-fill"></i> 12 blkrs</span><span class="pill-h amber"><i class="bi bi-bullseye"></i> 7.1</span><span class="pill-h navy"><i class="bi bi-cash-stack"></i> $3.0M</span></div>
+      </a>
+      <a href="dm-home.html?dm=sarah" class="dm-card-h green">
+        <div class="head"><div class="av" style="background:#16A34A;">SP</div><div><div class="nm">Sarah Patel</div><div class="un">NHS · 3 accts · 80 eng</div></div></div>
+        <div class="accts"><strong>Accounts</strong>WellnessOne · NeuroLab · CardioTech</div>
+        <div class="caps-h"><span class="pill-h green"><i class="bi bi-speedometer2"></i> 92%</span><span class="pill-h green"><i class="bi bi-octagon-fill"></i> 2 blkrs</span><span class="pill-h green"><i class="bi bi-bullseye"></i> 8.4</span><span class="pill-h navy"><i class="bi bi-cash-stack"></i> $3.2M</span></div>
+      </a>
+      <a href="dm-home.html?dm=rajesh" class="dm-card-h red">
+        <div class="head"><div class="av" style="background:#DC2626;">RK</div><div><div class="nm">Rajesh Kumar</div><div class="un">Common · 2 accts · 50 eng</div></div></div>
+        <div class="accts"><strong>Accounts</strong>PediaCare · OncoSys</div>
+        <div class="caps-h"><span class="pill-h red"><i class="bi bi-speedometer2"></i> 62%</span><span class="pill-h red"><i class="bi bi-octagon-fill"></i> 8 blkrs</span><span class="pill-h red"><i class="bi bi-bullseye"></i> 5.8</span><span class="pill-h navy"><i class="bi bi-cash-stack"></i> $2.0M</span></div>
+      </a>
+      <a href="dm-home.html?dm=anita" class="dm-card-h amber">
+        <div class="head"><div class="av" style="background:#F59E0B;">AM</div><div><div class="nm">Anita Mehta</div><div class="un">HLS-2 · 3 accts · 65 eng</div></div></div>
+        <div class="accts"><strong>Accounts</strong>OrthoFix · DermaPlus · OptiCare</div>
+        <div class="caps-h"><span class="pill-h amber"><i class="bi bi-speedometer2"></i> 82%</span><span class="pill-h amber"><i class="bi bi-octagon-fill"></i> 5 blkrs</span><span class="pill-h green"><i class="bi bi-bullseye"></i> 7.6</span><span class="pill-h navy"><i class="bi bi-cash-stack"></i> $2.8M</span></div>
+      </a>
+    </div>
+
+    <div class="section-sep"></div>
+
+    <div class="page-section-title" style="display:flex;justify-content:space-between;align-items:center;">
+      <span>YTD Revenue · Engineering Department</span>
+      <span class="toggle-window" style="display:inline-flex;gap:0;background:var(--border);border-radius:14px;padding:2px;">
+        <button class="on" onclick="setEngYtdRange('1M', this)" style="padding:4px 10px;border:none;background:var(--orange);color:#fff;cursor:pointer;font-size:10px;border-radius:12px;font-weight:600;">MON</button>
+        <button onclick="setEngYtdRange('1Q', this)" style="padding:4px 10px;border:none;background:transparent;color:var(--text);cursor:pointer;font-size:10px;border-radius:12px;font-weight:600;">QTR</button>
+      </span>
+    </div>
+    <div class="chart-card" style="cursor:pointer;" onclick="openYtdBillingFlyout()" title="Click for account breakdown">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span style="font-size:11px;color:var(--text-muted);">Click for account-level billing breakdown</span>
+        <span style="font-size:10px;color:var(--orange);font-weight:700;"><i class="bi bi-box-arrow-up-right"></i> Drill down</span>
+      </div>
+      <div id="ytdChart" style="height:260px;"></div>
+    </div>
+
+    <div style="height:1px;background:var(--border);margin:20px 0 14px;"></div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+      <span>Portfolio Forecast · All Accounts</span>
+      <span style="font-size:11px;color:var(--text-muted);text-transform:none;letter-spacing:0;font-weight:500;">Click any row for detail</span>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      <table class="pmo-tbl" style="width:100%;font-size:12px;border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="padding:10px 14px;background:var(--navy);color:#fff;font-size:10px;text-transform:uppercase;letter-spacing:0.4px;text-align:left;">Account</th>
+            <th style="padding:10px 14px;background:var(--navy);color:#fff;font-size:10px;text-transform:uppercase;letter-spacing:0.4px;text-align:left;">DM</th>
+            <th style="padding:10px 14px;background:var(--navy);color:#fff;font-size:10px;text-transform:uppercase;letter-spacing:0.4px;">YTD Plan</th>
+            <th style="padding:10px 14px;background:var(--navy);color:#fff;font-size:10px;text-transform:uppercase;letter-spacing:0.4px;">YTD Actual</th>
+            <th style="padding:10px 14px;background:var(--navy);color:#fff;font-size:10px;text-transform:uppercase;letter-spacing:0.4px;">Variance</th>
+            <th style="padding:10px 14px;background:var(--navy);color:#fff;font-size:10px;text-transform:uppercase;letter-spacing:0.4px;">M+1 (F)</th>
+            <th style="padding:10px 14px;background:var(--navy);color:#fff;font-size:10px;text-transform:uppercase;letter-spacing:0.4px;">RAG</th>
+          </tr>
+        </thead>
+        <tbody id="eng-forecast-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- FLYOUT -->
+    <div id="flyout-overlay" class="flyout-overlay" onclick="closeFlyout()"></div>
+    <div id="eng-flyout" class="flyout"></div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    function toggleSidebar(){var sb=document.querySelector('.sidebar');if(sb)sb.classList.toggle('collapsed');document.body.classList.toggle('sidebar-collapsed');}
+
+    /* YTD Revenue chart */
+    const ytdChart=echarts.init(document.getElementById('ytdChart'));
+    let engYtdRange='1M';
+    const ENG_YTD_DATA={
+      '1M':{x:['Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May'],
+            plan:[2.00,2.05,2.10,2.15,2.18,2.20,2.20,2.22,2.20,2.18,2.20,2.25],
+            actual:[1.95,2.10,2.05,2.10,2.12,2.15,2.20,2.18,2.22,2.10,2.15,null]},
+      '1Q':{x:['Q1 FY26','Q2 FY26','Q3 FY26','Q4 FY26'],
+            plan:[6.15,6.53,6.62,6.65],actual:[6.10,6.37,6.60,null]}
+    };
+    function drawYtdChart(){
+      const d=ENG_YTD_DATA[engYtdRange];
+      ytdChart.setOption({
+        tooltip:{trigger:'axis',valueFormatter:v=>v==null?'—':'$'+v.toFixed(2)+'M'},
+        legend:{data:['Plan','Actual'],top:6,right:10,textStyle:{fontSize:11}},
+        grid:{left:54,right:20,top:44,bottom:36},
+        xAxis:{type:'category',data:d.x,axisLabel:{fontSize:10,color:'#64748B'},axisLine:{lineStyle:{color:'#CBD5E1'}}},
+        yAxis:{type:'value',name:'USD M',nameTextStyle:{fontSize:10,color:'#64748B'},axisLabel:{fontSize:10,color:'#64748B',formatter:'${value}M'},splitLine:{lineStyle:{color:'#E2E8F0',type:'dashed'}}},
+        series:[
+          {name:'Plan',type:'line',data:d.plan,smooth:true,lineStyle:{width:2,type:'dashed',color:'#94A3B8'},itemStyle:{color:'#94A3B8'},symbol:'circle',symbolSize:6},
+          {name:'Actual',type:'line',data:d.actual,smooth:true,lineStyle:{width:3,color:'#FF9933'},itemStyle:{color:'#FF9933'},symbol:'circle',symbolSize:7,areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(255,153,51,0.25)'},{offset:1,color:'rgba(255,153,51,0.02)'}]}}}
+        ]
+      });
+    }
+    window.setEngYtdRange=function(r,btn){
+      engYtdRange=r;
+      document.querySelectorAll('.toggle-window button').forEach(b=>{b.classList.remove('on');b.style.background='transparent';b.style.color='var(--text)';});
+      btn.classList.add('on');btn.style.background='var(--orange)';btn.style.color='#fff';
+      drawYtdChart();
+    };
+    drawYtdChart();
+    window.addEventListener('resize',()=>ytdChart.resize());
+
+    /* Portfolio data — USD format matching PMO */
+    var ENG_FORECAST=[
+      {acct:"Acme FinTech",  dm:"Sneha R.", plan:2.28,actual:2.16,rag:"A",
+       rev3m:[2.05,2.18,2.18],
+       escItems:[{title:"Invoice overdue Q4",cat:"Invoices/Payments",owner:"Sneha R.",days:10,sev:"High"}],
+       aiItems:[{title:"Prepare revised SOW",owner:"Arjun K.",due:"Jun 5",status:"Open"},{title:"Schedule QBR",owner:"Priya M.",due:"Jun 12",status:"In Progress"}],
+       team:[{n:"Arjun K.",r:"Dev Lead",av:"AK"},{n:"Priya M.",r:"BA",av:"PM"},{n:"Ravi S.",r:"QA",av:"RS"},{n:"Deepa L.",r:"PM",av:"DL"}],
+       releases:[{v:"v4.2",d:"Jun 12",s:"At Risk",epics:[{id:"EPIC-1042",title:"Billing reconciliation",track:"Backend",owner:"Arjun K.",pts:18,st:"at-risk"},{id:"EPIC-1038",title:"SSO migration",track:"Platform",owner:"Ravi S.",pts:12,st:"in-progress"}]},
+                 {v:"v4.3",d:"Aug 8",s:"Planned",epics:[{id:"EPIC-1055",title:"Mobile push notifications",track:"Mobile",owner:"Priya M.",pts:8,st:"planned"}]}]},
+      {acct:"RetailMax",     dm:"Kiran B.", plan:1.75,actual:1.87,rag:"G",
+       rev3m:[1.63,1.75,1.87],
+       escItems:[],
+       aiItems:[{title:"Renew contract addendum",owner:"Mohit P.",due:"Jun 18",status:"Open"}],
+       team:[{n:"Mohit P.",r:"PM",av:"MP"},{n:"Sona M.",r:"Dev Lead",av:"SM"},{n:"Tanya S.",r:"QA",av:"TS"}],
+       releases:[{v:"v2.1",d:"May 30",s:"On Track",epics:[{id:"EPIC-2011",title:"Reporting dashboard v2",track:"Full-stack",owner:"Sona M.",pts:21,st:"in-progress"},{id:"EPIC-2009",title:"Audit log enhancement",track:"Backend",owner:"Tanya S.",pts:9,st:"planned"}]}]},
+      {acct:"LogiCorp",      dm:"Anita K.", plan:1.32,actual:1.14,rag:"R",
+       rev3m:[1.44,1.26,1.14],
+       escItems:[{title:"Deliverable quality — Sprint 19",cat:"Quality of Deliverables",owner:"Anita K.",days:2,sev:"Critical"},{title:"Resource not onboarded",cat:"Resourcing",owner:"Suresh J.",days:5,sev:"High"},{title:"Communication gaps",cat:"Communication",owner:"Leela V.",days:3,sev:"Medium"}],
+       aiItems:[{title:"Root cause analysis doc",owner:"Suresh J.",due:"Jun 3",status:"Open"},{title:"Weekly status call setup",owner:"Leela V.",due:"Jun 4",status:"Open"},{title:"Escalation response letter",owner:"Anita K.",due:"Jun 2",status:"In Progress"},{title:"Resource replacement plan",owner:"Rahul T.",due:"Jun 6",status:"Open"}],
+       team:[{n:"Suresh J.",r:"PM",av:"SJ"},{n:"Leela V.",r:"Dev Lead",av:"LV"},{n:"Rahul T.",r:"BA",av:"RT"}],
+       releases:[{v:"v1.7",d:"Jun 25",s:"Delayed",epics:[{id:"EPIC-3021",title:"HL7 integration",track:"Integration",owner:"Leela V.",pts:24,st:"blocked"},{id:"EPIC-3018",title:"Patient onboarding revamp",track:"Backend",owner:"Suresh J.",pts:16,st:"at-risk"}]}]},
+      {acct:"UrbanEdge",     dm:"Sneha R.", plan:1.08,actual:1.20,rag:"G",
+       rev3m:[1.02,1.14,1.20],
+       escItems:[],aiItems:[],
+       team:[{n:"Kavya R.",r:"PM",av:"KR"},{n:"Anil D.",r:"Dev Lead",av:"AD"},{n:"Pooja N.",r:"QA",av:"PN"}],
+       releases:[{v:"v3.0",d:"Jul 4",s:"On Track",epics:[{id:"EPIC-4031",title:"Provider portal redesign",track:"Frontend",owner:"Anil D.",pts:20,st:"in-progress"},{id:"EPIC-4028",title:"Compliance pack 26.2",track:"Compliance",owner:"Pooja N.",pts:11,st:"planned"}]}]},
+      {acct:"DataPeak",      dm:"Ravi M.",  plan:1.98,actual:1.80,rag:"A",
+       rev3m:[1.92,1.86,1.80],
+       escItems:[{title:"Budget overrun — infra",cat:"Budget",owner:"Vivek R.",days:7,sev:"High"}],
+       aiItems:[{title:"Revised infra cost plan",owner:"Vivek R.",due:"Jun 7",status:"Open"},{title:"Client sign-off on change req",owner:"Sneha K.",due:"Jun 9",status:"Open"},{title:"Weekly billing report",owner:"Ananya M.",due:"Jun 5",status:"In Progress"}],
+       team:[{n:"Vivek R.",r:"PM",av:"VR"},{n:"Sneha K.",r:"Dev Lead",av:"SK"},{n:"Rohan M.",r:"BA",av:"RM"},{n:"Ananya M.",r:"QA",av:"AM"}],
+       releases:[{v:"v5.2",d:"Jul 15",s:"At Risk",epics:[{id:"EPIC-5044",title:"Claims auto-route",track:"AI/ML",owner:"Sneha K.",pts:28,st:"at-risk"},{id:"EPIC-5040",title:"Performance hotpath",track:"Backend",owner:"Rohan M.",pts:15,st:"in-progress"}]},
+                 {v:"v5.3",d:"Sep 3",s:"Planned",epics:[{id:"EPIC-5058",title:"EHR adapter",track:"Integration",owner:"Vivek R.",pts:22,st:"planned"}]}]},
+      {acct:"NovaBuild",     dm:"Kiran B.", plan:0.84,actual:0.90,rag:"G",
+       rev3m:[0.78,0.84,0.90],
+       escItems:[],
+       aiItems:[{title:"Go-live readiness checklist",owner:"Neeraj T.",due:"Jun 20",status:"Open"}],
+       team:[{n:"Neeraj T.",r:"PM",av:"NT"},{n:"Divya B.",r:"Dev Lead",av:"DB"}],
+       releases:[{v:"v1.1",d:"Aug 20",s:"Planned",epics:[{id:"EPIC-6011",title:"SSO migration",track:"Platform",owner:"Divya B.",pts:10,st:"planned"}]}]},
+      {acct:"SecureNet",     dm:"Anita K.", plan:1.50,actual:1.44,rag:"G",
+       rev3m:[1.44,1.50,1.44],
+       escItems:[],
+       aiItems:[{title:"Penetration test sign-off",owner:"Manoj P.",due:"Jun 10",status:"Open"},{title:"Update security runbook",owner:"Priya L.",due:"Jun 15",status:"In Progress"}],
+       team:[{n:"Manoj P.",r:"PM",av:"MP"},{n:"Priya L.",r:"Dev Lead",av:"PL"},{n:"Sunil K.",r:"QA",av:"SK"}],
+       releases:[{v:"v2.8",d:"Jun 22",s:"On Track",epics:[{id:"EPIC-7033",title:"Audit log enhancement",track:"Backend",owner:"Sunil K.",pts:14,st:"in-progress"},{id:"EPIC-7029",title:"Compliance pack 26.2",track:"Compliance",owner:"Priya L.",pts:9,st:"planned"}]},
+                 {v:"v2.9",d:"Oct 1",s:"Planned",epics:[{id:"EPIC-7044",title:"EHR adapter",track:"Integration",owner:"Manoj P.",pts:18,st:"planned"}]}]},
+      {acct:"CloudWave",     dm:"Ravi M.",  plan:0.66,actual:0.72,rag:"G",
+       rev3m:[0.60,0.66,0.72],
+       escItems:[],aiItems:[],
+       team:[{n:"Rita C.",r:"PM",av:"RC"},{n:"Kiran S.",r:"Dev Lead",av:"KS"}],
+       releases:[{v:"v0.9",d:"Jul 28",s:"On Track",epics:[{id:"EPIC-8009",title:"Mobile push notifications",track:"Mobile",owner:"Kiran S.",pts:8,st:"in-progress"}]}]}
+    ];
+
+    /* Populate forecast table */
+    (function(){
+      var tbody=document.getElementById('eng-forecast-tbody');
+      if(!tbody)return;
+      tbody.innerHTML=ENG_FORECAST.map(function(d,i){
+        var varAmt=(d.actual-d.plan).toFixed(2);
+        var varTxt=(d.actual>=d.plan?'+':'')+varAmt+'M';
+        var varStyle=d.actual>=d.plan?'color:var(--green);font-weight:700;':'color:var(--red);font-weight:700;';
+        var ragC={G:'var(--green)',A:'var(--amber)',R:'var(--red)'}[d.rag];
+        var ragL={G:'Green',A:'Amber',R:'Red'}[d.rag];
+        var m1=(d.actual*1.03).toFixed(2);
+        return '<tr style="cursor:pointer;" onmouseover="this.style.background=\'var(--bg)\'" onmouseout="this.style.background=\'\'" onclick="openPortfolioFlyout('+i+')">'
+          +'<td><strong>'+d.acct+'</strong></td>'
+          +'<td>$'+d.plan.toFixed(2)+'M</td>'
+          +'<td>$'+d.actual.toFixed(2)+'M</td>'
+          +'<td><span style="'+varStyle+'">'+varTxt+'</span></td>'
+          +'<td>$'+m1+'M</td>'
+          +'<td><span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:9px;height:9px;border-radius:50%;background:'+ragC+';display:inline-block;"></span>'+ragL+'</span></td>'
+          +'</tr>';
+      }).join('');
+    })();
+
+    /* Shared helpers */
+    var AV_COLORS=['#1e3a5f','#0369a1','#7c3aed','#047857','#b45309','#be123c','#0f766e','#6d28d9'];
+    function avColor(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return AV_COLORS[Math.abs(h)%AV_COLORS.length];}
+
+    function _epicCard(e){
+      var sm={planned:{c:'var(--green)',bg:'#dcfce7',lbl:'Planned'},'in-progress':{c:'#92400e',bg:'#fef3c7',lbl:'In Progress'},'at-risk':{c:'var(--red)',bg:'#fee2e2',lbl:'At Risk'},blocked:{c:'#581c87',bg:'#f3e8ff',lbl:'Blocked'}};
+      var ss=sm[e.st]||sm['planned'];
+      var bc=e.st==='planned'?'var(--green)':(e.st==='in-progress'?'var(--amber)':(e.st==='blocked'?'#7c3aed':'var(--red)'));
+      return '<div style="background:var(--card);border:1px solid var(--border);border-left:3px solid '+bc+';border-radius:8px;padding:10px 12px;margin-bottom:8px;">'
+        +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">'
+        +'<div style="flex:1;min-width:0;"><div style="font-size:10px;font-family:monospace;color:var(--text-muted);">'+e.id+' · '+e.track+'</div>'
+        +'<div style="font-size:12px;font-weight:700;color:var(--navy);margin-top:2px;">'+e.title+'</div>'
+        +'<div style="font-size:10px;color:var(--text-muted);margin-top:3px;">Owner: '+e.owner+' · '+e.pts+' pts</div></div>'
+        +'<span style="flex-shrink:0;background:'+ss.bg+';color:'+ss.c+';padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;">'+ss.lbl+'</span>'
+        +'</div></div>';
+    }
+
+    window.openPortfolioFlyout=function(idx){
+      var d=ENG_FORECAST[idx];if(!d)return;
+      var revId='eng-rev-'+idx+'-'+Date.now();
+
+      var sec1='<div class="flyout-section"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px;">Revenue — Last 3 Months (USD)</div>'
+        +'<div id="'+revId+'" style="height:130px;width:100%;"></div></div>';
+
+      var sevC={'Critical':'#991b1b','High':'#92400e','Medium':'#1e40af'};
+      var sevBg={'Critical':'#fee2e2','High':'#fef3c7','Medium':'#dbeafe'};
+      var stC={'Open':'#92400e','In Progress':'#1e40af','Blocked':'#581c87','Resolved':'#166534'};
+      var stBg={'Open':'#fef3c7','In Progress':'#dbeafe','Blocked':'#f3e8ff','Resolved':'#dcfce7'};
+
+      var escRows=d.escItems.map(function(e){
+        return '<div style="border:1px solid var(--border);border-left:3px solid var(--red);border-radius:7px;padding:9px 11px;margin-bottom:7px;">'
+          +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">'
+          +'<div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--navy);">'+e.title+'</div>'
+          +'<div style="font-size:10px;color:var(--text-muted);margin-top:3px;">'+e.cat+' · Owner: '+e.owner+' · '+e.days+'d open</div></div>'
+          +'<span style="flex-shrink:0;background:'+(sevBg[e.sev]||'#fee2e2')+';color:'+(sevC[e.sev]||'#991b1b')+';padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;">'+e.sev+'</span>'
+          +'</div></div>';
+      }).join('');
+
+      var aiRows=d.aiItems.map(function(a){
+        return '<div style="border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:7px;padding:9px 11px;margin-bottom:7px;">'
+          +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">'
+          +'<div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--navy);">'+a.title+'</div>'
+          +'<div style="font-size:10px;color:var(--text-muted);margin-top:3px;">Owner: '+a.owner+' · Due: '+a.due+'</div></div>'
+          +'<span style="flex-shrink:0;background:'+(stBg[a.status]||'#fef3c7')+';color:'+(stC[a.status]||'#92400e')+';padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;">'+a.status+'</span>'
+          +'</div></div>';
+      }).join('');
+
+      var noItems=d.escItems.length===0&&d.aiItems.length===0;
+      var sec2='<div class="flyout-section"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px;">Escalations &amp; Action Items</div>'
+        +(d.escItems.length>0?'<div style="font-size:10px;font-weight:600;color:var(--red);margin-bottom:5px;">ESCALATIONS</div>'+escRows:'')
+        +(d.aiItems.length>0?'<div style="font-size:10px;font-weight:600;color:var(--amber);margin-bottom:5px;"'+(d.escItems.length>0?' style="margin-top:8px;"':'')+'>ACTION ITEMS</div>'+aiRows:'')
+        +(noItems?'<div style="background:#dcfce7;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;"><span style="font-size:18px;">&#10003;</span><div><div style="font-size:12px;font-weight:700;color:#166534;">All Clear</div><div style="font-size:11px;color:#166534;opacity:0.8;">No open escalations or action items</div></div></div>':'')
+        +'</div>';
+
+      var teamCards=d.team.map(function(m){
+        var bg=avColor(m.av);
+        return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);">'
+          +'<div style="width:34px;height:34px;border-radius:50%;background:'+bg+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">'+m.av+'</div>'
+          +'<div><div style="font-size:12px;font-weight:700;color:var(--navy);">'+m.n+'</div>'
+          +'<div style="font-size:10px;color:var(--text-muted);">'+m.r+'</div></div>'
+          +'</div>';
+      }).join('');
+      var sec3='<div class="flyout-section"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px;">Team</div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">'+teamCards+'</div></div>';
+
+      var relCards=d.releases.map(function(r){
+        var sColorMap={'On Track':'#166534','At Risk':'#92400e','Planned':'#1e40af','Delayed':'#991b1b'};
+        var sBgMap={'On Track':'#dcfce7','At Risk':'#fef3c7','Planned':'#dbeafe','Delayed':'#fee2e2'};
+        return '<div style="margin-bottom:12px;">'
+          +'<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:0.4px;padding-bottom:6px;border-bottom:2px solid var(--border);margin-bottom:8px;">'
+          +'<span>'+r.v+' · '+r.epics.length+' epic'+(r.epics.length>1?'s':'')+'</span>'
+          +'<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:10px;color:var(--text-muted);font-weight:500;text-transform:none;letter-spacing:0;">'+r.d+'</span>'
+          +'<span style="background:'+(sBgMap[r.s]||'#dcfce7')+';color:'+(sColorMap[r.s]||'#166534')+';padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;text-transform:none;letter-spacing:0;">'+r.s+'</span></div></div>'
+          +r.epics.map(_epicCard).join('')+'</div>';
+      }).join('');
+      var sec4='<div class="flyout-section"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px;">Upcoming Releases</div>'+relCards+'</div>';
+
+      var flyout=document.getElementById('eng-flyout');
+      flyout.style.width='500px';
+      flyout.innerHTML=
+        '<div class="flyout-header"><span>'+d.acct+' &mdash; Portfolio Detail</span><button class="flyout-close" onclick="closeFlyout()">&#10005;</button></div>'
+        +'<div class="flyout-body">'+sec1+sec2+sec3+sec4+'</div>';
+      document.getElementById('flyout-overlay').classList.add('open');
+      flyout.classList.add('open');
+
+      setTimeout(function(){
+        var el=document.getElementById(revId);if(!el)return;
+        var ec=echarts.init(el);
+        ec.setOption({
+          grid:{top:8,bottom:26,left:42,right:12},
+          tooltip:{trigger:'axis',valueFormatter:function(v){return '$'+v.toFixed(2)+'M';}},
+          xAxis:{type:'category',data:['Feb','Mar','Apr'],axisLabel:{fontSize:11}},
+          yAxis:{type:'value',axisLabel:{formatter:'${value}M',fontSize:10}},
+          series:[{type:'bar',data:d.rev3m,barWidth:'45%',
+            itemStyle:{color:function(p){return p.dataIndex===2?'#1e3a5f':'#93b4d4';}},
+            label:{show:true,position:'top',formatter:function(p){return '$'+p.value.toFixed(2)+'M';},fontSize:11}}]
+        });
+      },80);
+    };
+
+    window.openYtdBillingFlyout=function(){
+      var accounts=[
+        {name:"Acme FinTech", plan:2.28,actual:2.16,pct:95},
+        {name:"RetailMax",    plan:1.75,actual:1.87,pct:107},
+        {name:"LogiCorp",     plan:1.32,actual:1.14,pct:86},
+        {name:"UrbanEdge",    plan:1.08,actual:1.20,pct:111},
+        {name:"DataPeak",     plan:1.98,actual:1.80,pct:91},
+        {name:"NovaBuild",    plan:0.84,actual:0.90,pct:107},
+        {name:"SecureNet",    plan:1.50,actual:1.44,pct:96},
+        {name:"CloudWave",    plan:0.66,actual:0.72,pct:109}
+      ];
+      var tp=0,ta=0;
+      accounts.forEach(function(a){tp+=a.plan;ta+=a.actual;});
+      var rows=accounts.map(function(a){
+        var cls=a.pct>=100?'color:#166534;font-weight:600;':(a.pct>=90?'color:#92400e;font-weight:600;':'color:#991b1b;font-weight:600;');
+        return '<tr><td style="padding:7px 10px;font-size:13px;border-bottom:1px solid var(--border);">'+a.name+'</td>'
+          +'<td style="padding:7px 10px;font-size:13px;text-align:right;border-bottom:1px solid var(--border);">$'+a.plan.toFixed(2)+'M</td>'
+          +'<td style="padding:7px 10px;font-size:13px;text-align:right;border-bottom:1px solid var(--border);">$'+a.actual.toFixed(2)+'M</td>'
+          +'<td style="padding:7px 10px;font-size:13px;text-align:right;border-bottom:1px solid var(--border);'+cls+'">'+a.pct+'%</td></tr>';
+      }).join('');
+      var tpct=Math.round(ta/tp*100);
+      var tcls=tpct>=100?'color:#166534;':(tpct>=90?'color:#92400e;':'color:#991b1b;');
+      var flyout=document.getElementById('eng-flyout');
+      flyout.style.width='480px';
+      flyout.innerHTML=
+        '<div class="flyout-header"><span>YTD Billing — Account Breakdown</span><button class="flyout-close" onclick="closeFlyout()">&#10005;</button></div>'
+        +'<div class="flyout-body"><div class="flyout-section">'
+        +'<table style="width:100%;border-collapse:collapse;">'
+        +'<thead><tr style="background:var(--bg);"><th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;">Account</th>'
+        +'<th style="padding:8px 10px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;">Plan</th>'
+        +'<th style="padding:8px 10px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;">Actual</th>'
+        +'<th style="padding:8px 10px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;">Attainment</th>'
+        +'</tr></thead><tbody>'+rows+'</tbody>'
+        +'<tfoot><tr style="background:var(--bg);">'
+        +'<td style="padding:9px 10px;font-size:13px;font-weight:700;">Total</td>'
+        +'<td style="padding:9px 10px;font-size:13px;font-weight:700;text-align:right;">$'+tp.toFixed(2)+'M</td>'
+        +'<td style="padding:9px 10px;font-size:13px;font-weight:700;text-align:right;">$'+ta.toFixed(2)+'M</td>'
+        +'<td style="padding:9px 10px;font-size:13px;font-weight:700;text-align:right;'+tcls+'">'+tpct+'%</td>'
+        +'</tr></tfoot></table></div></div>';
+      document.getElementById('flyout-overlay').classList.add('open');
+      flyout.classList.add('open');
+    };
+
+    window.closeFlyout=function(){
+      document.querySelectorAll('.flyout').forEach(function(f){f.classList.remove('open');});
+      document.querySelectorAll('.flyout-overlay').forEach(function(o){o.classList.remove('open');});
+    };
+  </script>
+</body>
+</html>

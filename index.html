@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="blue">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in — Pulse · Nalashaa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    body { font-family: 'Fredoka', system-ui, sans-serif; }
+
+    /* ── Split layout ── */
+    .login-split { display: flex; height: 100vh; width: 100vw; }
+    .login-split-left {
+      flex: 1.15; position: relative; overflow: hidden;
+      background: linear-gradient(135deg, #0A1426 0%, #142847 55%, #1E2D4F 100%);
+      color: #E5EBF5;
+      display: flex; flex-direction: column; justify-content: space-between;
+      padding: 56px 64px;
+    }
+    [data-look="modern"] .login-split-left {
+      background: linear-gradient(135deg, #0A1A3A 0%, #14274D 55%, #1E3A6F 100%);
+    }
+    [data-mode="dark"] .login-split-left {
+      background: linear-gradient(135deg, #050E22 0%, #0A1426 55%, #142847 100%);
+    }
+
+    .login-split-right {
+      flex: 0.85; position: relative;
+      display: flex; align-items: center; justify-content: center;
+      background: #F5F7FA; padding: 24px;
+    }
+    [data-mode="dark"] .login-split-right { background: #0A1426; }
+    [data-look="modern"] .login-split-right { background: #FAFAFA; }
+    [data-look="modern"][data-mode="dark"] .login-split-right { background: #050E22; }
+
+    /* ── Left hero content ── */
+    .hero-top { position: relative; z-index: 3; }
+    .hero-brand-row { display: flex; align-items: center; gap: 12px; }
+    .hero-brand-icon { width: 44px; height: 44px; color: #FF9933; }
+    [data-look="modern"] .hero-brand-icon { color: #E65100; }
+    .hero-brand-name {
+      font-family: 'Fredoka',system-ui; font-size: 32px; font-weight: 700;
+      color: #fff; letter-spacing: -0.5px;
+    }
+    .hero-mid { position: relative; z-index: 3; max-width: 540px; }
+    .hero-headline {
+      font-size: 38px; font-weight: 700; line-height: 1.18; color: #fff;
+      letter-spacing: -0.6px; margin: 0 0 14px;
+    }
+    .hero-headline .accent { color: #FF9933; }
+    [data-look="modern"] .hero-headline .accent { color: #FFB066; }
+    .hero-subline {
+      font-size: 15px; color: #A0AEC4; line-height: 1.6; margin: 0 0 28px;
+    }
+    .hero-pillars {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 24px;
+      max-width: 460px;
+    }
+    .hero-pillar {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13px; color: #C9D2E0;
+    }
+    .hero-pillar i {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: rgba(255,153,51,0.12); color: #FF9933;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    [data-look="modern"] .hero-pillar i { background: rgba(255,176,102,0.14); color: #FFB066; }
+
+    .hero-foot {
+      position: relative; z-index: 3;
+      font-size: 11px; color: #6B7280; letter-spacing: 0.3px;
+    }
+
+    /* ── ECG trace overlay on left ── */
+    .login-ecg {
+      position: absolute; left: -5%; right: -5%; top: 50%;
+      width: 110%; height: 240px; transform: translateY(-50%);
+      color: #FF9933; opacity: 0.14; pointer-events: none;
+      z-index: 1;
+    }
+    [data-mode="dark"] .login-ecg { opacity: 0.20; }
+    [data-look="modern"] .login-ecg { color: #FFB066; }
+
+    /* ── Glyphs subtle on left ── */
+    .login-glyph { position: absolute; opacity: 0.06; pointer-events: none; color: #FFFFFF; z-index: 1; }
+    .login-glyph.tl { top: 6%;  left: 6%;   font-size: 130px; }
+    .login-glyph.tr { top: 9%;  right: 7%;  font-size: 110px; }
+    .login-glyph.bl { bottom: 9%; left: 8%; font-size: 120px; }
+    .login-glyph.br { bottom: 6%; right: 5%; font-size: 140px; }
+
+    /* ── Right card overrides ── */
+    .login-card {
+      position: relative; width: 100%; max-width: 380px;
+      box-shadow: 0 12px 40px rgba(0,32,96,0.10);
+    }
+    [data-mode="dark"] .login-card { box-shadow: 0 12px 40px rgba(0,0,0,0.45); }
+
+    .login-theme-toggle { position: absolute; top: 18px; right: 24px; }
+
+    /* ── Responsive: collapse to single column ── */
+    @media (max-width: 880px) {
+      .login-split { flex-direction: column; }
+      .login-split-left {
+        flex: 0 0 auto; padding: 28px 28px 24px;
+        min-height: 200px;
+      }
+      .login-split-right { flex: 1; }
+      .hero-headline { font-size: 22px; margin-bottom: 8px; }
+      .hero-subline, .hero-pillars, .hero-foot { display: none; }
+      .login-ecg { height: 140px; }
+      .login-glyph.tl, .login-glyph.bl { display: none; }
+      .login-glyph.tr { font-size: 70px; }
+      .login-glyph.br { font-size: 80px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-split">
+    <!-- ═══════════ LEFT: HERO PANEL ═══════════ -->
+    <div class="login-split-left">
+      <!-- Animated heartbeat trace -->
+      <svg class="login-ecg" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="0,100 100,100 130,100 145,40 160,160 175,80 190,120 220,100 320,100 350,100 365,60 380,140 395,90 410,110 440,100 540,100 570,100 585,30 600,170 615,70 630,130 660,100 800,100"
+          stroke="currentColor" stroke-width="2.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>
+
+      <!-- Ghosted dept glyphs -->
+      <i class="bi bi-cpu-fill login-glyph tl"></i>
+      <i class="bi bi-cash-stack login-glyph tr"></i>
+      <i class="bi bi-people-fill login-glyph bl"></i>
+      <i class="bi bi-graph-up-arrow login-glyph br"></i>
+
+      <!-- Top: brand mark -->
+      <div class="hero-top">
+        <div class="hero-brand-row">
+          <span class="hero-brand-icon">
+            <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1.5" y="2" width="25" height="17" rx="2.5" stroke="currentColor" stroke-width="1.5"/>
+              <rect x="3.5" y="4" width="21" height="13" rx="1" fill="currentColor" fill-opacity="0.10"/>
+              <line x1="14" y1="19" x2="14" y2="23.5" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="9" y1="23.5" x2="19" y2="23.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <polyline points="4,10.5 7,10.5 8.5,6.5 10,14.5 11.5,10.5 13,10.5 14,8 15,13 16.5,10.5 18,10.5 24,10.5"
+                stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="hero-brand-name">Pulse</span>
+        </div>
+      </div>
+
+      <!-- Mid: headline + pillars -->
+      <div class="hero-mid">
+        <h1 class="hero-headline">
+          The <span class="accent">heartbeat</span> of your operations — every department, one signal.
+        </h1>
+        <p class="hero-subline">
+          Real-time KPIs, AI-curated alerts, and drill-downs that take you from board view to root cause in seconds.
+        </p>
+        <div class="hero-pillars">
+          <div class="hero-pillar"><i class="bi bi-cpu-fill"></i><span>Engineering &amp; Delivery</span></div>
+          <div class="hero-pillar"><i class="bi bi-cash-stack"></i><span>Finance &amp; Pipeline</span></div>
+          <div class="hero-pillar"><i class="bi bi-people-fill"></i><span>People &amp; Talent</span></div>
+          <div class="hero-pillar"><i class="bi bi-graph-up-arrow"></i><span>Sales &amp; Mining</span></div>
+        </div>
+      </div>
+
+      <!-- Foot: tagline -->
+      <div class="hero-foot">
+        Pulse v2.0 · Built for IT services leadership
+      </div>
+    </div>
+
+    <!-- ═══════════ RIGHT: LOGIN CARD ═══════════ -->
+    <div class="login-split-right">
+      <!-- Pre-auth theme toggles -->
+      <div class="login-theme-toggle">
+        <button id="lookBtn" onclick="toggleLook()">Modern</button>
+        <button id="modeBtn" onclick="toggleMode()">🌙</button>
+      </div>
+
+      <!-- Login Card -->
+      <div class="login-card">
+        <div class="login-brand">
+          <div class="login-brand-row">
+            <span class="login-brand-icon">
+              <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="1.5" y="2" width="25" height="17" rx="2.5" stroke="currentColor" stroke-width="1.5" style="color:var(--orange);"/>
+                <rect x="3.5" y="4" width="21" height="13" rx="1" fill="currentColor" fill-opacity="0.07" style="color:var(--orange);"/>
+                <line x1="14" y1="19" x2="14" y2="23.5" stroke="currentColor" stroke-width="1.5" style="color:var(--orange);"/>
+                <line x1="9" y1="23.5" x2="19" y2="23.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="color:var(--orange);"/>
+                <polyline points="4,10.5 7,10.5 8.5,6.5 10,14.5 11.5,10.5 13,10.5 14,8 15,13 16.5,10.5 18,10.5 24,10.5"
+                  stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round" style="color:var(--orange);"/>
+              </svg>
+            </span>
+            <span class="login-brand-name">Pulse</span>
+          </div>
+          <div class="login-tagline">Sign in to your operational pulse.</div>
+        </div>
+
+        <form onsubmit="event.preventDefault(); doSignIn();">
+          <div class="login-field">
+            <label>Email</label>
+            <input type="email" id="loginEmail" autofocus value="john.doe@nalashaa.com" placeholder="name@nalashaa.com">
+          </div>
+          <div class="login-field">
+            <label>Password</label>
+            <input type="password" id="loginPass" value="••••••••" placeholder="Enter password">
+          </div>
+          <div class="login-field-row">
+            <label><input type="checkbox" checked> Remember me</label>
+            <a href="#" onclick="alert('Password reset link would be sent to your email.');return false;">Forgot password?</a>
+          </div>
+          <button type="submit" class="login-btn">Sign in</button>
+        </form>
+
+        <div class="login-divider">or continue with</div>
+        <div class="sso-row">
+          <button class="sso-btn" onclick="doSignIn()"><i class="bi bi-microsoft"></i> Microsoft</button>
+          <button class="sso-btn" onclick="doSignIn()"><i class="bi bi-google"></i> Google</button>
+        </div>
+
+        <div class="login-foot">
+          © 2026 Nalashaa Solutions · Pulse v2.0 · <a href="#">Privacy</a> · <a href="#">Terms</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    // Pre-auth theme buttons
+    function toggleLook() {
+      const cur = document.documentElement.getAttribute('data-look') || 'classic';
+      const next = cur === 'modern' ? 'classic' : 'modern';
+      setLook(next);
+      document.getElementById('lookBtn').textContent = next === 'modern' ? 'Classic' : 'Modern';
+    }
+    function toggleMode() {
+      const cur = document.documentElement.getAttribute('data-mode') || 'light';
+      const next = cur === 'dark' ? 'light' : 'dark';
+      setMode(next);
+      document.getElementById('modeBtn').textContent = next === 'dark' ? '☀' : '🌙';
+    }
+    // Reflect saved state on load
+    document.addEventListener('DOMContentLoaded', () => {
+      const look = document.documentElement.getAttribute('data-look');
+      const mode = document.documentElement.getAttribute('data-mode');
+      document.getElementById('lookBtn').textContent = look === 'modern' ? 'Classic' : 'Modern';
+      document.getElementById('modeBtn').textContent = mode === 'dark' ? '☀' : '🌙';
+    });
+    function doSignIn() {
+      // Dummy auth — any creds work in prototype
+      const btn = document.querySelector('.login-btn');
+      if (btn) { btn.textContent = 'Signing in…'; btn.style.opacity = 0.7; }
+      setTimeout(() => { window.location.href = 'org-pulse.html'; }, 350);
+    }
+  </script>
+</body>
+</html>

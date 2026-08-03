@@ -1,0 +1,2069 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="blue">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">Solutions — BA Detail · Pulse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <style>
+    /* ── Ribbon ───────────────────────────────────────────── */
+    .ba-ribbon { background:linear-gradient(95deg,var(--navy) 0%,#0F2449 60%,#14274D 100%); color:#fff; border-radius:12px; padding:16px 22px; display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; position:relative; overflow:hidden; }
+    .ba-ribbon::before { content:''; position:absolute; top:0; right:0; width:200px; height:100%; background:linear-gradient(90deg,transparent,rgba(255,153,51,0.08)); }
+    .ba-ribbon-left { display:flex; align-items:center; gap:16px; z-index:2; }
+    .ba-ribbon-avatar { width:56px; height:56px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:20px; box-shadow:0 4px 12px rgba(0,0,0,0.25); flex-shrink:0; }
+    .ba-ribbon-name { font-size:18px; font-weight:800; line-height:1.1; }
+    .ba-ribbon-unit { font-size:11px; opacity:.65; margin-top:3px; }
+    .ba-ribbon-meta { display:flex; gap:16px; font-size:11px; opacity:.85; margin-top:6px; }
+    .ba-ribbon-meta span { display:inline-flex; align-items:center; gap:4px; }
+    .ba-ribbon-back { color:rgba(255,255,255,0.7); text-decoration:none; font-size:11px; padding:6px 10px; border-radius:6px; background:rgba(255,255,255,0.08); display:inline-flex; align-items:center; gap:4px; transition:background .15s; }
+    .ba-ribbon-back:hover { background:rgba(255,255,255,0.15); color:#fff; }
+    .ba-ribbon-stats { display:flex; gap:22px; z-index:2; }
+    .ba-rs-val { font-size:18px; font-weight:800; }
+    .ba-rs-val.red   { color:#F87171; }
+    .ba-rs-val.amber { color:#FCD34D; }
+    .ba-rs-val.green { color:#4ADE80; }
+    .ba-rs-lbl { font-size:9px; opacity:.6; text-transform:uppercase; letter-spacing:.4px; margin-top:2px; }
+    .ba-ribbon-pipe { width:1px; background:rgba(255,255,255,0.2); height:36px; align-self:center; }
+
+    /* ── Tabs ─────────────────────────────────────────────── */
+    .tabs { display:flex; gap:4px; border-bottom:2px solid var(--border); margin-bottom:16px; }
+    .tab { padding:11px 16px; cursor:pointer; font-size:12px; font-weight:600; color:var(--text-muted); border-bottom:3px solid transparent; margin-bottom:-2px; display:flex; align-items:center; gap:6px; }
+    .tab.active { color:var(--navy); border-bottom-color:var(--orange); }
+    [data-mode="dark"] .tab.active { color:#fff; }
+    .tab .badge { font-size:9px; padding:1px 6px; border-radius:4px; font-weight:700; }
+    .tab .badge.red   { background:#FEE2E2; color:#991B1B; }
+    .tab .badge.amber { background:#FEF3C7; color:#92400E; }
+    .pane { display:none; } .pane.active { display:block; }
+
+    /* ── KPI tiles ────────────────────────────────────────── */
+    .kgrid   { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+    .kgrid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
+    .kc { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px; border-left:4px solid transparent; cursor:pointer; transition:all .15s; }
+    .kc:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,0.08); }
+    .kc.green { border-left-color:var(--green); }
+    .kc.amber { border-left-color:var(--amber); }
+    .kc.red   { border-left-color:var(--red); }
+    .kc.grey  { border-left-color:var(--border); cursor:default; }
+    .kc.grey:hover { transform:none; box-shadow:none; }
+    .klbl { font-size:10px; text-transform:uppercase; letter-spacing:.4px; color:var(--text-muted); font-weight:700; margin-bottom:6px; }
+    .kval { font-size:22px; font-weight:800; color:var(--navy); }
+    [data-mode="dark"] .kval { color:#fff; }
+    .ksub { font-size:11px; color:var(--text-muted); margin-top:4px; }
+    .stitle { font-size:13px; font-weight:700; color:var(--navy); margin:14px 0 10px; padding-bottom:6px; border-bottom:2px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+    [data-mode="dark"] .stitle { color:#fff; }
+
+    /* ── Project cards — Tab 1 ────────────────────────────── */
+    .proj-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px; }
+    .proj-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px 12px; cursor:pointer; position:relative; transition:all .15s; border-top:3px solid transparent; }
+    .proj-card:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,0.08); }
+    .proj-card.green { border-top-color:var(--green); }
+    .proj-card.amber { border-top-color:var(--amber); }
+    .proj-card.red   { border-top-color:var(--red); }
+    .pc-name  { font-size:13px; font-weight:700; color:var(--navy); margin-bottom:2px; }
+    [data-mode="dark"] .pc-name { color:#fff; }
+    .pc-acct  { font-size:10px; color:var(--text-muted); margin-bottom:8px; }
+    .pc-checks { display:grid; grid-template-columns:1fr 1fr; gap:4px 8px; margin-bottom:8px; }
+    .pc-check  { font-size:11px; display:flex; align-items:center; gap:5px; color:var(--text); }
+    .pc-check .ok  { color:var(--green); font-size:13px; }
+    .pc-check .no  { color:var(--red);   font-size:13px; }
+    .pc-meta-row { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; align-items:center; }
+    .doc-chip { font-size:9px; padding:2px 6px; border-radius:4px; font-weight:700; display:inline-flex; align-items:center; gap:3px; }
+    .doc-chip.signed  { background:#D1FAE5; color:#065F46; }
+    .doc-chip.review  { background:#FEF3C7; color:#92400E; }
+    .doc-chip.draft   { background:#FEE2E2; color:#991B1B; }
+    .doc-chip.missing { background:#FEE2E2; color:#991B1B; }
+    .doc-age { font-size:9px; color:var(--text-muted); }
+    .pc-score { font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:4px; }
+    .pc-score.green { color:var(--green); }
+    .pc-score.amber { color:var(--amber); }
+    .pc-score.red   { color:var(--red); }
+    .pc-footer { display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid var(--border); }
+    .pc-sprint { font-size:10px; color:var(--text-muted); }
+    .pc-badge  { font-size:9px; padding:2px 8px; border-radius:4px; font-weight:700; }
+    .pc-badge.green { background:#D1FAE5; color:#065F46; }
+    .pc-badge.amber { background:#FEF3C7; color:#92400E; }
+    .pc-badge.red   { background:#FEE2E2; color:#991B1B; }
+
+    /* ── Quality cards — Tab 2 ────────────────────────────── */
+    .qcard { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px 12px; cursor:pointer; transition:all .15s; border-top:3px solid transparent; }
+    .qcard:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,0.08); }
+    .qcard.green { border-top-color:var(--green); }
+    .qcard.amber { border-top-color:var(--amber); }
+    .qcard.red   { border-top-color:var(--red); }
+    .qc-name  { font-size:13px; font-weight:700; color:var(--navy); margin-bottom:2px; }
+    [data-mode="dark"] .qc-name { color:#fff; }
+    .qc-acct  { font-size:10px; color:var(--text-muted); margin-bottom:8px; }
+    .qc-big   { font-size:28px; font-weight:800; color:var(--navy); line-height:1; }
+    [data-mode="dark"] .qc-big { color:#fff; }
+    .qc-big.red   { color:var(--red); }
+    .qc-big.amber { color:var(--amber); }
+    .qc-big.green { color:var(--green); }
+    .qc-big-lbl { font-size:9px; text-transform:uppercase; letter-spacing:.4px; color:var(--text-muted); margin-bottom:8px; }
+    .qc-rows  { display:flex; flex-direction:column; gap:4px; margin-bottom:8px; }
+    .qc-row   { display:flex; justify-content:space-between; font-size:11px; color:var(--text); }
+    .qc-row .v { font-weight:700; }
+    .qc-row .v.red   { color:var(--red); }
+    .qc-row .v.amber { color:var(--amber); }
+    .qc-row .v.green { color:var(--green); }
+    .qc-footer { display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid var(--border); }
+    .root-tag { font-size:9px; padding:2px 6px; border-radius:4px; font-weight:700; }
+    .root-tag.ba    { background:#FEE2E2; color:#991B1B; }
+    .root-tag.pm    { background:#FEF3C7; color:#92400E; }
+    .root-tag.stake { background:#EDE9FE; color:#5B21B6; }
+    .root-tag.na    { background:#F1F5F9; color:#64748B; }
+    .breach-icon { font-size:10px; color:var(--red); font-weight:700; }
+    .sparkline-wrap { display:flex; align-items:center; gap:5px; margin-top:4px; margin-bottom:6px; }
+    .spark-lbl { font-size:9px; color:var(--text-muted); }
+
+    /* ── Capacity mini tiles — Tab 3 top row ──────────────── */
+    .cap-mini-tile { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:10px 16px; text-align:center; flex:1; min-width:0; border-top:3px solid var(--border); transition:all .15s; }
+    .cap-mini-tile.green { border-top-color:var(--green); }
+    .cap-mini-tile.amber { border-top-color:var(--amber); }
+    .cap-mini-tile.red   { border-top-color:var(--red); }
+    .cap-mini-tile[style*="cursor:pointer"]:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.07); }
+    .cap-mini-val { font-size:18px; font-weight:800; color:var(--navy); line-height:1.1; }
+    [data-mode="dark"] .cap-mini-val { color:#fff; }
+    .cap-mini-lbl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted); margin-top:3px; }
+
+    /* ── Presales cards — Tab 3 ───────────────────────────── */
+    .pcard { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px; cursor:pointer; transition:all .15s; border-top:3px solid transparent; }
+    .pcard:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,0.08); }
+    .pcard.green { border-top-color:var(--green); }
+    .pcard.amber { border-top-color:var(--amber); }
+    .pcard.red   { border-top-color:var(--red); }
+    .pc2-name  { font-size:13px; font-weight:700; color:var(--navy); margin-bottom:2px; }
+    [data-mode="dark"] .pc2-name { color:#fff; }
+    .pc2-acct  { font-size:10px; color:var(--text-muted); margin-bottom:8px; }
+    .pc2-val   { font-size:22px; font-weight:800; color:var(--navy); line-height:1.1; }
+    [data-mode="dark"] .pc2-val { color:#fff; }
+    .pc2-rows  { font-size:11px; color:var(--text); display:flex; flex-direction:column; gap:3px; margin:8px 0; }
+    .pc2-rows .lbl { color:var(--text-muted); font-size:10px; }
+    .pc2-footer { display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid var(--border); }
+
+    /* ── Forecast strip ───────────────────────────────────── */
+    .forecast-strip { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+    .forecast-chip { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:11px; display:flex; flex-direction:column; gap:2px; min-width:120px; }
+    .fc-proj  { font-weight:700; color:var(--navy); font-size:12px; }
+    [data-mode="dark"] .fc-proj { color:#fff; }
+    .fc-month { font-size:9px; text-transform:uppercase; letter-spacing:.4px; color:var(--text-muted); }
+    .fc-end   { font-size:10px; color:var(--text-muted); }
+    .fc-avail { font-size:10px; font-weight:700; color:var(--green); }
+
+    /* ── Bench risk strip ─────────────────────────────────── */
+    .bench-strip { display:flex; align-items:center; gap:10px; margin-bottom:12px; padding:10px 14px; background:var(--card); border:1px solid var(--border); border-radius:8px; font-size:11px; }
+    .bench-label { color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:.4px; font-weight:700; }
+    .bench-badge { font-size:10px; padding:2px 8px; border-radius:4px; font-weight:700; }
+    .bench-badge.green { background:#D1FAE5; color:#065F46; }
+    .bench-badge.amber { background:#FEF3C7; color:#92400E; }
+    .bench-badge.red   { background:#FEE2E2; color:#991B1B; }
+    .bench-note { font-size:11px; color:var(--text); }
+    .bench-pipe { width:1px; background:var(--border); height:16px; }
+    .pipeline-strip { display:flex; align-items:center; gap:10px; margin-bottom:12px; padding:10px 14px; background:var(--card); border:1px solid var(--border); border-radius:8px; font-size:11px; }
+    .pipeline-val { font-size:18px; font-weight:800; color:var(--navy); }
+    [data-mode="dark"] .pipeline-val { color:#fff; }
+
+    /* ── Chart containers ─────────────────────────────────── */
+    .chart-section { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:12px; }
+    .chart-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-muted); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+    #chartUtil { width:100%; height:200px; }
+    #chartFin  { width:100%; height:180px; }
+
+    /* ── Flyout ───────────────────────────────────────────── */
+    .fly-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:200; }
+    .fly-overlay.open { display:block; }
+    .fly-panel { position:fixed; right:0; top:var(--top-nav-h,56px); bottom:0; width:460px; background:var(--card); border-left:1px solid var(--border); z-index:201; overflow-y:auto; transform:translateX(100%); transition:transform .25s ease; }
+    .fly-panel.open { transform:translateX(0); }
+    .fly-head  { background:linear-gradient(90deg,var(--blue),#0284C7); color:#fff; padding:18px 20px 14px; position:sticky; top:0; z-index:1; }
+    .fly-title { font-size:15px; font-weight:800; margin-bottom:4px; }
+    .fly-sub   { font-size:11px; opacity:.65; }
+    .fly-close { position:absolute; top:16px; right:16px; background:none; border:none; color:#fff; font-size:18px; cursor:pointer; opacity:.7; }
+    .fly-close:hover { opacity:1; }
+    .fly-body  { padding:18px 20px; }
+    .fly-row   { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed var(--border); font-size:12px; }
+    .fly-row:last-child { border-bottom:none; }
+    .fly-lbl   { color:var(--text-muted); font-size:11px; }
+    .fly-val   { font-weight:700; color:var(--text); }
+    .fly-sect  { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); margin:14px 0 8px; }
+    .fly-note  { font-size:12px; color:var(--text); line-height:1.7; }
+
+    /* ── Sprint table in flyout ───────────────────────────── */
+    .sprint-tbl { width:100%; border-collapse:collapse; font-size:11px; margin:6px 0 12px; }
+    .sprint-tbl th { text-align:left; padding:5px 6px; border-bottom:2px solid var(--border); color:var(--text-muted); font-size:9px; text-transform:uppercase; letter-spacing:.4px; }
+    .sprint-tbl td { padding:5px 6px; border-bottom:1px dashed var(--border); }
+    .sprint-tbl tr:last-child td { border-bottom:none; }
+    .sprint-tbl .churn-cell.red   { color:var(--red); font-weight:700; }
+    .sprint-tbl .churn-cell.amber { color:var(--amber); font-weight:700; }
+    .sprint-tbl .churn-cell.green { color:var(--green); }
+
+    /* ── Epic rows in flyout ──────────────────────────────── */
+    .epic-block { padding:8px 0; border-bottom:1px dashed var(--border); }
+    .epic-block:last-child { border-bottom:none; }
+    .epic-nm { font-size:12px; font-weight:700; color:var(--navy); margin-bottom:4px; }
+    [data-mode="dark"] .epic-nm { color:#fff; }
+    .epic-stats { display:flex; gap:10px; font-size:11px; flex-wrap:wrap; }
+    .epic-stat { color:var(--text-muted); }
+    .epic-stat span { font-weight:700; color:var(--text); }
+    .epic-stat span.red { color:var(--red); }
+
+    /* ── Load more btn ────────────────────────────────────── */
+    .load-more-btn { display:block; width:100%; text-align:center; padding:8px; border:1px dashed var(--border); border-radius:6px; background:transparent; cursor:pointer; font-size:11px; color:var(--text-muted); margin:10px 0; }
+    .load-more-btn:hover { background:var(--bg); color:var(--navy); }
+
+    .data-fresh { font-size:10px; color:var(--text-muted); margin-bottom:10px; }
+    .badge { display:inline-block; padding:2px 7px; border-radius:4px; font-size:10px; font-weight:700; }
+    .badge.green { background:#D1FAE5; color:#065F46; }
+    .badge.amber { background:#FEF3C7; color:#92400E; }
+    .badge.red   { background:#FEE2E2; color:#991B1B; }
+    .badge.grey  { background:#F1F5F9; color:#64748B; }
+
+    /* ── Compact cap KPI tiles (Tab 3) ───────────────────────── */
+    .kc-compact { background:var(--card); border:1px solid var(--border); border-radius:10px; border-left:4px solid transparent; cursor:pointer; transition:all .15s; display:flex; align-items:stretch; overflow:hidden; }
+    .kc-compact:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,0.08); }
+    .kc-compact.green { border-left-color:var(--green); }
+    .kc-compact.amber { border-left-color:var(--amber); }
+    .kc-compact.red   { border-left-color:var(--red); }
+    .kc-compact.grey  { border-left-color:var(--border); cursor:default; }
+    .kc-compact.grey:hover { transform:none; box-shadow:none; }
+    .kcc-left  { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:12px 14px 12px 10px; min-width:58px; flex-shrink:0; }
+    .kcc-big   { font-size:26px; font-weight:800; color:var(--navy); line-height:1; }
+    [data-mode="dark"] .kcc-big { color:#fff; }
+    .kcc-lbl   { font-size:9px; text-transform:uppercase; letter-spacing:.4px; color:var(--text-muted); font-weight:700; margin-top:3px; white-space:nowrap; }
+    .kcc-sep   { width:1px; background:var(--border); align-self:stretch; flex-shrink:0; }
+    .kcc-right { display:flex; flex-direction:column; justify-content:center; padding:10px 12px; gap:3px; min-width:0; overflow:hidden; }
+    .kcc-item  { font-size:11px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .kcc-item.muted { color:var(--text-muted); font-size:10px; }
+    .kcc-item.red   { color:var(--red); font-weight:700; }
+    .kcc-item.amber { color:var(--amber); font-weight:600; }
+
+    /* ── Story status rows (Tab 2 flyout) ─────────────────────── */
+    .story-row { display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px dashed var(--border); font-size:11px; }
+    .story-row:last-child { border-bottom:none; }
+    .story-id  { font-size:10px; color:var(--text-muted); min-width:50px; font-family:monospace; }
+    .story-name { flex:1; color:var(--text); }
+    .story-chip { font-size:9px; padding:2px 6px; border-radius:4px; font-weight:700; white-space:nowrap; }
+    .story-chip.done     { background:#D1FAE5; color:#065F46; }
+    .story-chip.progress { background:#FEF3C7; color:#92400E; }
+    .story-chip.no-ac    { background:#FEE2E2; color:#991B1B; }
+    .story-chip.missing  { background:#FEE2E2; color:#7F1D1D; }
+
+    /* ── Sprint N-1/N/N+1 view ─────────────────────────────────── */
+    .sprint-view { display:flex; flex-direction:column; gap:10px; margin:6px 0 12px; }
+    .sv-sprint   { border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+    .sv-head     { display:flex; align-items:center; justify-content:space-between; padding:7px 12px; font-size:11px; font-weight:700; }
+    .sv-head.past    { background:#F1F5F9; color:var(--text-muted); }
+    .sv-head.current { background:rgba(0,176,240,0.12); color:#0369A1; }
+    .sv-head.future  { background:rgba(22,163,74,0.08); color:#166534; }
+    [data-mode="dark"] .sv-head.past    { background:#1E293B; }
+    [data-mode="dark"] .sv-head.current { background:#0C2A3A; color:#7DD3FC; }
+    [data-mode="dark"] .sv-head.future  { background:#052E16; color:#86EFAC; }
+    .sv-body     { padding:8px 12px; }
+    .sv-epic-row { display:flex; align-items:center; justify-content:space-between; font-size:11px; padding:3px 0; border-bottom:1px dashed var(--border); }
+    .sv-epic-row:last-child { border-bottom:none; }
+    .sv-epic-name { color:var(--text); font-weight:600; }
+    .sv-epic-stat { font-size:10px; color:var(--text-muted); display:flex; gap:8px; }
+    .sv-epic-stat .done  { color:var(--green); font-weight:700; }
+    .sv-epic-stat .wip   { color:var(--amber); font-weight:700; }
+    .sv-epic-stat .plan  { color:var(--navy); font-weight:700; }
+    [data-mode="dark"] .sv-epic-stat .plan { color:#7DD3FC; }
+    .sv-summary  { font-size:10px; color:var(--text-muted); }
+    .sv-alert    { font-size:11px; color:var(--red); display:flex; align-items:center; gap:5px; padding:6px 0; }
+
+  </style>
+</head>
+<body>
+
+  <!-- ══ TOP NAV ══════════════════════════════════════════════════════════ -->
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:0;">
+      <button class="hamburger-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <div class="pulse-logo">
+        <span class="pulse-icon"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="2" width="25" height="17" rx="2.5" stroke="#FF9933" stroke-width="1.5"/><line x1="14" y1="19" x2="14" y2="23.5" stroke="#FF9933" stroke-width="1.5"/><line x1="9" y1="23.5" x2="19" y2="23.5" stroke="#FF9933" stroke-width="1.8" stroke-linecap="round"/><polyline points="4,10.5 7,10.5 8.5,6.5 10,14.5 11.5,10.5 13,10.5 14,8 15,13 16.5,10.5 18,10.5 24,10.5" stroke="#FF9933" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg></span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <button class="help-btn">?</button>
+      <div class="alert-bell"><i class="bi bi-bell-fill" style="font-size:16px;"></i></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <!-- ══ SIDEBAR ══════════════════════════════════════════════════════════ -->
+  <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html" class="active"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+    <div class="sidebar-brand"><img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo"></div>
+  </div>
+
+  <!-- ══ MAIN ═════════════════════════════════════════════════════════════ -->
+  <div class="main" style="padding:18px 28px;">
+    <div class="data-fresh"><i class="bi bi-clock"></i> Data as of 2026-05-15 08:30 · Source: SharePoint · Jira · Manual</div>
+
+    <!-- ── RIBBON ───────────────────────────────────────────────────── -->
+    <div class="ba-ribbon">
+      <div class="ba-ribbon-left">
+        <div class="ba-ribbon-avatar" id="baAvatar">AS</div>
+        <div>
+          <div class="ba-ribbon-name" id="baName">Ananya S.</div>
+          <div class="ba-ribbon-unit" id="baUnit">Senior BA · Healthcare &amp; Life Sciences</div>
+          <div class="ba-ribbon-meta">
+            <span><i class="bi bi-briefcase-fill"></i> <span id="baProjects">3 projects</span></span>
+            <span><i class="bi bi-bullseye"></i> <span id="baPresales">2 presales</span></span>
+            <a href="solutions.html" class="ba-ribbon-back"><i class="bi bi-arrow-left"></i> All BAs</a>
+          </div>
+        </div>
+      </div>
+      <div class="ba-ribbon-stats">
+        <div style="text-align:center;"><div class="ba-rs-val green" id="statCoverage">100%</div><div class="ba-rs-lbl">Artefact Coverage</div></div>
+        <div class="ba-ribbon-pipe"></div>
+        <div style="text-align:center;"><div class="ba-rs-val green" id="statChurn">0</div><div class="ba-rs-lbl">Sprint Churn</div></div>
+        <div class="ba-ribbon-pipe"></div>
+        <div style="text-align:center;"><div class="ba-rs-val green" id="statAC">0</div><div class="ba-rs-lbl">Missing ACs</div></div>
+        <div class="ba-ribbon-pipe"></div>
+        <div style="text-align:center;"><div class="ba-rs-val" id="statYTD">$0.18M</div><div class="ba-rs-lbl">YTD Billing</div></div>
+        <div class="ba-ribbon-pipe"></div>
+        <div style="text-align:center;"><div class="ba-rs-val green" id="statDays">4.2d</div><div class="ba-rs-lbl">Avg First Artefact</div></div>
+      </div>
+    </div>
+
+    <!-- ── TABS ─────────────────────────────────────────────────────── -->
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('art',this)"><i class="bi bi-file-earmark-check-fill"></i> Artefact Health <span class="badge amber" id="tabArtBadge"></span></div>
+      <div class="tab" onclick="showTab('req',this)"><i class="bi bi-exclamation-triangle-fill"></i> Requirements Quality <span class="badge red" id="tabReqBadge"></span></div>
+      <div class="tab" onclick="showTab('cap',this)"><i class="bi bi-people-fill"></i> Capacity &amp; Presales</div>
+    </div>
+
+    <!-- ════ TAB 1 — ARTEFACT HEALTH ══════════════════════════════════ -->
+    <div class="pane active" id="pane-art">
+      <div class="kgrid">
+        <div class="kc amber" id="kBRD"><div class="klbl">BRD Coverage</div><div class="kval" id="vBRD">100%</div><div class="ksub" id="sBRD">All projects</div></div>
+        <div class="kc amber" id="kFSD"><div class="klbl">FSD Coverage</div><div class="kval" id="vFSD">100%</div><div class="ksub" id="sFSD">All projects</div></div>
+        <div class="kc green" id="kStories"><div class="klbl">User Stories in Jira</div><div class="kval" id="vStories">100%</div><div class="ksub" id="sStories">All projects</div></div>
+        <div class="kc amber" id="kTemplate"><div class="klbl">Template Adoption</div><div class="kval" id="vTemplate">100%</div><div class="ksub" id="sTemplate">Standard templates</div></div>
+      </div>
+      <div class="stitle">Project Artefact Cards <span style="font-size:11px;font-weight:400;color:var(--text-muted);">Click card for sprint summary</span></div>
+      <div class="proj-grid" id="artCards"></div>
+    </div>
+
+    <!-- ════ TAB 2 — REQUIREMENTS QUALITY ══════════════════════════════ -->
+    <div class="pane" id="pane-req">
+      <div class="kgrid">
+        <div class="kc red" id="kChurn"><div class="klbl">Mid-Sprint Churn</div><div class="kval" id="vChurn">0</div><div class="ksub" id="sChurn">Stories modified after sprint start</div></div>
+        <div class="kc amber" id="kAC"><div class="klbl">Stories Without ACs</div><div class="kval" id="vAC">0</div><div class="ksub" id="sAC">Untestable before QA flags</div></div>
+        <div class="kc green" id="kVersions"><div class="klbl">Avg Doc Versions</div><div class="kval" id="vVersions">—</div><div class="ksub" id="sVersions">Target ≤ 2.5</div></div>
+        <div class="kc grey" id="kKickoff"><div class="klbl">Kick-off → First Artefact</div><div class="kval" id="vKickoff">—</div><div class="ksub">Avg days · target ≤ 10</div></div>
+      </div>
+      <div class="stitle">Requirements Quality · per Project <span style="font-size:11px;font-weight:400;color:var(--text-muted);">Click card for epic detail</span></div>
+      <div class="proj-grid" id="reqCards"></div>
+    </div>
+
+    <!-- ════ TAB 3 — CAPACITY & PRESALES ════════════════════════════════ -->
+    <div class="pane" id="pane-cap">
+
+      <!-- Top row: 6-col grid — same methodology as Tab 1 / Tab 2 -->
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px;">
+        <div class="kc green" id="kLoad" style="cursor:pointer;">
+          <div class="klbl">Projects</div>
+          <div class="kval" id="vLoad">3</div>
+          <div class="ksub" id="sLoad">—</div>
+        </div>
+        <div class="kc amber" id="kPresCovered" style="cursor:pointer;">
+          <div class="klbl">Pursuits</div>
+          <div class="kval" id="vPresCovered">2</div>
+          <div class="ksub" id="sPresCovered">—</div>
+        </div>
+        <div class="kc amber" id="kYTD2" style="cursor:pointer;">
+          <div class="klbl">YTD Billing</div>
+          <div class="kval" id="vYTD2">$0.18M</div>
+          <div class="ksub" id="sYTD2">—</div>
+        </div>
+        <div class="kc grey" id="benchStrip" style="cursor:default;">
+          <div class="klbl">Bench Risk</div>
+          <div class="kval" id="benchBadge">Low</div>
+          <div class="ksub" id="benchNote">—</div>
+        </div>
+        <div class="kc grey" id="kPipeline" style="cursor:default;">
+          <div class="klbl">Pipeline</div>
+          <div class="kval" id="pipelineVal">$270K</div>
+          <div class="ksub" id="pipelineNote">—</div>
+        </div>
+        <div id="forecastStrip"></div>
+      </div>
+      <!-- cap tab hidden spans removed — IDs now in tile structure -->
+
+      <!-- Utilization chart -->
+      <div class="chart-section">
+        <div class="chart-title">
+          Monthly Utilization
+          <span style="font-size:10px;font-weight:400;">Allocation by project (%) · Invoiced % overlay</span>
+        </div>
+        <div id="chartUtil"></div>
+      </div>
+
+      <!-- Financial chart -->
+      <div class="chart-section">
+        <div class="chart-title">
+          Billing Performance ($K/month)
+          <span style="font-size:10px;font-weight:400;">Target vs Actual</span>
+        </div>
+        <div id="chartFin"></div>
+      </div>
+
+      <div class="stitle">Active Presales Pursuits</div>
+      <div class="proj-grid" id="capCards"></div>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- ══ FLYOUT ═══════════════════════════════════════════════════════════ -->
+  <div class="fly-overlay" id="flyOverlay" onclick="closeFly()"></div>
+  <div class="fly-panel" id="flyPanel">
+    <div class="fly-head">
+      <div class="fly-title" id="flyTitle">Detail</div>
+      <div class="fly-sub"   id="flySub"></div>
+      <button class="fly-close" onclick="closeFly()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="fly-body" id="flyBody"></div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+  // ════════════════════════════════════════════════════════════════════════
+  // BA DATA MODEL
+  // ════════════════════════════════════════════════════════════════════════
+  var BA = {
+    ananya: {
+      name:'Ananya S.', unit:'Senior BA · Healthcare & Life Sciences',
+      initials:'AS', color:'#16A34A',
+      ribbon:{ coverage:'100%', churn:'0', ac:'0', ytd:'$0.18M', days:'4.2d',
+               covClass:'green', churnClass:'green', acClass:'green', daysClass:'green' },
+      tiles:{ brd:{v:'100%',s:'3 of 3 · all present',c:'green'}, fsd:{v:'100%',s:'3 of 3',c:'green'},
+              stories:{v:'100%',s:'3 of 3',c:'green'}, template:{v:'100%',s:'Standard templates',c:'green'},
+              churn:{v:'0',s:'No mid-sprint churn',c:'green'}, ac:{v:'0',s:'All stories have ACs',c:'green'},
+              versions:{v:'2.2',s:'Best in unit · target ≤ 2.5',c:'green'}, kickoff:{v:'4.2d',s:'Fastest in unit',c:'green'} },
+      load:{v:'3',s:'EHR Phase 3 · UAT+ Portal · Scheduling Engine',c:'green'},
+      pres:{v:'2',s:'DevOps Add-on (MedTech) · Analytics POC (PharmCare)'},
+      ytd2:{v:'$0.18M',s:'vs target $0.20M · 90%',c:'amber'},
+      forecast:[
+        {month:'Jun–Aug 2026', proj:'EHR Phase 3', endDate:'Aug 2026', note:'Ongoing delivery'},
+        {month:'Jul 2026', proj:'UAT+ Portal', endDate:'Jul 2026', note:'Freeing up ~35%'},
+        {month:'Jun 2026', proj:'Scheduling Engine', endDate:'Jun 2026', note:'Freeing up ~20%'}
+      ],
+      pipelineValue:'$270K',
+      benchRisk:{risk:'green', note:'Fully utilized. 2 projects ending Jun–Jul 2026 — plan successor assignment by May 25.'},
+      utilization:{
+        months:['Dec','Jan','Feb','Mar','Apr','May'],
+        projects:['EHR Phase 3','UAT+ Portal','Sched Engine'],
+        colors:['#002060','#FF9933','#0EA5E9'],
+        allocated:[[40,42,40,40,38,38],[35,35,35,38,38,35],[0,0,5,15,20,22]],
+        invoiced:[75,77,80,83,84,82]
+      },
+      financial:{
+        months:['Dec','Jan','Feb','Mar','Apr','May'],
+        target:[28,28,30,30,30,32], actual:[26,27,28,30,30,28],
+        accounts:['MedTech Corp','PharmCare','OptiCare'],
+        accountColors:['#002060','#FF9933','#0EA5E9'],
+        accountBilling:[[12,13,13,13,12,12],[10,10,11,12,12,10],[4,4,4,5,6,6]]
+      },
+      artProjects:[
+        { name:'EHR Phase 3', acct:'MedTech Corp', sprint:'S15', brd:true, fsd:true, stories:true, template:true, flag:'green', badge:'On Track',
+          docAge:{brd:'210d',fsd:'45d'}, signOff:{brd:'Signed',fsd:'Signed'}, score:9.8, storyCount:42, brdDocs:1, fsdDocs:1, acGap:0,
+          sprintView:{
+            past:[{num:'S13',summary:'12/12 done · 0 carry-fwd'},{num:'S14',summary:'10/12 done · 2 carry-fwd',churn:0}],
+            current:{num:'S15',epics:[{name:'Admissions',planned:5,done:4,inProgress:1},{name:'Discharge',planned:4,done:3,inProgress:1},{name:'Lab Orders',planned:3,done:3,inProgress:0}]},
+            next:{num:'S16',epics:[{name:'Pharmacy Module',planned:6},{name:'Reporting',planned:4},{name:'Audit Trail',planned:3}]},
+            n2:{num:'S17',epics:[{name:'Billing Module',planned:5},{name:'Analytics Dashboard',planned:4}]},
+            n3:{num:'S18',epics:[{name:'Admin Console',planned:4},{name:'Notifications v2',planned:3}]}
+          },
+          insights:'Model project. Zero churn across 15 sprints. BRD approved version 1. Benchmark for the unit.' },
+        { name:'UAT+ Portal', acct:'PharmCare', sprint:'S10', brd:true, fsd:true, stories:true, template:true, flag:'green', badge:'On Track',
+          docAge:{brd:'120d',fsd:'60d'}, signOff:{brd:'Signed',fsd:'Signed'}, score:9.5, storyCount:28, brdDocs:1, fsdDocs:1, acGap:0,
+          sprintView:{
+            past:[{num:'S08',summary:'8/8 done · 0 carry-fwd'},{num:'S09',summary:'8/8 done · 0 carry-fwd',churn:0}],
+            current:{num:'S10',epics:[{name:'Portal Auth',planned:4,done:4,inProgress:0},{name:'Reports',planned:4,done:3,inProgress:1}]},
+            next:{num:'S11',epics:[{name:'Analytics View',planned:5},{name:'Admin Panel',planned:4}]},
+            n2:{num:'S12',epics:[{name:'Data Export',planned:4},{name:'Role Management',planned:3}]},
+            n3:{num:'S13',epics:[{name:'Audit Log',planned:3},{name:'Performance Tuning',planned:2}]}
+          },
+          insights:'Cleanest sign-off in portfolio. BRD approved on first version. Client satisfaction high.' },
+        { name:'Scheduling Engine', acct:'OptiCare', sprint:'S04', brd:true, fsd:false, stories:true, template:true, flag:'amber', badge:'Watch',
+          docAge:{brd:'22d',fsd:null}, signOff:{brd:'Signed',fsd:'Draft'}, score:7.2, storyCount:16, brdDocs:1, fsdDocs:0, acGap:0,
+          alerts:['FSD unsigned · S05 planning May 18','Stories at risk · await FSD lock'],
+          sprintView:{
+            past:[{num:'S02',summary:'5/6 done · 1 carry-fwd'},{num:'S03',summary:'6/6 done · 0 carry-fwd',churn:0}],
+            current:{num:'S04',epics:[{name:'Schedule Grid',planned:4,done:3,inProgress:1},{name:'Notifications',planned:3,done:2,inProgress:1},{name:'API Layer',planned:2,done:2,inProgress:0}]},
+            next:{num:'S05',epics:[{name:'Conflict Resolution',planned:5},{name:'Calendar Sync',planned:4}]},
+            n2:{num:'S06',epics:[{name:'Multi-Resource View',planned:4},{name:'API Layer v2',planned:3}]},
+            n3:{num:'S07',epics:[{name:'Reporting Module',planned:4},{name:'Integration Tests',planned:3}]}
+          },
+          insights:'FSD in draft — expected May 20. Sprint S05 planning May 18; FSD must be locked before then.' }
+      ],
+      reqProjects:[
+        { name:'EHR Phase 3', acct:'MedTech Corp', sprint:'S15', churn:0, ac:0, versions:2.4, flag:'green', badge:'Clean',
+          epics:[{name:'Admissions',stories:8,done:8,inProgress:0,noAC:0},{name:'Discharge',stories:6,done:6,inProgress:0,noAC:0},{name:'Lab Orders',stories:5,done:5,inProgress:0,noAC:0}],
+          rootCause:'N/A', sparkline:[0,0,0,0,0,0], breachFlag:false,
+          flyNote:'Zero churn across 15 sprints. Stakeholder sign-off gates enforced every sprint.',
+          sprintView:{
+            past:[{num:'S13',summary:'19/19 done · 0 churn'},{num:'S14',summary:'19/19 done · 0 churn'}],
+            current:{num:'S15',epics:[{name:'Admissions',stories:8,done:8,inProgress:0,noAC:0},{name:'Discharge',stories:6,done:6,inProgress:0,noAC:0},{name:'Lab Orders',stories:5,done:5,inProgress:0,noAC:0}]},
+            next:{num:'S16',epics:[{name:'Billing Module',stories:5,done:0,inProgress:0,noAC:0},{name:'Compliance Audit',stories:3,done:0,inProgress:0,noAC:0}]},
+            n2:{num:'S17',epics:[{name:'Admin Console',stories:4,done:0,inProgress:0,noAC:0},{name:'Reporting',stories:3,done:0,inProgress:0,noAC:0}]},
+            n3:{num:'S18',epics:[{name:'Sign-off Package',stories:2,done:0,inProgress:0,noAC:0}]}
+          } },
+        { name:'UAT+ Portal', acct:'PharmCare', sprint:'S10', churn:0, ac:0, versions:1.8, flag:'green', badge:'Clean',
+          epics:[{name:'Portal Auth',stories:5,done:5,inProgress:0,noAC:0},{name:'Reports',stories:4,done:4,inProgress:0,noAC:0}],
+          rootCause:'N/A', sparkline:[0,0,0,0,0,0], breachFlag:false,
+          flyNote:'Best doc-version score in unit. Client aligned on scope from day 1.',
+          sprintView:{
+            past:[{num:'S08',summary:'9/9 done · 0 churn'},{num:'S09',summary:'9/9 done · 0 churn'}],
+            current:{num:'S10',epics:[{name:'Portal Auth',stories:5,done:5,inProgress:0,noAC:0},{name:'Reports',stories:4,done:4,inProgress:0,noAC:0}]},
+            next:{num:'S11',epics:[{name:'Admin Panel',stories:4,done:0,inProgress:0,noAC:0},{name:'UAT Sign-off',stories:3,done:0,inProgress:0,noAC:0}]},
+            n2:{num:'S12',epics:[{name:'Handover Docs',stories:2,done:0,inProgress:0,noAC:0}]},
+            n3:{num:'S13',epics:[{name:'Final UAT',stories:1,done:0,inProgress:0,noAC:0}]}
+          } },
+        { name:'Scheduling Engine', acct:'OptiCare', sprint:'S04', churn:0, ac:0, versions:2.5, flag:'amber', badge:'Watch',
+          epics:[{name:'Schedule Grid',stories:4,done:3,inProgress:1,noAC:0},{name:'Notifications',stories:3,done:2,inProgress:1,noAC:0}],
+          rootCause:'N/A', sparkline:[0,0,0,0,0,0], breachFlag:false,
+          flyNote:'FSD draft. No churn yet but sprint S05 planning is May 18. Monitor closely.',
+          sprintView:{
+            past:[{num:'S02',summary:'6/6 done · 0 churn'},{num:'S03',summary:'7/7 done · 0 churn'}],
+            current:{num:'S04',epics:[{name:'Schedule Grid',stories:4,done:3,inProgress:1,noAC:0},{name:'Notifications',stories:3,done:2,inProgress:1,noAC:0}]},
+            next:{num:'S05',epics:[{name:'Calendar View',stories:5,done:0,inProgress:0,noAC:0},{name:'Resource Config',stories:3,done:0,inProgress:0,noAC:0}]},
+            n2:{num:'S06',epics:[{name:'Multi-site Support',stories:4,done:0,inProgress:0,noAC:0}]},
+            n3:{num:'S07',epics:[{name:'Reporting',stories:3,done:0,inProgress:0,noAC:0}]}
+          } }
+      ],
+      presalesProjects:[
+        { name:'DevOps Add-on', acct:'MedTech Corp', val:'$180K', stage:'SOW Review', scope:true, flag:'green', badge:'Covered',
+          owner:'Ananya R.', awaited:8, pendingWith:'MedTech Corp legal — final SOW sign-off', daysSinceLastMeeting:3,
+          lastCall:{date:'12 May 2026', type:'Video Call', notes:'Legal cleared major clauses. Finalising liability cap. Sign-off expected May 25.'},
+          activity:[
+            {date:'12 May 2026', type:'Video Call',    title:'SOW review checkpoint',           notes:'Legal cleared major clauses. Finalising liability cap.'},
+            {date:'05 May 2026', type:'Email',          title:'SOW v2 submitted to client',     notes:'Revised payment schedule and SLA terms per client request.'},
+            {date:'28 Apr 2026', type:'Meeting',        title:'Scope lock — DevOps pipeline',   notes:'3 pipelines, 2 environments, IaC templates confirmed. Scope book signed.'},
+            {date:'15 Apr 2026', type:'Proposal Sent',  title:'Proposal submitted — $180K',    notes:'Fixed price, 14-week engagement. Infrastructure scope only.'}
+          ],
+          flyNote:'SOW under review. Scope book complete. Expected close May 25.' },
+        { name:'Analytics POC', acct:'PharmCare', val:'$90K', stage:'Scoping', scope:true, flag:'amber', badge:'Watch',
+          owner:'Ananya R.', awaited:0, pendingWith:'Ananya R. — complete scope doc before next client meeting', daysSinceLastMeeting:6,
+          lastCall:{date:'09 May 2026', type:'Meeting', notes:'Discovery session 2 of 3. Data sources mapped. Retention policy TBD — needs CTO clarification.'},
+          activity:[
+            {date:'09 May 2026', type:'Meeting',        title:'Discovery session 2 — data source mapping',  notes:'8 data sources identified. Retention policy TBD.'},
+            {date:'02 May 2026', type:'Meeting',        title:'Discovery session 1 — requirements',         notes:'Analytics dashboard for clinical trial data. 3 personas identified.'},
+            {date:'24 Apr 2026', type:'Intro Call',     title:'First scoping discussion',                   notes:'PharmCare VP Data wants POC by Q3. Moving fast.'}
+          ],
+          flyNote:'Discovery sessions in progress. Given 3-project load, confirm timeline is realistic before committing.' }
+      ]
+    },
+
+    vikram: {
+      name:'Vikram T.', unit:'Senior BA · NHS + Common',
+      initials:'VT', color:'#F59E0B',
+      ribbon:{ coverage:'89%', churn:'3', ac:'3', ytd:'$0.16M', days:'9.1d',
+               covClass:'amber', churnClass:'amber', acClass:'amber', daysClass:'amber' },
+      tiles:{ brd:{v:'100%',s:'3 of 3',c:'green'}, fsd:{v:'100%',s:'3 of 3',c:'green'},
+              stories:{v:'100%',s:'3 of 3',c:'green'}, template:{v:'67%',s:'1 project ad-hoc',c:'amber'},
+              churn:{v:'3',s:'All in Mobile App v2 · PM-driven',c:'amber'}, ac:{v:'3',s:'Mobile App v2 · ACs in progress',c:'amber'},
+              versions:{v:'2.6',s:'Slightly above target 2.5',c:'amber'}, kickoff:{v:'9.1d',s:'Above target · manageable',c:'amber'} },
+      load:{v:'3',s:'Mobile App v2 · HL7 Integration · CRM Integration',c:'green'},
+      pres:{v:'1',s:'DR Setup (HealthFirst)'},
+      ytd2:{v:'$0.16M',s:'vs target $0.18M · 89%',c:'amber'},
+      forecast:[
+        {month:'Jul 2026', proj:'CRM Integration', endDate:'Jul 2026', note:'Freeing up ~10%'},
+        {month:'Sep 2026', proj:'Mobile App v2', endDate:'Sep 2026', note:'Main project — plan successor'}
+      ],
+      pipelineValue:'$120K',
+      benchRisk:{risk:'amber', note:'CRM Integration ends Jul 2026. Successor project needed to avoid bench. Flag to Nandita by Jun 1.'},
+      utilization:{
+        months:['Dec','Jan','Feb','Mar','Apr','May'],
+        projects:['Mobile App v2','HL7 Integration','CRM Integration'],
+        colors:['#002060','#FF9933','#0EA5E9'],
+        allocated:[[38,38,40,40,40,42],[30,30,30,30,30,30],[0,0,5,10,10,10]],
+        invoiced:[66,68,70,73,76,80]
+      },
+      financial:{
+        months:['Dec','Jan','Feb','Mar','Apr','May'],
+        target:[26,26,28,28,28,30], actual:[22,24,25,26,26,28],
+        accounts:['HealthFirst Inc','CardioTech','RenewalCare'],
+        accountColors:['#002060','#F59E0B','#0EA5E9'],
+        accountBilling:[[10,11,11,11,11,12],[8,9,10,10,10,11],[4,4,4,5,5,5]]
+      },
+      artProjects:[
+        { name:'Mobile App v2', acct:'HealthFirst Inc', sprint:'S11', brd:true, fsd:true, stories:true, template:false, flag:'amber', badge:'Watch',
+          docAge:{brd:'90d',fsd:'30d'}, signOff:{brd:'Signed',fsd:'Signed'}, score:7.5, storyCount:35, brdDocs:1, fsdDocs:1, acGap:3,
+          alerts:['Template non-compliant · fix by S12','3 stories missing ACs (Auth Module)'],
+          sprintView:{
+            past:[{num:'S09',summary:'8/9 done · 1 carry-fwd'},{num:'S10',summary:'8/9 done · 1 carry-fwd',churn:1}],
+            current:{num:'S11',epics:[{name:'Auth Module',planned:5,done:4,inProgress:1},{name:'Booking Flow',planned:3,done:3,inProgress:0},{name:'Profile',planned:3,done:2,inProgress:1}]},
+            next:{num:'S12',epics:[{name:'Notifications',planned:5},{name:'Push Alerts',planned:4},{name:'Analytics',planned:3}]},
+            n2:{num:'S13',epics:[{name:'Settings Module',planned:4},{name:'Dark Mode',planned:2}]},
+            n3:{num:'S14',epics:[{name:'Performance Suite',planned:3},{name:'Accessibility',planned:3}]}
+          },
+          insights:'BRD/FSD present. Template non-compliance flagged — custom doc format. Vikram to migrate to standard by S12. Churn is PM-driven, not BA quality.' },
+        { name:'HL7 Integration', acct:'CardioTech', sprint:'S08', brd:true, fsd:true, stories:true, template:true, flag:'green', badge:'On Track',
+          docAge:{brd:'150d',fsd:'90d'}, signOff:{brd:'Signed',fsd:'Signed'}, score:9.2,
+          sprints:[{num:'S07',planned:6,done:6,churn:0,blockers:'None'},{num:'S08',planned:6,done:6,churn:0,blockers:'None'}],
+          insights:'All clean. Steady delivery. No concerns.' },
+        { name:'CRM Integration', acct:'RenewalCare', sprint:'S03', brd:true, fsd:true, stories:true, template:true, flag:'green', badge:'On Track',
+          docAge:{brd:'20d',fsd:'12d'}, signOff:{brd:'Signed',fsd:'Signed'}, score:9.0,
+          sprints:[{num:'S02',planned:5,done:5,churn:0,blockers:'None'},{num:'S03',planned:5,done:5,churn:0,blockers:'None'}],
+          insights:'New project in early sprints. Strong artefact foundation.' }
+      ],
+      reqProjects:[
+        { name:'Mobile App v2', acct:'HealthFirst Inc', sprint:'S11', churn:3, ac:3, versions:2.8, flag:'amber', badge:'Watch',
+          epics:[{name:'Auth Module',stories:6,done:5,inProgress:1,noAC:2},{name:'Booking Flow',stories:5,done:4,inProgress:1,noAC:1},{name:'Profile',stories:4,done:3,inProgress:1,noAC:0}],
+          rootCause:'PM-driven', sparkline:[0,1,0,2,1,3], breachFlag:true,
+          flyNote:'3 stories reprioritised by PM after sprint start. Not a BA quality issue — PM alignment gap. Discuss sprint planning discipline with DM.',
+          sprintView:{
+            past:[{num:'S09',summary:'8/9 done · 1 churn · PM-driven'},{num:'S10',summary:'7/9 done · 2 churn · PM-driven'}],
+            current:{num:'S11',epics:[{name:'Auth Module',stories:6,done:5,inProgress:1,noAC:2},{name:'Booking Flow',stories:5,done:4,inProgress:1,noAC:1},{name:'Profile',stories:4,done:3,inProgress:1,noAC:0}]},
+            next:{num:'S12',epics:[{name:'Notifications',stories:5,done:0,inProgress:0,noAC:0},{name:'Push Alerts',stories:4,done:0,inProgress:0,noAC:0},{name:'Analytics',stories:3,done:0,inProgress:0,noAC:0}]},
+            n2:{num:'S13',epics:[{name:'Settings Module',stories:4,done:0,inProgress:0,noAC:0},{name:'Dark Mode',stories:2,done:0,inProgress:0,noAC:0}]},
+            n3:{num:'S14',epics:[{name:'Performance Suite',stories:3,done:0,inProgress:0,noAC:0},{name:'Accessibility',stories:3,done:0,inProgress:0,noAC:0}]}
+          } },
+        { name:'HL7 Integration', acct:'CardioTech', sprint:'S08', churn:0, ac:0, versions:2.2, flag:'green', badge:'Clean',
+          epics:[{name:'Message Transforms',stories:8,done:8,inProgress:0,noAC:0},{name:'Ack Handling',stories:6,done:6,inProgress:0,noAC:0}],
+          rootCause:'N/A', sparkline:[0,0,0,0,0,0], breachFlag:false,
+          flyNote:'Clean delivery.',
+          sprintView:{
+            past:[{num:'S06',summary:'12/12 done · 0 churn'},{num:'S07',summary:'12/12 done · 0 churn'}],
+            current:{num:'S08',epics:[{name:'Message Transforms',stories:8,done:8,inProgress:0,noAC:0},{name:'Ack Handling',stories:6,done:6,inProgress:0,noAC:0}]},
+            next:{num:'S09',epics:[{name:'Error Recovery',stories:4,done:0,inProgress:0,noAC:0},{name:'Performance Tests',stories:3,done:0,inProgress:0,noAC:0}]},
+            n2:{num:'S10',epics:[{name:'Monitoring Dashboard',stories:3,done:0,inProgress:0,noAC:0}]},
+            n3:{num:'S11',epics:[{name:'Handover & Docs',stories:2,done:0,inProgress:0,noAC:0}]}
+          } },
+        { name:'CRM Integration', acct:'RenewalCare', sprint:'S03', churn:0, ac:0, versions:2.3, flag:'green', badge:'Clean',
+          epics:[{name:'Contacts',stories:5,done:5,inProgress:0,noAC:0},{name:'Deals Pipeline',stories:4,done:4,inProgress:0,noAC:0}],
+          rootCause:'N/A', sparkline:[0,0,0,0,0,0], breachFlag:false,
+          flyNote:'New project — early sprints clean.',
+          sprintView:{
+            past:[{num:'S01',summary:'5/5 done · 0 churn'},{num:'S02',summary:'5/5 done · 0 churn'}],
+            current:{num:'S03',epics:[{name:'Contacts',stories:5,done:5,inProgress:0,noAC:0},{name:'Deals Pipeline',stories:4,done:4,inProgress:0,noAC:0}]},
+            next:{num:'S04',epics:[{name:'Activity Log',stories:4,done:0,inProgress:0,noAC:0},{name:'Reports',stories:3,done:0,inProgress:0,noAC:0}]},
+            n2:{num:'S05',epics:[{name:'Email Sync',stories:3,done:0,inProgress:0,noAC:0}]},
+            n3:{num:'S06',epics:[{name:'API Webhooks',stories:3,done:0,inProgress:0,noAC:0}]}
+          } }
+      ],
+      presalesProjects:[
+        { name:'DR Setup', acct:'HealthFirst Inc', val:'$120K', stage:'SOW Review', scope:true, flag:'green', badge:'Covered',
+          owner:'Vikram T.', awaited:5, pendingWith:'HealthFirst Inc — SOW approval from VP IT', daysSinceLastMeeting:5,
+          lastCall:{date:'10 May 2026', type:'Phone Call', notes:'VP IT confirmed no blockers. Verbal go-ahead received. Formal sign-off expected week of May 18.'},
+          activity:[
+            {date:'10 May 2026', type:'Phone Call',     title:'Verbal go-ahead from VP IT',     notes:'No blockers. SOW sign-off expected May 18.'},
+            {date:'03 May 2026', type:'Email',          title:'SOW submitted',                  notes:'Scope book attached. RTO 4h / RPO 1h confirmed.'},
+            {date:'26 Apr 2026', type:'Meeting',        title:'DR architecture review',         notes:'AWS primary, Azure DR. Multi-region failover in scope.'},
+            {date:'12 Apr 2026', type:'Proposal Sent',  title:'DR proposal submitted — $120K', notes:'12-week engagement. Includes testing sprints and runbook.'}
+          ],
+          flyNote:'Scope book done. SOW review week of May 18. Strong position to close.' }
+      ]
+    },
+
+    priya: {
+      name:'Priya N.', unit:'Mid BA · HLS-2 + Presales support',
+      initials:'PN', color:'#DC2626',
+      ribbon:{ coverage:'25%', churn:'12', ac:'9', ytd:'$0.12M', days:'11.2d',
+               covClass:'red', churnClass:'red', acClass:'red', daysClass:'red' },
+      tiles:{ brd:{v:'50%',s:'1 of 2 · PediaCare missing',c:'red'}, fsd:{v:'0%',s:'Neither project has FSD',c:'red'},
+              stories:{v:'50%',s:'PediaCare has no stories in Jira',c:'red'}, template:{v:'50%',s:'1 non-standard BRD',c:'amber'},
+              churn:{v:'12',s:'BioGen 5 · PediaCare 7 · escalation needed',c:'red'}, ac:{v:'9',s:'BioGen 4 · PediaCare 5',c:'red'},
+              versions:{v:'4.1',s:'Well above target 2.5 · rework pattern',c:'red'}, kickoff:{v:'11.2d',s:'Above target · PediaCare took 15d',c:'red'} },
+      load:{v:'2',s:'Analytics Platform · Patient Portal',c:'amber'},
+      pres:{v:'1',s:'Phase 3 Expansion (BioGen)'},
+      ytd2:{v:'$0.12M',s:'vs target $0.14M · 86%',c:'amber'},
+      forecast:[
+        {month:'Oct 2026', proj:'Analytics Platform', endDate:'Oct 2026', note:'Active · red status'},
+        {month:'TBD', proj:'Patient Portal', endDate:'TBD', note:'No end date locked — no BRD'}
+      ],
+      pipelineValue:'$340K',
+      benchRisk:{risk:'red', note:'Priya at capacity with 2 red projects. No presales bandwidth. Nandita intervention required.'},
+      utilization:{
+        months:['Dec','Jan','Feb','Mar','Apr','May'],
+        projects:['Analytics Platform','Patient Portal'],
+        colors:['#002060','#DC2626'],
+        allocated:[[50,55,50,50,52,50],[0,0,20,30,35,35]],
+        invoiced:[50,55,62,58,62,58]
+      },
+      financial:{
+        months:['Dec','Jan','Feb','Mar','Apr','May'],
+        target:[20,20,22,22,22,24], actual:[18,18,18,18,19,20],
+        accounts:['BioGen Labs','PediaCare'],
+        accountColors:['#002060','#DC2626'],
+        accountBilling:[[12,12,12,12,13,14],[6,6,6,6,6,6]]
+      },
+      artProjects:[
+        { name:'Analytics Platform', acct:'BioGen Labs', sprint:'S12', brd:true, fsd:false, stories:true, template:true, flag:'amber', badge:'Watch',
+          docAge:{brd:'65d',fsd:null}, signOff:{brd:'Signed',fsd:'Draft'}, score:4.8, storyCount:18, brdDocs:1, fsdDocs:0, acGap:4,
+          alerts:['No FSD · 5 churn stories linked','4 stories missing ACs (Data Ingest)'],
+          sprintView:{
+            past:[{num:'S10',summary:'5/7 done · 2 carry-fwd'},{num:'S11',summary:'4/6 done · 2 carry-fwd',churn:2}],
+            current:{num:'S12',epics:[{name:'Data Ingestion',planned:4,done:2,inProgress:2},{name:'Dashboards',planned:3,done:1,inProgress:2},{name:'Exports',planned:2,done:0,inProgress:1}]},
+            next:{num:'S13',epics:[{name:'Data Ingestion (cont.)',planned:4},{name:'Dashboard Filters',planned:3}]},
+            n2:{num:'S14',epics:[{name:'Scheduled Reports',planned:4},{name:'Alerts Engine',planned:3}]},
+            n3:{num:'S15',epics:[{name:'Data Governance',planned:3},{name:'API Endpoints',planned:4}]}
+          },
+          insights:'FSD not started. Stakeholder scope additions creating churn before FSD is locked. Nandita to review scope baseline with Priya this week.' },
+        { name:'Patient Portal', acct:'PediaCare', sprint:'S09', brd:false, fsd:false, stories:false, template:false, flag:'red', badge:'Escalate',
+          docAge:{brd:null,fsd:null}, signOff:{brd:'Missing',fsd:'Missing'}, score:1.2, storyCount:0, brdDocs:0, fsdDocs:0, acGap:0,
+          alerts:['CRITICAL: No BRD · unvalidated scope','CRITICAL: No FSD · QA blind','No Jira stories · untrackable'],
+          sprintView:{
+            past:[{num:'S07',summary:'2/5 done · 3 carry-fwd'},{num:'S08',summary:'2/4 done · 2 carry-fwd',churn:2}],
+            current:{num:'S09',epics:[{name:'Registration (undocumented)',planned:5,done:1,inProgress:2},{name:'Appointments (undocumented)',planned:4,done:0,inProgress:2}]},
+            next:{num:'S10',epics:[{name:'[Blocked — BRD required first]',planned:0}]},
+            n2:{num:'S11',epics:[{name:'[TBD — pending BRD]',planned:0}]},
+            n3:{num:'S12',epics:[{name:'[TBD — pending BRD]',planned:0}]}
+          },
+          insights:'CRITICAL: 3 weeks in, zero artefacts. Sprint S09 running without locked scope. Coaching intervention required immediately.' }
+      ],
+      reqProjects:[
+        { name:'Analytics Platform', acct:'BioGen Labs', sprint:'S12', churn:5, ac:4, versions:3.0, flag:'amber', badge:'Watch',
+          epics:[{name:'Data Ingestion',stories:8,done:4,inProgress:2,noAC:3},{name:'Dashboards',stories:6,done:3,inProgress:2,noAC:1},{name:'Exports',stories:4,done:1,inProgress:1,noAC:2}],
+          rootCause:'Stakeholder-driven', sparkline:[0,2,1,3,2,5], breachFlag:true,
+          flyNote:'Scope additions from BioGen stakeholders driving churn. FSD absence means there is no locked baseline to defend.',
+          sprintView:{
+            past:[{num:'S10',summary:'5/7 done · 2 churn · stakeholder adds'},{num:'S11',summary:'4/6 done · 3 churn · escalated'}],
+            current:{num:'S12',epics:[{name:'Data Ingestion',stories:8,done:4,inProgress:2,noAC:3},{name:'Dashboards',stories:6,done:3,inProgress:2,noAC:1},{name:'Exports',stories:4,done:1,inProgress:1,noAC:2}]},
+            next:{num:'S13',epics:[{name:'Data Transforms',stories:6,done:0,inProgress:0,noAC:0},{name:'Access Control',stories:4,done:0,inProgress:0,noAC:0}]},
+            n2:{num:'S14',epics:[{name:'Performance Tuning',stories:4,done:0,inProgress:0,noAC:0}]},
+            n3:{num:'S15',epics:[{name:'UAT Prep',stories:3,done:0,inProgress:0,noAC:0}]}
+          } },
+        { name:'Patient Portal', acct:'PediaCare', sprint:'S09', churn:7, ac:5, versions:5.1, flag:'red', badge:'Escalate',
+          epics:[{name:'Registration',stories:5,done:1,inProgress:1,noAC:4},{name:'Appointments',stories:5,done:0,inProgress:2,noAC:5}],
+          rootCause:'BA Gap', sparkline:[0,0,2,4,5,7], breachFlag:true,
+          flyNote:'Highest churn in portfolio. No BRD means every stakeholder request enters sprint directly. Escalation to DM recommended.',
+          sprintView:{
+            past:[{num:'S07',summary:'2/4 done · 4 churn · no BRD baseline'},{num:'S08',summary:'1/5 done · 6 churn · escalation pending'}],
+            current:{num:'S09',epics:[{name:'Registration',stories:5,done:1,inProgress:1,noAC:4},{name:'Appointments',stories:5,done:0,inProgress:2,noAC:5}]},
+            next:{num:'S10',epics:[{name:'Billing',stories:4,done:0,inProgress:0,noAC:0},{name:'Notifications',stories:3,done:0,inProgress:0,noAC:0}]},
+            n2:{num:'S11',epics:[{name:'Patient Records',stories:5,done:0,inProgress:0,noAC:0}]},
+            n3:{num:'S12',epics:[{name:'Reports',stories:3,done:0,inProgress:0,noAC:0}]}
+          } }
+      ],
+      presalesProjects:[
+        { name:'Phase 3 Expansion', acct:'BioGen Labs', val:'$340K', stage:'Proposal Draft', scope:true, flag:'amber', badge:'Watch',
+          owner:'Priya N.', awaited:12, pendingWith:'Priya N. — scope book QC by Nandita before submission', daysSinceLastMeeting:12,
+          lastCall:{date:'03 May 2026', type:'Meeting', notes:'BioGen VP confirmed $340K budget approved for Phase 3. Client expecting proposal by May 20. Internal QC hold in place.'},
+          activity:[
+            {date:'03 May 2026', type:'Meeting',        title:'Budget confirmation from BioGen VP',      notes:'$340K approved. Client wants proposal by May 20.'},
+            {date:'25 Apr 2026', type:'Video Call',     title:'Phase 3 scope discussion',               notes:'Analytics, LIMS integration, mobile reporting in scope.'},
+            {date:'10 Apr 2026', type:'Discovery Call', title:'Phase 3 requirements discovery',         notes:'3 workstreams identified. Priya to produce scope book.'}
+          ],
+          flyNote:'Scope book present but requires spot-check by Nandita before submission — given current quality concerns on delivery side.' }
+      ]
+    },
+
+    rohan: {
+      name:'Rohan M.', unit:'Mid BA · Common + PMO support',
+      initials:'RM', color:'#FF9933',
+      ribbon:{ coverage:'63%', churn:'9', ac:'6', ytd:'$0.10M', days:'10.8d',
+               covClass:'amber', churnClass:'red', acClass:'red', daysClass:'amber' },
+      tiles:{ brd:{v:'50%',s:'WellnessOne missing BRD',c:'red'}, fsd:{v:'50%',s:'WellnessOne missing FSD',c:'red'},
+              stories:{v:'75%',s:'3 of 4 · WellnessOne OK',c:'amber'}, template:{v:'50%',s:'2 projects ad-hoc',c:'amber'},
+              churn:{v:'9',s:'WellnessOne 9 · at capacity risk',c:'red'}, ac:{v:'6',s:'WellnessOne 6 · QA risk',c:'red'},
+              versions:{v:'4.2',s:'WellnessOne driving the average',c:'red'}, kickoff:{v:'10.8d',s:'Load of 4 projects affecting speed',c:'amber'} },
+      load:{v:'4',s:'Claims Automation · MFG Scheduling · + 2 PMO support',c:'red'},
+      pres:{v:'0',s:'No presales assigned'},
+      ytd2:{v:'$0.10M',s:'vs target $0.12M · 83%',c:'amber'},
+      forecast:[
+        {month:'Aug 2026', proj:'MFG Scheduling', endDate:'Aug 2026', note:'Freeing up ~35%'},
+        {month:'Nov 2026', proj:'Claims Automation', endDate:'Nov 2026', note:'Critical project — watch'}
+      ],
+      pipelineValue:'$0',
+      benchRisk:{risk:'red', note:'4 projects = AT CAPACITY. No presales or new projects until Claims Automation is stabilised. Recommend offloading 1 PMO support.'},
+      utilization:{
+        months:['Dec','Jan','Feb','Mar','Apr','May'],
+        projects:['Claims Automation','MFG Scheduling','PMO Support'],
+        colors:['#DC2626','#002060','#94A3B8'],
+        allocated:[[0,0,20,40,45,48],[30,35,35,35,35,35],[15,15,15,10,10,8]],
+        invoiced:[45,50,56,66,68,70]
+      },
+      financial:{
+        months:['Dec','Jan','Feb','Mar','Apr','May'],
+        target:[18,18,20,20,22,22], actual:[14,15,16,18,18,19],
+        accounts:['WellnessOne','OrthoFix'],
+        accountColors:['#DC2626','#002060'],
+        accountBilling:[[0,0,4,8,8,9],[14,15,12,10,10,10]]
+      },
+      artProjects:[
+        { name:'Claims Automation', acct:'WellnessOne', sprint:'S14', brd:false, fsd:false, stories:true, template:false, flag:'red', badge:'Escalate',
+          docAge:{brd:null,fsd:null}, signOff:{brd:'Missing',fsd:'Missing'}, score:1.0, storyCount:15, brdDocs:0, fsdDocs:0, acGap:6,
+          alerts:['No BRD · S15 must not start','No FSD · scope undefined','6 stories missing ACs · QA risk'],
+          sprintView:{
+            past:[{num:'S12',summary:'4/6 done · 2 carry-fwd'},{num:'S13',summary:'3/5 done · 2 carry-fwd',churn:4}],
+            current:{num:'S14',epics:[{name:'Claims Processing',planned:4,done:1,inProgress:2},{name:'Validation Engine',planned:3,done:1,inProgress:1},{name:'Reporting',planned:2,done:0,inProgress:0}]},
+            next:{num:'S15',epics:[{name:'[Blocked — BRD required]',planned:0},{name:'[Blocked — FSD required]',planned:0}]},
+            n2:{num:'S16',epics:[{name:'[TBD — BRD/FSD needed]',planned:0}]},
+            n3:{num:'S17',epics:[{name:'[TBD]',planned:0}]}
+          },
+          insights:'Highest-risk project. No BRD, no FSD. Sprint S14 running on unvalidated scope. Recommend redistributing 1 project from Rohan before S15.' },
+        { name:'MFG Scheduling', acct:'OrthoFix', sprint:'S06', brd:true, fsd:true, stories:true, template:true, flag:'green', badge:'On Track',
+          docAge:{brd:'55d',fsd:'35d'}, signOff:{brd:'Signed',fsd:'Signed'}, score:9.4, storyCount:22, brdDocs:1, fsdDocs:1, acGap:0,
+          sprintView:{
+            past:[{num:'S04',summary:'6/6 done · 0 carry-fwd'},{num:'S05',summary:'6/6 done · 0 carry-fwd',churn:0}],
+            current:{num:'S06',epics:[{name:'Job Scheduling',planned:4,done:4,inProgress:0},{name:'Alerts & Notif.',planned:3,done:3,inProgress:0}]},
+            next:{num:'S07',epics:[{name:'Shift Management',planned:5},{name:'Reporting Dashboard',planned:4}]},
+            n2:{num:'S08',epics:[{name:'Payroll Integration',planned:4},{name:'Leave Management',planned:3}]},
+            n3:{num:'S09',epics:[{name:'Compliance Reports',planned:3},{name:'Mobile App',planned:5}]}
+          },
+          insights:'Stable. First artefact day 6 — good given 4-project load. Rohan is capable; WellnessOne is a capacity/artefact issue, not a skill issue.' }
+      ],
+      reqProjects:[
+        { name:'Claims Automation', acct:'WellnessOne', sprint:'S14', churn:9, ac:6, versions:4.2, flag:'red', badge:'Escalate',
+          epics:[{name:'Processing',stories:6,done:1,inProgress:2,noAC:4},{name:'Validation',stories:5,done:1,inProgress:1,noAC:3},{name:'Reporting',stories:4,done:0,inProgress:1,noAC:3}],
+          rootCause:'BA Gap', sparkline:[0,2,4,5,6,9], breachFlag:true,
+          flyNote:'9 churn + 6 missing ACs = QA will block. Direct consequence of no BRD/FSD. Intervention now.',
+          sprintView:{
+            past:[{num:'S12',summary:'4/8 done · 6 churn · no BRD'},{num:'S13',summary:'3/8 done · 8 churn · DM notified'}],
+            current:{num:'S14',epics:[{name:'Processing',stories:6,done:1,inProgress:2,noAC:4},{name:'Validation',stories:5,done:1,inProgress:1,noAC:3},{name:'Reporting',stories:4,done:0,inProgress:1,noAC:3}]},
+            next:{num:'S15',epics:[{name:'EDI 837 Export',stories:5,done:0,inProgress:0,noAC:0},{name:'Payer Mapping',stories:4,done:0,inProgress:0,noAC:0}]},
+            n2:{num:'S16',epics:[{name:'Reconciliation',stories:4,done:0,inProgress:0,noAC:0}]},
+            n3:{num:'S17',epics:[{name:'Audit Reporting',stories:3,done:0,inProgress:0,noAC:0}]}
+          } },
+        { name:'MFG Scheduling', acct:'OrthoFix', sprint:'S06', churn:0, ac:0, versions:2.6, flag:'green', badge:'Clean',
+          epics:[{name:'Job Scheduling',stories:8,done:8,inProgress:0,noAC:0},{name:'Alerts & Notif.',stories:5,done:5,inProgress:0,noAC:0}],
+          rootCause:'N/A', sparkline:[0,0,0,0,0,0], breachFlag:false,
+          flyNote:'Clean. Rohan is capable — WellnessOne situation is capacity/artefact, not skill.',
+          sprintView:{
+            past:[{num:'S04',summary:'13/13 done · 0 churn'},{num:'S05',summary:'13/13 done · 0 churn'}],
+            current:{num:'S06',epics:[{name:'Job Scheduling',stories:8,done:8,inProgress:0,noAC:0},{name:'Alerts & Notif.',stories:5,done:5,inProgress:0,noAC:0}]},
+            next:{num:'S07',epics:[{name:'Dashboard Widgets',stories:5,done:0,inProgress:0,noAC:0},{name:'Config Panel',stories:3,done:0,inProgress:0,noAC:0}]},
+            n2:{num:'S08',epics:[{name:'Reports',stories:4,done:0,inProgress:0,noAC:0}]},
+            n3:{num:'S09',epics:[{name:'Handover Package',stories:2,done:0,inProgress:0,noAC:0}]}
+          } }
+      ],
+      presalesProjects:[]
+    },
+
+    deepa: {
+      name:'Deepa K.', unit:'Mid BA · NHS vertical',
+      initials:'DK', color:'#0EA5E9',
+      ribbon:{ coverage:'88%', churn:'0', ac:'0', ytd:'$0.06M', days:'7.8d',
+               covClass:'green', churnClass:'green', acClass:'green', daysClass:'green' },
+      tiles:{ brd:{v:'100%',s:'2 of 2',c:'green'}, fsd:{v:'100%',s:'2 of 2',c:'green'},
+              stories:{v:'50%',s:'BI Dashboard stories in progress for S08',c:'amber'}, template:{v:'100%',s:'Standard templates',c:'green'},
+              churn:{v:'0',s:'No churn on either project',c:'green'}, ac:{v:'0',s:'All stories have ACs',c:'green'},
+              versions:{v:'2.1',s:'Excellent sign-off rate',c:'green'}, kickoff:{v:'7.8d',s:'Within target',c:'green'} },
+      load:{v:'2',s:'BI Dashboard · Rx Workflow · Available for 1 more',c:'green'},
+      pres:{v:'0',s:'Available for presales assignment'},
+      ytd2:{v:'$0.06M',s:'vs target $0.08M · 75%',c:'amber'},
+      forecast:[
+        {month:'Jul 2026', proj:'Rx Workflow', endDate:'Jul 2026', note:'Freeing up ~35%'},
+        {month:'Sep 2026', proj:'BI Dashboard', endDate:'Sep 2026', note:'Main project · ongoing'},
+        {month:'Jun 2026', proj:'[Available]', endDate:'—', note:'Capacity for new project or presales'}
+      ],
+      pipelineValue:'$430K',
+      benchRisk:{risk:'green', note:'1 project ending Jul 2026. Deepa has capacity to absorb a presales assignment by Jun 1. Recommend Oncology Portal.'},
+      utilization:{
+        months:['Dec','Jan','Feb','Mar','Apr','May'],
+        projects:['BI Dashboard','Rx Workflow'],
+        colors:['#002060','#FF9933'],
+        allocated:[[35,35,38,40,42,42],[30,32,32,35,35,35]],
+        invoiced:[60,64,65,70,72,74]
+      },
+      financial:{
+        months:['Dec','Jan','Feb','Mar','Apr','May'],
+        target:[12,12,14,14,14,16], actual:[10,11,12,12,13,13],
+        accounts:['NeuroLab','DermaPlus'],
+        accountColors:['#002060','#FF9933'],
+        accountBilling:[[4,5,6,6,7,7],[6,6,6,6,6,6]]
+      },
+      artProjects:[
+        { name:'BI Dashboard', acct:'NeuroLab', sprint:'S07', brd:true, fsd:true, stories:false, template:true, flag:'amber', badge:'Watch',
+          docAge:{brd:'40d',fsd:'28d'}, signOff:{brd:'Signed',fsd:'Signed'}, score:8.5, storyCount:8, brdDocs:1, fsdDocs:1, acGap:0,
+          alerts:['S08 stories not pushed to Jira · due May 17'],
+          sprintView:{
+            past:[{num:'S05',summary:'5/5 done · 0 carry-fwd'},{num:'S06',summary:'5/5 done · 0 carry-fwd',churn:0}],
+            current:{num:'S07',epics:[{name:'Charts & Viz',planned:3,done:3,inProgress:0},{name:'Filters',planned:2,done:2,inProgress:0},{name:'Export',planned:2,done:1,inProgress:1}]},
+            next:{num:'S08',epics:[{name:'Advanced Filters',planned:4},{name:'PDF Export',planned:3},{name:'Drill-down',planned:3}]},
+            n2:{num:'S09',epics:[{name:'Scheduled Reports',planned:4},{name:'Alert Widgets',planned:3}]},
+            n3:{num:'S10',epics:[{name:'Collaboration Tools',planned:4},{name:'Performance Mode',planned:2}]}
+          },
+          insights:'Stories being authored for S08. Deepa on track to resolve before sprint planning. No other concerns.' },
+        { name:'Rx Workflow', acct:'DermaPlus', sprint:'S05', brd:true, fsd:true, stories:true, template:true, flag:'green', badge:'On Track',
+          docAge:{brd:'80d',fsd:'60d'}, signOff:{brd:'Signed',fsd:'Signed'}, score:9.6, storyCount:20, brdDocs:1, fsdDocs:1, acGap:0,
+          sprintView:{
+            past:[{num:'S03',summary:'7/7 done · 0 carry-fwd'},{num:'S04',summary:'7/7 done · 0 carry-fwd',churn:0}],
+            current:{num:'S05',epics:[{name:'Prescription Mgmt',planned:4,done:4,inProgress:0},{name:'Dispensing',planned:3,done:3,inProgress:0}]},
+            next:{num:'S06',epics:[{name:'Refill Workflow',planned:4},{name:'Drug Interaction Alerts',planned:3},{name:'Integration Tests',planned:3}]},
+            n2:{num:'S07',epics:[{name:'Insurance Verification',planned:4},{name:'Patient Portal',planned:3}]},
+            n3:{num:'S08',epics:[{name:'Reporting Suite',planned:5},{name:'Compliance Checks',planned:3}]}
+          },
+          insights:'Clean delivery. Client signed BRD on first version. Best version rate in unit.' }
+      ],
+      reqProjects:[
+        { name:'BI Dashboard', acct:'NeuroLab', sprint:'S07', churn:0, ac:0, versions:2.1, flag:'green', badge:'Clean',
+          epics:[{name:'Charts & Viz',stories:5,done:5,inProgress:0,noAC:0},{name:'Filters',stories:4,done:4,inProgress:0,noAC:0},{name:'Export',stories:3,done:2,inProgress:1,noAC:0}],
+          rootCause:'N/A', sparkline:[0,0,0,0,0,0], breachFlag:false,
+          flyNote:'Zero churn. Stories gap will be resolved before S08 planning.',
+          sprintView:{
+            past:[{num:'S05',summary:'9/9 done · 0 churn'},{num:'S06',summary:'9/9 done · 0 churn'}],
+            current:{num:'S07',epics:[{name:'Charts & Viz',stories:5,done:5,inProgress:0,noAC:0},{name:'Filters',stories:4,done:4,inProgress:0,noAC:0},{name:'Export',stories:3,done:2,inProgress:1,noAC:0}]},
+            next:{num:'S08',epics:[{name:'Drill-down',stories:5,done:0,inProgress:0,noAC:0},{name:'Sharing',stories:3,done:0,inProgress:0,noAC:0}]},
+            n2:{num:'S09',epics:[{name:'Performance',stories:4,done:0,inProgress:0,noAC:0}]},
+            n3:{num:'S10',epics:[{name:'UAT & Sign-off',stories:3,done:0,inProgress:0,noAC:0}]}
+          } },
+        { name:'Rx Workflow', acct:'DermaPlus', sprint:'S05', churn:0, ac:0, versions:2.0, flag:'green', badge:'Clean',
+          epics:[{name:'Prescription Mgmt',stories:6,done:6,inProgress:0,noAC:0},{name:'Dispensing',stories:5,done:5,inProgress:0,noAC:0}],
+          rootCause:'N/A', sparkline:[0,0,0,0,0,0], breachFlag:false,
+          flyNote:'Best version rate. Stable.',
+          sprintView:{
+            past:[{num:'S03',summary:'11/11 done · 0 churn'},{num:'S04',summary:'11/11 done · 0 churn'}],
+            current:{num:'S05',epics:[{name:'Prescription Mgmt',stories:6,done:6,inProgress:0,noAC:0},{name:'Dispensing',stories:5,done:5,inProgress:0,noAC:0}]},
+            next:{num:'S06',epics:[{name:'Inventory Alerts',stories:4,done:0,inProgress:0,noAC:0},{name:'Audit Trail',stories:3,done:0,inProgress:0,noAC:0}]},
+            n2:{num:'S07',epics:[{name:'Reporting',stories:3,done:0,inProgress:0,noAC:0}]},
+            n3:{num:'S08',epics:[{name:'Handover',stories:2,done:0,inProgress:0,noAC:0}]}
+          } }
+      ],
+      presalesProjects:[
+        { name:'Oncology Portal (Recommend)', acct:'OncoSys', val:'$280K', stage:'Proposal Draft', scope:false, flag:'red', badge:'Unassigned',
+          owner:'Unassigned', awaited:18, pendingWith:'Nandita — assign BA before proposal is submitted', daysSinceLastMeeting:18,
+          lastCall:{date:'27 Apr 2026', type:'Meeting', notes:'OncoSys CTO met sales team. Strong interest. $280K budget confirmed. No BA assigned — proposal cannot proceed without scoping input.'},
+          activity:[
+            {date:'27 Apr 2026', type:'Meeting',        title:'Discovery with OncoSys CTO',          notes:'Portal for oncology care coordination. Budget confirmed. No BA to own scope.'},
+            {date:'14 Apr 2026', type:'Intro Call',     title:'First contact — referral via MedTech', notes:'Warm intro. Decision timeline Q3 2026.'}
+          ],
+          flyNote:'Currently unassigned — $280K proposal going out without BA. Deepa has capacity. Recommend immediate assignment.' },
+        { name:'Platform Expansion (Recommend)', acct:'RenewalCare', val:'$150K', stage:'Discovery', scope:false, flag:'amber', badge:'Available',
+          owner:'Deepa K. (Recommended)', awaited:0, pendingWith:'Nandita — confirm Deepa assignment to begin discovery', daysSinceLastMeeting:7,
+          lastCall:{date:'08 May 2026', type:'Discovery Call', notes:'RenewalCare COO interested in platform expansion for 2 new verticals. Deepa has capacity and vertical knowledge.'},
+          activity:[
+            {date:'08 May 2026', type:'Discovery Call', title:'Platform expansion — vertical scope',  notes:'2 new verticals: Dental and Ophthalmology. COO driving initiative.'},
+            {date:'01 May 2026', type:'Intro Call',     title:'Account review — expansion flagged',  notes:'RenewalCare flagged expansion interest during Q1 billing review.'}
+          ],
+          flyNote:'Discovery stage. Deepa available. Assignment would cover the presales gap.' }
+      ]
+    }
+  };
+
+  // ════════════════════════════════════════════════════════════════════════
+  // HELPERS
+  // ════════════════════════════════════════════════════════════════════════
+  function getParam(n) { return new URLSearchParams(window.location.search).get(n)||'ananya'; }
+  function churnColor(v) { return v>5?'red':v>0?'amber':'green'; }
+  function acColor(v)    { return v>4?'red':v>0?'amber':'green'; }
+  function verColor(v)   { return v>3.5?'red':v>2.5?'amber':'green'; }
+  function scoreColor(v) { return v>=8?'green':v>=6?'amber':'red'; }
+
+  function chipClass(s) {
+    if (!s||s==='Missing') return 'missing';
+    if (s==='Signed')      return 'signed';
+    if (s==='Under Review') return 'review';
+    return 'draft';
+  }
+  function chipLabel(s) { return (!s||s==='Missing')?'Missing':s; }
+
+  function sparklineSVG(data, w, h, color) {
+    var max = Math.max.apply(null, data)||1;
+    var pts = data.map(function(v,i){
+      var x = (i/(data.length-1))*w;
+      var y = h - (v/max)*(h-2) - 1;
+      return x.toFixed(1)+','+y.toFixed(1);
+    }).join(' ');
+    return '<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" style="display:inline-block;vertical-align:middle;">'+
+      '<polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>'+
+      '</svg>';
+  }
+
+  function rootTagHTML(rc) {
+    var map = {'N/A':'na','BA Gap':'ba','PM-driven':'pm','Stakeholder-driven':'stake'};
+    return '<span class="root-tag '+(map[rc]||'na')+'">'+rc+'</span>';
+  }
+
+  function signOffAge(signOff, docAge, type) {
+    var so = signOff[type], da = docAge ? docAge[type] : null;
+    if (!so || so==='Missing') return '<span class="doc-chip missing">'+type.toUpperCase()+': Missing</span>';
+    var ageStr = da ? ' <span class="doc-age">'+da+'</span>' : '';
+    return '<span class="doc-chip '+chipClass(so)+'">'+type.toUpperCase()+': '+so+'</span>'+ageStr;
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // RENDER PAGE
+  // ════════════════════════════════════════════════════════════════════════
+  var currentBA = 'ananya';
+
+  function renderPage(baKey) {
+    currentBA = baKey;
+    var d = BA[baKey]; if (!d){ baKey='ananya'; d=BA.ananya; }
+    document.title = d.name + ' — Solutions · Pulse';
+
+    var av = document.getElementById('baAvatar');
+    av.textContent = d.initials; av.style.background = d.color;
+    document.getElementById('baName').textContent = d.name;
+    document.getElementById('baUnit').textContent = d.unit;
+    document.getElementById('baProjects').textContent = d.load.v+' project'+(parseInt(d.load.v)===1?'':'s');
+    document.getElementById('baPresales').textContent = d.pres.v+' presales';
+
+    var r = d.ribbon;
+    setRibbonStat('statCoverage', r.coverage, r.covClass);
+    setRibbonStat('statChurn',    r.churn,    r.churnClass);
+    setRibbonStat('statAC',       r.ac,       r.acClass);
+    document.getElementById('statYTD').textContent = r.ytd;
+    setRibbonStat('statDays', r.days, r.daysClass);
+
+    var artWarn = d.artProjects.filter(function(p){return p.flag!=='green';}).length;
+    var reqCrit = d.reqProjects.filter(function(p){return p.flag==='red';}).length;
+    var ab=document.getElementById('tabArtBadge'), rb=document.getElementById('tabReqBadge');
+    ab.style.display=artWarn>0?'':'none'; ab.textContent=artWarn>0?artWarn+' watch':'';
+    rb.style.display=reqCrit>0?'':'none'; rb.textContent=reqCrit>0?reqCrit+' critical':'';
+
+    var t = d.tiles;
+    setTile('kBRD',     t.brd.c,     'vBRD',     t.brd.v,     'sBRD',     t.brd.s);
+    setTile('kFSD',     t.fsd.c,     'vFSD',     t.fsd.v,     'sFSD',     t.fsd.s);
+    setTile('kStories', t.stories.c, 'vStories', t.stories.v, 'sStories', t.stories.s);
+    setTile('kTemplate',t.template.c,'vTemplate',t.template.v,'sTemplate',t.template.s);
+    document.getElementById('kBRD').onclick      = function(){ openArtHealthFly(d); };
+    document.getElementById('kFSD').onclick      = function(){ openArtHealthFly(d); };
+    document.getElementById('kStories').onclick  = function(){ openArtHealthFly(d); };
+    document.getElementById('kTemplate').onclick = function(){ openArtTileFly('template',d); };
+
+    setTile('kChurn', t.churn.c, 'vChurn', t.churn.v, 'sChurn', t.churn.s);
+    setTile('kAC',    t.ac.c,    'vAC',    t.ac.v,    'sAC',    t.ac.s);
+    setTile('kVersions', t.versions.c, 'vVersions', t.versions.v, 'sVersions', t.versions.s);
+    document.getElementById('vKickoff').textContent = t.kickoff.v;
+    document.getElementById('kKickoff').className = 'kc grey';
+    document.getElementById('kChurn').onclick    = function(){ openReqHealthFly(d); };
+    document.getElementById('kAC').onclick       = function(){ openReqHealthFly(d); };
+    document.getElementById('kVersions').onclick = function(){ openReqHealthFly(d); };
+
+    var lc = d.load.c||'green';
+    document.getElementById('kLoad').className = 'kc '+lc;
+    document.getElementById('vLoad').textContent = d.load.v;
+    document.getElementById('sLoad').textContent = d.load.s;
+    document.getElementById('kLoad').onclick = function(){ openCapTileFly('load',d); };
+
+    var presCount = parseInt(d.pres.v)||0;
+    document.getElementById('kPresCovered').className = 'kc '+(presCount===0?'grey':'amber');
+    document.getElementById('vPresCovered').textContent = d.pres.v;
+    document.getElementById('sPresCovered').textContent = presCount===0?'No presales assigned':d.pres.s;
+    document.getElementById('kPresCovered').onclick = function(){ openCapTileFly('pres',d); };
+
+    document.getElementById('kYTD2').className = 'kc '+(d.ytd2.c||'green');
+    document.getElementById('vYTD2').textContent = d.ytd2.v;
+    document.getElementById('sYTD2').textContent = d.ytd2.s;
+    document.getElementById('kYTD2').onclick = function(){ openCapTileFly('ytd',d); };
+
+    renderForecast(d.forecast);
+
+    var br = d.benchRisk;
+    document.getElementById('benchStrip').className = 'kc '+(br.risk||'grey');
+    document.getElementById('benchBadge').style.color = br.risk==='green'?'#16A34A':br.risk==='red'?'#DC2626':'#F59E0B';
+    document.getElementById('benchBadge').textContent = br.risk==='green'?'Low':br.risk==='amber'?'Medium':'High';
+    document.getElementById('benchNote').textContent = br.note;
+    document.getElementById('pipelineVal').textContent = d.pipelineValue;
+    document.getElementById('pipelineNote').textContent = d.presalesProjects.length+' active pursuit'+(d.presalesProjects.length===1?'':'s');
+
+    renderArtCards(d.artProjects);
+    renderReqCards(d.reqProjects);
+    renderCapCards(d.presalesProjects);
+
+    chartsInited = false;
+    if (document.getElementById('pane-cap').classList.contains('active')) {
+      setTimeout(function(){ initCharts(baKey); }, 60);
+    }
+  }
+
+  function setRibbonStat(id, v, c) {
+    var el = document.getElementById(id);
+    el.textContent = v; el.className = 'ba-rs-val '+(c||'');
+  }
+  function setTile(tid, color, vid, val, sid, sub) {
+    document.getElementById(tid).className = 'kc '+color;
+    document.getElementById(vid).textContent = val;
+    if (sid) document.getElementById(sid).textContent = sub;
+  }
+
+  function renderForecast(forecast) {
+    var strip = document.getElementById('forecastStrip');
+    strip.innerHTML = '';
+    var lines = '';
+    if (!forecast||!forecast.length) {
+      lines = '<div style="font-size:11px;color:var(--text-muted);padding:4px 0;">No upcoming capacity changes.</div>';
+    } else {
+      forecast.forEach(function(f) {
+        var isAvail = f.proj==='[Available]';
+        var dotCol = isAvail?'#16A34A':f.note.toLowerCase().indexOf('red')>-1?'#DC2626':f.note.toLowerCase().indexOf('amber')>-1||f.note.toLowerCase().indexOf('watch')>-1?'#F59E0B':'#3B82F6';
+        lines += '<div style="display:flex;align-items:baseline;gap:7px;padding:5px 0;border-bottom:1px dashed rgba(59,130,246,0.15);">'
+          + '<span style="color:'+dotCol+';font-size:13px;line-height:1;flex-shrink:0;">•</span>'
+          + '<span style="font-size:11px;color:var(--navy);font-weight:700;flex-shrink:0;">'+f.proj+'</span>'
+          + '<span style="font-size:10px;color:var(--text-muted);">|</span>'
+          + '<span style="font-size:11px;color:var(--text);">'+f.month+'</span>'
+          + '<span style="font-size:10px;color:var(--text-muted);">·</span>'
+          + '<span style="font-size:11px;color:'+(isAvail?'#16A34A':'var(--text-muted)')+';">'+f.note+'</span>'
+          + '</div>';
+      });
+    }
+    strip.innerHTML = '<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-left:3px solid #3B82F6;border-radius:8px;padding:10px 14px;">'
+      + '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#3B82F6;margin-bottom:8px;">Capacity Forecast</div>'
+      + lines
+      + '</div>';
+  }
+
+  // ── Art cards ─────────────────────────────────────────────────────────
+  function renderArtCards(projs) {
+    var grid = document.getElementById('artCards');
+    grid.innerHTML = '';
+    if (!projs||!projs.length) { grid.innerHTML='<div style="font-size:12px;color:var(--text-muted);">No projects.</div>'; return; }
+    projs.forEach(function(p) {
+      var sc = scoreColor(p.score||5);
+      var el = document.createElement('div');
+      el.className = 'proj-card '+p.flag;
+      // Magnitude counts
+      var stC = p.storyCount||0, brdC = p.brdDocs||0, fsdC = p.fsdDocs||0, acG = p.acGap||0;
+      var mag = '<strong style="color:var(--navy);">'+stC+'</strong> <span style="color:var(--text-muted);font-size:10px;">Stories</span>'
+        + '<span style="color:var(--border);margin:0 4px;">·</span>'
+        + '<strong style="color:'+(brdC>0?'var(--green)':'var(--red)')+';">'+brdC+'</strong> <span style="color:var(--text-muted);font-size:10px;">BRD</span>'
+        + '<span style="color:var(--border);margin:0 4px;">·</span>'
+        + '<strong style="color:'+(fsdC>0?'var(--green)':'var(--red)')+';">'+fsdC+'</strong> <span style="color:var(--text-muted);font-size:10px;">FSD</span>'
+        + (acG>0 ? '<span style="color:var(--border);margin:0 4px;">·</span><strong style="color:var(--red);">'+acG+'</strong> <span style="color:var(--red);font-size:10px;">No-AC</span>' : '');
+      // Alert tags (first 2, truncated)
+      var alertsHTML = '';
+      if (p.alerts&&p.alerts.length) {
+        alertsHTML = '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">';
+        p.alerts.slice(0,2).forEach(function(a){
+          alertsHTML += '<span style="font-size:9px;background:#FEE2E2;color:#991B1B;padding:2px 6px;border-radius:4px;font-weight:700;line-height:1.5;">'
+            + a.substring(0,40)+(a.length>40?'…':'') + '</span>';
+        });
+        alertsHTML += '</div>';
+      }
+      el.innerHTML =
+        '<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;">'+
+          '<div style="flex:1;min-width:0;">'+
+            '<div class="pc-name" style="margin-bottom:1px;">'+p.name+'</div>'+
+            '<div class="pc-acct">'+p.acct+'</div>'+
+          '</div>'+
+          '<div style="text-align:right;font-size:10px;line-height:1.6;white-space:nowrap;flex-shrink:0;">'+
+            '<strong style="color:var(--navy);">'+stC+'</strong><span style="color:var(--text-muted);"> St</span>'+
+            ' <span style="color:var(--border);">|</span> '+
+            '<strong style="color:'+(brdC>0?'var(--green)':'var(--red)')+';">'+brdC+'</strong><span style="color:var(--text-muted);"> BRD</span>'+
+            ' <span style="color:var(--border);">|</span> '+
+            '<strong style="color:'+(fsdC>0?'var(--green)':'var(--red)')+';">'+fsdC+'</strong><span style="color:var(--text-muted);"> FSD</span>'+
+            (acG>0 ? '<br><span style="color:var(--red);font-weight:700;">'+acG+' No-AC</span>' : '')+
+          '</div>'+
+        '</div>'+
+        alertsHTML+
+        '<div class="pc-footer" style="margin-top:4px;">'+
+          '<span class="pc-sprint">'+p.sprint+'</span>'+
+          '<span class="pc-score '+sc+'"><i class="bi bi-shield-fill-check"></i> '+p.score+'</span>'+
+          '<span class="pc-badge '+p.flag+'">'+p.badge+'</span>'+
+        '</div>';
+      el.onclick = function(){ openArtCardFly(p); };
+      grid.appendChild(el);
+    });
+  }
+
+  // ── Req cards ─────────────────────────────────────────────────────────
+  function renderReqCards(projs) {
+    var grid = document.getElementById('reqCards');
+    grid.innerHTML = '';
+    if (!projs||!projs.length) { grid.innerHTML='<div style="font-size:12px;color:var(--text-muted);">No projects.</div>'; return; }
+    projs.forEach(function(p) {
+      var sc = p.breachFlag?'var(--red)':churnColor(p.churn)==='green'?'var(--green)':'var(--amber)';
+      var el = document.createElement('div');
+      el.className = 'qcard '+p.flag;
+      el.innerHTML =
+        '<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;">'+
+          '<div style="flex:1;min-width:0;">'+
+            '<div class="qc-name" style="margin-bottom:1px;">'+p.name+'</div>'+
+            '<div class="qc-acct">'+p.acct+'</div>'+
+          '</div>'+
+          '<div style="text-align:right;font-size:10px;line-height:1.7;white-space:nowrap;flex-shrink:0;">'+
+            '<span class="qc-big '+churnColor(p.churn)+'" style="font-size:18px;line-height:1;">'+p.churn+'</span>'+
+            '<span style="color:var(--text-muted);font-size:9px;"> churn</span>'+
+            '<br>'+
+            '<span style="font-weight:700;color:'+(acColor(p.ac)==='red'?'var(--red)':acColor(p.ac)==='amber'?'var(--amber)':'var(--green)')+';">'+p.ac+'</span>'+
+            '<span style="color:var(--text-muted);"> No-AC</span>'+
+            ' <span style="color:var(--border);">|</span> '+
+            '<span style="font-weight:700;color:'+(verColor(p.versions)==='red'?'var(--red)':verColor(p.versions)==='amber'?'var(--amber)':'var(--green)')+';">v'+p.versions+'</span>'+
+          '</div>'+
+        '</div>'+
+        (p.breachFlag?'<div style="font-size:9px;color:var(--red);font-weight:700;margin-bottom:4px;"><i class="bi bi-exclamation-triangle-fill"></i> Breach</div>':'')+
+        '<div class="qc-footer" style="margin-top:4px;">'+
+          '<span class="pc-sprint">'+p.sprint+'</span>'+
+          rootTagHTML(p.rootCause)+
+          '<span class="pc-badge '+p.flag+'">'+p.badge+'</span>'+
+        '</div>';
+      el.onclick = function(){ openReqCardFly(p); };
+      grid.appendChild(el);
+    });
+  }
+
+  // ── Cap cards ─────────────────────────────────────────────────────────
+  function renderCapCards(projs) {
+    var grid = document.getElementById('capCards');
+    grid.innerHTML = '';
+    if (!projs||!projs.length) {
+      grid.innerHTML='<div style="font-size:12px;color:var(--text-muted);padding:12px 0;">No presales currently assigned.</div>';
+      return;
+    }
+    projs.forEach(function(p) {
+      var el = document.createElement('div');
+      el.className = 'pcard '+p.flag;
+      el.innerHTML =
+        '<div class="pc2-name">'+p.name+'</div>'+
+        '<div class="pc2-acct">'+p.acct+'</div>'+
+        '<div class="pc2-val">'+p.val+'</div>'+
+        '<div class="pc2-rows">'+
+          '<div><span class="lbl">Stage: </span>'+p.stage+'</div>'+
+          '<div><span class="lbl">Scope Book: </span>'+
+            '<span style="color:'+(p.scope?'var(--green)':'var(--red)')+';font-weight:700;">'+(p.scope?'Present':'Missing')+'</span>'+
+          '</div>'+
+        '</div>'+
+        '<div class="pc2-footer"><span></span><span class="pc-badge '+p.flag+'">'+p.badge+'</span></div>';
+      el.onclick = function(){ openCapCardFly(p); };
+      grid.appendChild(el);
+    });
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // FLYOUT OPENERS
+  // ════════════════════════════════════════════════════════════════════════
+
+  // C4 — Combined Artifact Health flyout (BRD + FSD + User Stories — all in one, grouped by project)
+  function openArtHealthFly(d) {
+    var reqMap = {};
+    (d.reqProjects||[]).forEach(function(p){ reqMap[p.name] = p; });
+
+    function artBadge(present) {
+      return present
+        ? '<span class="badge green" style="flex-shrink:0;">Present</span>'
+        : '<span class="badge red"   style="flex-shrink:0;">Missing</span>';
+    }
+    function docMeta(age, signOff) {
+      if (!age && !signOff) return '';
+      var parts = [];
+      if (age)    parts.push(age+' old');
+      if (signOff)parts.push(signOff);
+      return '<span style="font-size:9px;color:var(--text-muted);margin-left:6px;">'+parts.join(' · ')+'</span>';
+    }
+    function artRow(label, present, age, signOff) {
+      return '<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);">'+
+        '<span style="font-size:10px;font-weight:700;color:var(--text);width:80px;flex-shrink:0;">'+label+'</span>'+
+        artBadge(present)+
+        docMeta(age, signOff)+
+      '</div>';
+    }
+
+    var html = '';
+    d.artProjects.forEach(function(p) {
+      var worst = (!p.brd || !p.fsd || !p.stories) ? 'red' : 'green';
+      var borderCol = worst==='red' ? '#DC2626' : '#16A34A';
+      var bgCol     = worst==='red' ? 'rgba(220,38,38,0.06)' : 'rgba(22,163,74,0.05)';
+
+      // ── Project header ──
+      html += '<div style="background:'+bgCol+';border-left:3px solid '+borderCol+';border-radius:0 6px 6px 0;padding:8px 12px;margin-top:10px;margin-bottom:6px;">'+
+        '<div style="font-size:12px;font-weight:700;color:var(--navy);">'+p.name+'</div>'+
+        '<div style="font-size:10px;color:var(--text-muted);">'+p.acct+' · '+p.sprint+'</div>'+
+      '</div>';
+
+      // ── BRD row ──
+      html += artRow('BRD', p.brd, p.docAge&&p.docAge.brd, p.signOff&&p.signOff.brd);
+      // ── FSD row ──
+      html += artRow('FSD', p.fsd, p.docAge&&p.docAge.fsd, p.signOff&&p.signOff.fsd);
+
+      // ── User Stories ──
+      var rp = reqMap[p.name];
+      if (!p.stories) {
+        html += artRow('User Stories', false, null, null);
+        html += '<div style="font-size:10px;color:#DC2626;padding:3px 0 6px 86px;">No stories in Jira — delivery untrackable</div>';
+      } else {
+        html += artRow('User Stories', true, (p.storyCount?p.storyCount+' total':null), (p.acGap>0?p.acGap+' missing ACs':null));
+        if (rp && rp.epics && rp.epics.length) {
+          rp.epics.forEach(function(e) {
+            var pending = (e.stories||0) - (e.done||0);
+            var noac    = e.noAC||0;
+            var stories = buildEpicStories(e);
+            var epicBg  = (noac>0||pending>0) ? 'rgba(245,158,11,0.06)' : 'rgba(22,163,74,0.04)';
+            html += '<div style="margin:4px 0 0 12px;background:'+epicBg+';border-radius:5px;padding:6px 10px;">';
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'+
+              '<span style="font-size:10px;font-weight:700;color:var(--navy);">'+e.name+'</span>'+
+              '<span style="font-size:9px;color:var(--text-muted);">'+
+                (e.done>0?'<span style="color:#16A34A;font-weight:700;">'+e.done+' done</span> ':'')+
+                (e.inProgress>0?'<span style="color:#F59E0B;font-weight:700;">'+e.inProgress+' wip</span> ':'')+
+                (noac>0?'<span style="color:#DC2626;font-weight:700;">'+noac+' no-AC</span>':'')+
+              '</span>'+
+            '</div>';
+            // Only list non-done stories
+            var nonDone = stories.filter(function(s){ return s.status!=='done'; });
+            if (nonDone.length) {
+              nonDone.forEach(function(s){
+                var col = s.status==='no-ac'?'#DC2626':s.status==='progress'?'#F59E0B':'#94A3B8';
+                html += '<div style="display:flex;align-items:center;gap:6px;padding:2px 0;">'+
+                  '<span style="font-size:9px;color:var(--text-muted);flex-shrink:0;font-family:monospace;">'+s.id+'</span>'+
+                  '<span style="font-size:10px;color:var(--text);flex:1;">'+s.name+'</span>'+
+                  '<span style="font-size:8px;font-weight:700;color:'+col+';flex-shrink:0;text-transform:uppercase;">'+s.status+'</span>'+
+                '</div>';
+              });
+            }
+            html += '</div>';
+          });
+        }
+      }
+    });
+
+    // summary count chips
+    var missBRD  = d.artProjects.filter(function(p){return !p.brd;}).length;
+    var missFSD  = d.artProjects.filter(function(p){return !p.fsd;}).length;
+    var missStory= d.artProjects.filter(function(p){return !p.stories;}).length;
+    var chips = [
+      {l:'BRD Missing',  v:missBRD,  c:missBRD>0?'#DC2626':'#16A34A'},
+      {l:'FSD Missing',  v:missFSD,  c:missFSD>0?'#DC2626':'#16A34A'},
+      {l:'No Stories',   v:missStory,c:missStory>0?'#DC2626':'#16A34A'}
+    ].map(function(ch){
+      return '<div style="text-align:center;padding:5px 12px;background:'+ch.c+'18;border-radius:6px;">'+
+        '<div style="font-size:14px;font-weight:800;color:'+ch.c+';">'+ch.v+'</div>'+
+        '<div style="font-size:9px;color:var(--text-muted);margin-top:1px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;">'+ch.l+'</div>'+
+      '</div>';
+    }).join('');
+
+    var header = '<div style="display:flex;gap:8px;margin-bottom:4px;">'+chips+'</div>';
+    openFly('Artifact Health · '+d.name, d.unit, header+html);
+  }
+
+  // Template tile still uses separate flyout
+  function openArtTileFly(type, d) {
+    var labels = {template:'Template Compliance'};
+    var label = labels[type]||type;
+    var missing = d.artProjects.filter(function(p){ return !p[type]; });
+    var present = d.artProjects.filter(function(p){ return  p[type]; });
+    var html = '<div class="fly-sect">Missing '+label+' ('+missing.length+')</div>';
+    if (missing.length===0) {
+      html += '<div style="font-size:12px;color:var(--green);padding:8px 0;"><i class="bi bi-check-circle-fill"></i> All projects comply</div>';
+    } else {
+      missing.forEach(function(p){
+        html += '<div class="fly-row"><span class="fly-lbl">'+p.name+'</span><span class="badge red">Missing</span></div>'+
+                '<div style="font-size:10px;color:var(--text-muted);padding-bottom:8px;">'+p.acct+' · '+p.sprint+'</div>';
+      });
+    }
+    html += '<div class="fly-sect">Compliant ('+present.length+')</div>';
+    present.forEach(function(p){
+      html += '<div class="fly-row"><span class="fly-lbl">'+p.name+'</span><span class="badge green">Compliant</span></div>';
+    });
+    openFly(label+' — '+d.name, d.tiles[type].v+' · '+d.tiles[type].s, html);
+  }
+
+  // C5 — Art card flyout — polished epic cards + story names + n2/n3 sprints + Load More
+  function openArtCardFly(p) {
+    function chip(l,v,col) {
+      return '<div style="text-align:center;padding:5px 10px;background:'+col+'18;border-radius:6px;min-width:54px;">'+
+        '<div style="font-size:13px;font-weight:800;color:'+col+';">'+v+'</div>'+
+        '<div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);margin-top:1px;">'+l+'</div>'+
+      '</div>';
+    }
+    var scoreCol = (p.score||0)>=8?'#16A34A':(p.score||0)>=6?'#F59E0B':'#DC2626';
+    var html = '<div style="display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;">'+
+      chip('Score',(p.score||'—')+'/10',scoreCol)+
+      chip('Sprint',p.sprint,'var(--navy)')+
+      chip('BRD',p.brd?'✓':'✗',p.brd?'#16A34A':'#DC2626')+
+      chip('FSD',p.fsd?'✓':'✗',p.fsd?'#16A34A':'#DC2626')+
+      chip('Stories',p.storyCount||0,'#3B82F6')+
+      ((p.acGap||0)>0?chip('No-AC',p.acGap,'#DC2626'):'')+
+    '</div>';
+    if (p.alerts&&p.alerts.length) {
+      p.alerts.forEach(function(a){
+        html += '<div style="display:flex;align-items:flex-start;gap:7px;padding:5px 8px;background:rgba(220,38,38,0.06);border-left:3px solid #DC2626;border-radius:0 5px 5px 0;margin-bottom:5px;">'+
+          '<i class="bi bi-exclamation-triangle-fill" style="color:#DC2626;font-size:11px;margin-top:1px;flex-shrink:0;"></i>'+
+          '<span style="font-size:11px;color:var(--text);">'+a+'</span></div>';
+      });
+    }
+    var _epicCounter = 0;
+    function epicCard(e, showStories) {
+      var rem = (e.planned||0)-(e.done||0)-(e.inProgress||0);
+      var hasIssue = rem>0||e.inProgress>0;
+      var eid = 'ep-'+(++_epicCounter)+'-'+Math.random().toString(36).slice(2,5);
+      var hasDetail = showStories && ((e.planned||0)>0 || (e.stories||0)>0 || (e.done||0)>0);
+      var out = '<div style="background:'+(hasIssue?'rgba(245,158,11,0.06)':'rgba(22,163,74,0.04)')+';border:1px solid var(--border);border-radius:6px;padding:7px 10px;margin-bottom:6px;">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;">'+
+          '<div style="display:flex;align-items:center;gap:6px;flex:1;">'+
+            (hasDetail?'<button onclick="toggleEpic(\'' + eid + '\',this)" style="width:18px;height:18px;border-radius:4px;background:var(--bg);border:1px solid var(--border);font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;line-height:1;">+</button>':'')+
+            '<span style="font-size:11px;font-weight:700;color:var(--navy);">'+e.name+'</span>'+
+          '</div>'+
+          '<span style="display:flex;gap:5px;font-size:9px;flex-shrink:0;">'+
+            (e.done>0?'<span style="background:#D1FAE5;color:#065F46;padding:1px 6px;border-radius:8px;font-weight:700;">'+e.done+' done</span>':'')+
+            (e.inProgress>0?'<span style="background:#FEF3C7;color:#92400E;padding:1px 6px;border-radius:8px;font-weight:700;">'+e.inProgress+' wip</span>':'')+
+            (rem>0?'<span style="background:#F1F5F9;color:#475569;padding:1px 6px;border-radius:8px;font-weight:700;">'+rem+' open</span>':'')+
+            '<span style="background:var(--bg);color:var(--text-muted);padding:1px 6px;border-radius:8px;">/ '+(e.planned||0)+'</span>'+
+          '</span>'+
+        '</div>';
+      if (hasDetail) {
+        out += '<div id="'+eid+'" style="display:none;margin-top:6px;">';
+        buildEpicStories(e).forEach(function(s){
+          var col = s.status==='done'?'#94A3B8':s.status==='no-ac'?'#DC2626':s.status==='progress'?'#F59E0B':'#CBD5E1';
+          out += '<div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-top:1px solid var(--border);">'+
+            '<span style="font-size:9px;color:var(--text-muted);flex-shrink:0;font-family:monospace;min-width:40px;">'+s.id+'</span>'+
+            '<span style="font-size:10px;color:var(--text);flex:1;'+(s.status!=='done'?'font-weight:600;':'')+'">'+s.name+'</span>'+
+            '<span style="font-size:8px;font-weight:700;color:'+col+';flex-shrink:0;text-transform:uppercase;min-width:52px;text-align:right;">'+s.status+'</span>'+
+          '</div>';
+        });
+        out += '</div>';
+      }
+      return out+'</div>';
+    }
+    function sprintBlock(label, color, icon, sprObj, showStories) {
+      var h = '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:'+color+';margin:10px 0 5px;">'+
+        '<i class="bi bi-'+icon+'"></i> '+sprObj.num+' — '+label+'</div>';
+      (sprObj.epics||[]).forEach(function(e){ h += epicCard(e, showStories); });
+      return h;
+    }
+    var _moreId = 'ac-more-'+Math.random().toString(36).slice(2,7);
+    if (p.sprintView) {
+      var sv = p.sprintView;
+      if (sv.past&&sv.past.length) {
+        html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);margin:10px 0 5px;">Past Sprints</div>';
+        sv.past.forEach(function(s){
+          html += '<div style="display:flex;justify-content:space-between;padding:5px 8px;background:var(--bg);border-radius:5px;font-size:11px;margin-bottom:4px;">'+
+            '<span style="font-weight:700;color:var(--text);">'+s.num+'</span><span style="color:var(--text-muted);">'+s.summary+'</span></div>';
+        });
+      }
+      if (sv.current)  html += sprintBlock('Current Sprint',  '#16A34A', 'play-circle-fill', sv.current, true);
+      if (sv.next)     html += sprintBlock('Next Sprint (N+1)','#3B82F6', 'calendar3',        sv.next,    true);
+      // N+2 and N+3 behind Load More
+      if (sv.n2||sv.n3) {
+        html += '<div id="'+_moreId+'" style="display:none;">';
+        if (sv.n2) html += sprintBlock('N+2 Sprint (Planned)', '#7C3AED', 'calendar-plus', sv.n2, true);
+        if (sv.n3) html += sprintBlock('N+3 Sprint (Planned)', '#7C3AED', 'calendar-plus', sv.n3, true);
+        html += '</div>';
+        html += '<button onclick="toggleSprintMore(\'' + _moreId + '\',this)" style="width:100%;margin-top:8px;padding:7px;background:var(--bg);border:1px dashed var(--border);border-radius:6px;font-size:11px;color:var(--text-muted);cursor:pointer;font-weight:600;text-align:center;"><i class="bi bi-chevron-down"></i> Show N+2 / N+3 Sprints</button>';
+      }
+    } else if (p.sprints&&p.sprints.length) {
+      html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);margin:10px 0 5px;">Sprint History</div>';
+      html += '<table class="sprint-tbl"><thead><tr><th>Sprint</th><th>Planned</th><th>Done</th><th>Churn</th></tr></thead><tbody>';
+      p.sprints.forEach(function(s){
+        html += '<tr><td>'+s.num+'</td><td>'+s.planned+'</td><td>'+s.done+'</td><td class="churn-cell '+churnColor(s.churn||0)+'">'+s.churn+'</td></tr>';
+      });
+      html += '</tbody></table>';
+    }
+    var insightText = p.insights||p.flyNote;
+    if (insightText) {
+      var bullets = insightText.split(/\.\s+/).filter(function(s){return s.trim().length>3;});
+      html += '<div style="background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.18);border-radius:6px;padding:10px 14px;margin-top:14px;">'+
+        '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#1D4ED8;margin-bottom:8px;">✦ BA Insights</div>'+
+        '<ul style="margin:0;padding-left:15px;">'+
+        bullets.map(function(b){return '<li style="font-size:11px;color:var(--text);line-height:1.55;margin-bottom:4px;">'+b.trim().replace(/\.$/,'')+'.</li>';}).join('')+
+        '</ul></div>';
+    }
+    openFly(p.name, p.acct+' · Artefact Detail', html);
+  }
+
+  // C6 — Req card flyout — story drill-down
+  var STORY_NAMES = {
+    'Admissions':['Patient registration form','Insurance verification','Bed assignment workflow','Pre-admission screening','Demographic data capture','Emergency contact entry','Admission approval routing','Nurse station notification'],
+    'Discharge':['Discharge summary generation','Medication reconciliation','Follow-up scheduling','Patient education handout','Insurance clearance','Discharge approval workflow'],
+    'Lab Orders':['Lab test order entry','CPOE integration','Result retrieval','Abnormal flag alert','Order cancellation flow'],
+    'Portal Auth':['SSO login integration','MFA enrollment','Session timeout handling','Role-based access control','Password reset flow'],
+    'Reports':['Report template creation','Scheduled report delivery','Export to PDF / Excel','Date-range filter','Report sharing link'],
+    'Schedule Grid':['Weekly grid view','Drag-and-drop reschedule','Conflict detection indicator','Multi-resource overlay'],
+    'Notifications':['Email appointment reminder','SMS cancellation alert','In-app notification badge'],
+    'Auth Module':['OAuth2 social login','Biometric unlock','Session management','Device trust registration','Account lockout policy','Password strength validation'],
+    'Booking Flow':['Appointment slot selection','Provider search & filter','Booking confirmation email','Reschedule / cancel flow','Wait-list join'],
+    'Profile':['Basic info edit','Photo upload','Notification preferences','Linked devices list'],
+    'Message Transforms':['ADT message parse','ORU message map','ORM transform','ACK response build','Segment validator','Error handler','Transform audit log','Schema versioning'],
+    'Ack Handling':['Positive ACK handler','Negative ACK retry','Timeout escalation','ACK log viewer','Duplicate detection','ACK dashboard'],
+    'Contacts':['Contact creation form','Bulk import CSV','Duplicate merge','Contact tagging','Search & filter'],
+    'Deals Pipeline':['Deal creation wizard','Stage progression','Win/loss capture','Pipeline value calc'],
+    'Data Ingestion':['CSV batch upload','API connector setup','Data validation rules','Error quarantine queue','Field mapping UI','Retry scheduler','Audit trail','Dedup logic'],
+    'Dashboards':['KPI widget builder','Date-range selector','Drill-down navigation','Dashboard sharing','Export snapshot','Role-based view'],
+    'Exports':['Excel export','PDF report export','Scheduled delivery','Custom column picker'],
+    'Registration':['Registration form (undocumented)','Identity verification','Insurance capture','Guardian consent','Duplicate check'],
+    'Appointments':['Appointment booking','Provider availability check','Cancellation flow','Reminder trigger'],
+    'Processing':['Claim submission form','Payer eligibility check','Claim status tracker','EDI 837 generation','Rejection handler','Resubmission flow'],
+    'Validation':['ICD-10 code validator','CPT code lookup','Prior auth check','Duplicate claim detect','Validation report'],
+    'Reporting':['Claims summary report','Denial trend chart','Payer performance table','Export to Excel'],
+    'Job Scheduling':['Job creation wizard','Dependency chain builder','Priority queue','Schedule conflict check','Job pause/resume','Batch trigger','Execution log','Retry policy'],
+    'Alerts & Notif.':['Threshold alert config','Email notification','In-app alert badge','Alert history log','Escalation rule'],
+    'Charts & Viz':['Bar chart widget','Line trend chart','Pie breakdown','Chart colour config','Responsive layout'],
+    'Filters':['Date-range filter','Multi-select filter','Filter preset save','Clear-all button'],
+    'Export':['CSV export','PDF export','Column selector'],
+    'Prescription Mgmt':['New Rx entry','Refill request','Drug interaction check','Prescriber lookup','Rx history view','Print label'],
+    'Dispensing':['Dispense queue view','Barcode scan verify','Dispense confirmation','Inventory deduction','Audit log']
+  };
+
+  function storyChip(status) {
+    var map = {done:'Done',progress:'In Progress','no-ac':'No AC',missing:'Missing'};
+    return '<span class="story-chip '+status+'">'+(map[status]||status)+'</span>';
+  }
+
+  function buildEpicStories(e) {
+    var names = STORY_NAMES[e.name] || [];
+    var stories = [], idx = 0, id = 100;
+    for (var i=0;i<(e.done||0);i++,idx++) stories.push({id:'US-'+(++id),name:names[idx]||'Story '+idx,status:'done'});
+    var noAC = e.noAC||0, wip = e.inProgress||0;
+    for (var i=0;i<wip;i++,idx++) stories.push({id:'US-'+(++id),name:names[idx]||'Story '+idx,status:(i<noAC?'no-ac':'progress')});
+    var total = (e.stories||e.planned||0);
+    var rem = total-(e.done||0)-wip;
+    for (var i=0;i<rem;i++,idx++) stories.push({id:'US-'+(++id),name:names[idx]||'Story '+idx,status:'missing'});
+    return stories;
+  }
+
+  // C6 — Req card flyout — epic mini-cards with pill stats
+  var STORY_NAMES = {
+    'Admissions':['Patient registration form','Insurance verification','Bed assignment workflow','Pre-admission screening','Demographic data capture','Emergency contact entry','Admission approval routing','Nurse station notification'],
+    'Discharge':['Discharge summary generation','Medication reconciliation','Follow-up scheduling','Patient education handout','Insurance clearance','Discharge approval workflow'],
+    'Lab Orders':['Lab test order entry','CPOE integration','Result retrieval','Abnormal flag alert','Order cancellation flow'],
+    'Portal Auth':['SSO login integration','MFA enrollment','Session timeout handling','Role-based access control','Password reset flow'],
+    'Reports':['Report template creation','Scheduled report delivery','Export to PDF / Excel','Date-range filter','Report sharing link'],
+    'Schedule Grid':['Weekly grid view','Drag-and-drop reschedule','Conflict detection indicator','Multi-resource overlay'],
+    'Notifications':['Email appointment reminder','SMS cancellation alert','In-app notification badge'],
+    'Auth Module':['OAuth2 social login','Biometric unlock','Session management','Device trust registration','Account lockout policy','Password strength validation'],
+    'Booking Flow':['Appointment slot selection','Provider search & filter','Booking confirmation email','Reschedule / cancel flow','Wait-list join'],
+    'Profile':['Basic info edit','Photo upload','Notification preferences','Linked devices list'],
+    'Message Transforms':['ADT message parse','ORU message map','ORM transform','ACK response build','Segment validator','Error handler','Transform audit log','Schema versioning'],
+    'Ack Handling':['Positive ACK handler','Negative ACK retry','Timeout escalation','ACK log viewer','Duplicate detection','ACK dashboard'],
+    'Contacts':['Contact creation form','Bulk import CSV','Duplicate merge','Contact tagging','Search & filter'],
+    'Deals Pipeline':['Deal creation wizard','Stage progression','Win/loss capture','Pipeline value calc'],
+    'Data Ingestion':['CSV batch upload','API connector setup','Data validation rules','Error quarantine queue','Field mapping UI','Retry scheduler','Audit trail','Dedup logic'],
+    'Dashboards':['KPI widget builder','Date-range selector','Drill-down navigation','Dashboard sharing','Export snapshot','Role-based view'],
+    'Exports':['Excel export','PDF report export','Scheduled delivery','Custom column picker'],
+    'Registration':['Registration form (undocumented)','Identity verification','Insurance capture','Guardian consent','Duplicate check'],
+    'Appointments':['Appointment booking','Provider availability check','Cancellation flow','Reminder trigger'],
+    'Processing':['Claim submission form','Payer eligibility check','Claim status tracker','EDI 837 generation','Rejection handler','Resubmission flow'],
+    'Validation':['ICD-10 code validator','CPT code lookup','Prior auth check','Duplicate claim detect','Validation report'],
+    'Reporting':['Claims summary report','Denial trend chart','Payer performance table','Export to Excel'],
+    'Job Scheduling':['Job creation wizard','Dependency chain builder','Priority queue','Schedule conflict check','Job pause/resume','Batch trigger','Execution log','Retry policy'],
+    'Alerts & Notif.':['Threshold alert config','Email notification','In-app alert badge','Alert history log','Escalation rule'],
+    'Charts & Viz':['Bar chart widget','Line trend chart','Pie breakdown','Chart colour config','Responsive layout'],
+    'Filters':['Date-range filter','Multi-select filter','Filter preset save','Clear-all button'],
+    'Export':['CSV export','PDF export','Column selector'],
+    'Prescription Mgmt':['New Rx entry','Refill request','Drug interaction check','Prescriber lookup','Rx history view','Print label'],
+    'Dispensing':['Dispense queue view','Barcode scan verify','Dispense confirmation','Inventory deduction','Audit log']
+  };
+
+  function storyChip(status) {
+    var map = {done:'Done',progress:'In Progress','no-ac':'No AC',missing:'Missing'};
+    return '<span class="story-chip '+status+'">'+(map[status]||status)+'</span>';
+  }
+
+  function buildEpicStories(e) {
+    var names = STORY_NAMES[e.name] || [];
+    var stories = [], idx = 0, id = 100;
+    for (var i=0;i<(e.done||0);i++,idx++) stories.push({id:'US-'+(++id),name:names[idx]||'Story '+idx,status:'done'});
+    var noAC = e.noAC||0, wip = e.inProgress||0;
+    for (var i=0;i<wip;i++,idx++) stories.push({id:'US-'+(++id),name:names[idx]||'Story '+idx,status:(i<noAC?'no-ac':'progress')});
+    var total = (e.stories||e.planned||0);
+    var rem = total-(e.done||0)-wip;
+    for (var i=0;i<rem;i++,idx++) stories.push({id:'US-'+(++id),name:names[idx]||'Story '+idx,status:'missing'});
+    return stories;
+  }
+
+  function openReqCardFly(p) {
+    function chip(l,v,col) {
+      return '<div style="text-align:center;padding:5px 10px;background:'+col+'18;border-radius:6px;min-width:54px;">'+
+        '<div style="font-size:13px;font-weight:800;color:'+col+';">'+v+'</div>'+
+        '<div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);margin-top:1px;">'+l+'</div>'+
+      '</div>';
+    }
+    var chCol = p.churn>5?'#DC2626':p.churn>0?'#F59E0B':'#16A34A';
+    var acCol = p.ac>4?'#DC2626':p.ac>0?'#F59E0B':'#16A34A';
+    var vCol  = p.versions>3.5?'#DC2626':p.versions>2.5?'#F59E0B':'#16A34A';
+    var html = '<div style="display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;">'+
+      chip('Sprint',p.sprint,'var(--navy)')+
+      chip('Churn',p.churn,chCol)+
+      chip('No-AC',p.ac,acCol)+
+      chip('Versions',p.versions,vCol)+
+    '</div>';
+    if (p.rootCause && p.rootCause!=='N/A') {
+      html += '<div style="display:flex;align-items:flex-start;gap:7px;padding:5px 8px;background:rgba(220,38,38,0.06);border-left:3px solid #DC2626;border-radius:0 5px 5px 0;margin-bottom:8px;">'+
+        '<i class="bi bi-exclamation-triangle-fill" style="color:#DC2626;font-size:11px;margin-top:1px;flex-shrink:0;"></i>'+
+        '<span style="font-size:11px;color:var(--text);">Root Cause: <strong>'+p.rootCause+'</strong></span></div>';
+    }
+    if (p.breachFlag) {
+      html += '<div style="display:flex;align-items:center;gap:7px;padding:5px 8px;background:rgba(245,158,11,0.08);border-left:3px solid #F59E0B;border-radius:0 5px 5px 0;margin-bottom:8px;">'+
+        '<i class="bi bi-exclamation-circle-fill" style="color:#F59E0B;font-size:11px;flex-shrink:0;"></i>'+
+        '<span style="font-size:11px;color:var(--text);">Churn in consecutive sprints — escalation risk</span></div>';
+    }
+    var _ec2 = 0;
+    function reqEpicCard(e, showExpand) {
+      var hasIssue = (e.noAC||0)>0 || ((e.stories||0)-(e.done||0)-(e.inProgress||0))>0;
+      var eid = 'rq2-'+(++_ec2)+'-'+Math.random().toString(36).slice(2,5);
+      var canExpand = showExpand && (e.done>0||e.inProgress>0||e.stories>0);
+      var rem = (e.stories||0)-(e.done||0)-(e.inProgress||0);
+      var out = '<div style="background:'+(hasIssue?'rgba(245,158,11,0.06)':'rgba(22,163,74,0.04)')+';border:1px solid var(--border);border-radius:6px;padding:7px 10px;margin-bottom:6px;">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;">'+
+          '<div style="display:flex;align-items:center;gap:6px;flex:1;">'+
+            (canExpand?'<button onclick="toggleEpic(\'' + eid + '\',this)" style="width:18px;height:18px;border-radius:4px;background:var(--bg);border:1px solid var(--border);font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;line-height:1;">+</button>':'')+
+            '<span style="font-size:11px;font-weight:700;color:var(--navy);">'+e.name+'</span>'+
+          '</div>'+
+          '<span style="display:flex;gap:5px;font-size:9px;flex-shrink:0;">'+
+            (e.done>0?'<span style="background:#D1FAE5;color:#065F46;padding:1px 6px;border-radius:8px;font-weight:700;">'+e.done+' done</span>':'')+
+            (e.inProgress>0?'<span style="background:#FEF3C7;color:#92400E;padding:1px 6px;border-radius:8px;font-weight:700;">'+e.inProgress+' wip</span>':'')+
+            ((e.noAC||0)>0?'<span style="background:#FEE2E2;color:#991B1B;padding:1px 6px;border-radius:8px;font-weight:700;">'+e.noAC+' no-AC</span>':'')+
+            (rem>0?'<span style="background:#F1F5F9;color:#475569;padding:1px 6px;border-radius:8px;font-weight:700;">'+rem+' open</span>':'')+
+            '<span style="background:var(--bg);color:var(--text-muted);padding:1px 6px;border-radius:8px;">/ '+(e.stories||0)+'</span>'+
+          '</span>'+
+        '</div>';
+      if (canExpand) {
+        out += '<div id="'+eid+'" style="display:none;margin-top:6px;">';
+        buildEpicStories(e).forEach(function(s){
+          var col = s.status==='done'?'#94A3B8':s.status==='no-ac'?'#DC2626':s.status==='progress'?'#F59E0B':'#CBD5E1';
+          out += '<div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-top:1px solid var(--border);">'+
+            '<span style="font-size:9px;color:var(--text-muted);flex-shrink:0;font-family:monospace;min-width:40px;">'+s.id+'</span>'+
+            '<span style="font-size:10px;color:var(--text);flex:1;'+(s.status!=='done'?'font-weight:600;':'')+'">'+s.name+'</span>'+
+            '<span style="font-size:8px;font-weight:700;color:'+col+';flex-shrink:0;text-transform:uppercase;min-width:52px;text-align:right;">'+s.status+'</span>'+
+          '</div>';
+        });
+        out += '</div>';
+      }
+      return out+'</div>';
+    }
+    function reqSprintBlock(label, color, icon, sprObj, showExpand) {
+      var h = '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:'+color+';margin:10px 0 5px;">'+
+        '<i class="bi bi-'+icon+'"></i> '+sprObj.num+' — '+label+'</div>';
+      (sprObj.epics||[]).forEach(function(e){ h += reqEpicCard(e, showExpand); });
+      return h;
+    }
+    var _moreId2 = 'rq-more-'+Math.random().toString(36).slice(2,7);
+    if (p.sprintView) {
+      var sv = p.sprintView;
+      if (sv.past&&sv.past.length) {
+        html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);margin:10px 0 5px;">Past Sprints</div>';
+        sv.past.forEach(function(s){
+          html += '<div style="display:flex;justify-content:space-between;padding:5px 8px;background:var(--bg);border-radius:5px;font-size:11px;margin-bottom:4px;">'+
+            '<span style="font-weight:700;color:var(--text);">'+s.num+'</span><span style="color:var(--text-muted);">'+s.summary+'</span></div>';
+        });
+      }
+      if (sv.current) html += reqSprintBlock('Current Sprint',  '#16A34A', 'play-circle-fill', sv.current, true);
+      if (sv.next)    html += reqSprintBlock('Next Sprint (N+1)','#3B82F6', 'calendar3',        sv.next,    true);
+      if (sv.n2||sv.n3) {
+        html += '<div id="'+_moreId2+'" style="display:none;">';
+        if (sv.n2) html += reqSprintBlock('N+2 Sprint (Planned)', '#7C3AED', 'calendar-plus', sv.n2, true);
+        if (sv.n3) html += reqSprintBlock('N+3 Sprint (Planned)', '#7C3AED', 'calendar-plus', sv.n3, true);
+        html += '</div>';
+        html += '<button onclick="toggleSprintMore(\'' + _moreId2 + '\',this)" style="width:100%;margin-top:8px;padding:7px;background:var(--bg);border:1px dashed var(--border);border-radius:6px;font-size:11px;color:var(--text-muted);cursor:pointer;font-weight:600;text-align:center;"><i class="bi bi-chevron-down"></i> Show N+2 / N+3 Sprints</button>';
+      }
+    } else if (p.epics&&p.epics.length) {
+      html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);margin:10px 0 5px;">Story Drill-down by Epic</div>';
+      p.epics.forEach(function(e){ html += reqEpicCard(e, true); });
+    }
+    if (p.flyNote) {
+      var bullets = p.flyNote.split(/\.\s+/).filter(function(s){return s.trim().length>3;});
+      html += '<div style="background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.18);border-radius:6px;padding:10px 14px;margin-top:14px;">'+
+        '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#1D4ED8;margin-bottom:8px;">✦ Assessment</div>'+
+        '<ul style="margin:0;padding-left:15px;">'+
+        bullets.map(function(b){return '<li style="font-size:11px;color:var(--text);line-height:1.55;margin-bottom:4px;">'+b.trim().replace(/\.$/,'')+'.</li>';}).join('')+
+        '</ul></div>';
+    }
+    openFly(p.name, p.acct+' · Requirements Quality', html);
+  }
+
+
+  // C7 — Cap tile flyouts
+  function openCapTileFly(type, d) {
+    var html = '';
+    if (type==='load') {
+      html = '<div class="fly-row"><span class="fly-lbl">Total Load</span><span class="fly-val">'+d.load.v+' projects</span></div>'+
+             '<div class="fly-sect">Allocation (Last 4 Months)</div>'+buildAllocationTable(d)+
+             '<div class="fly-sect">Active Projects</div>';
+      d.artProjects.forEach(function(p){
+        html += '<div class="fly-row"><span class="fly-lbl">'+p.name+'</span>'+
+                '<span><span class="doc-age">'+p.acct+'</span>&nbsp;<span class="badge '+p.flag+'">'+p.badge+'</span></span></div>';
+      });
+    } else if (type==='pres') {
+      // Rich pursuits flyout
+      var total = d.presalesProjects.length;
+      html = '<div style="display:flex;gap:8px;margin-bottom:14px;">'+
+        '<div style="text-align:center;padding:6px 14px;background:rgba(30,58,95,0.08);border-radius:6px;min-width:56px;">'+
+          '<div style="font-size:16px;font-weight:800;color:var(--navy);">'+total+'</div>'+
+          '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);margin-top:1px;">Active</div>'+
+        '</div>'+
+        '<div style="text-align:center;padding:6px 14px;background:rgba(30,58,95,0.08);border-radius:6px;min-width:56px;">'+
+          '<div style="font-size:16px;font-weight:800;color:var(--navy);">'+d.pipelineValue+'</div>'+
+          '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);margin-top:1px;">Pipeline</div>'+
+        '</div>'+
+      '</div>';
+      if (!d.presalesProjects.length) {
+        html += '<div style="font-size:12px;color:var(--text-muted);padding:8px 0;">No active presales assigned.</div>';
+      } else {
+        d.presalesProjects.forEach(function(p){
+          var flagCol = p.flag==='green'?'#16A34A':p.flag==='red'?'#DC2626':'#F59E0B';
+          var stageBg = p.stage==='SOW Review'?'rgba(22,163,74,0.08)':p.stage==='Scoping'?'rgba(245,158,11,0.08)':'rgba(59,130,246,0.08)';
+          html += '<div style="border:1px solid var(--border);border-left:3px solid '+flagCol+';border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:10px;">'+
+            '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">'+
+              '<div>'+
+                '<div style="font-size:12px;font-weight:700;color:var(--navy);">'+p.name+'</div>'+
+                '<div style="font-size:10px;color:var(--text-muted);margin-top:1px;">'+p.acct+'</div>'+
+              '</div>'+
+              '<span style="font-size:11px;font-weight:800;color:var(--navy);">'+p.val+'</span>'+
+            '</div>'+
+            '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">'+
+              '<span style="font-size:9px;padding:2px 8px;background:'+stageBg+';border-radius:8px;font-weight:700;color:var(--text);">'+p.stage+'</span>'+
+              '<span style="font-size:9px;padding:2px 8px;background:'+(p.scope?'rgba(22,163,74,0.1)':'rgba(220,38,38,0.1)')+';border-radius:8px;font-weight:700;color:'+(p.scope?'#16A34A':'#DC2626')+';">Scope Book '+(p.scope?'✓':'✗')+'</span>'+
+              '<span style="font-size:9px;padding:2px 8px;background:rgba(30,58,95,0.08);border-radius:8px;font-weight:700;color:var(--text);">'+p.badge+'</span>'+
+            '</div>'+
+            '<div style="background:rgba(59,130,246,0.05);border-left:2px solid #3B82F6;padding:6px 10px;border-radius:0 5px 5px 0;font-size:11px;color:var(--text);line-height:1.5;">'+p.flyNote+'</div>'+
+          '</div>';
+        });
+      }
+    } else {
+      html = '<div class="fly-row"><span class="fly-lbl">YTD Billing</span><span class="fly-val">'+d.ytd2.v+'</span></div>'+
+             '<div class="fly-row"><span class="fly-lbl">vs Target</span><span class="fly-val">'+d.ytd2.s+'</span></div>'+
+             '<div class="fly-sect">Monthly Billing</div>';
+      var fin = d.financial;
+      html += '<table class="sprint-tbl"><thead><tr><th>Month</th><th>Target ($K)</th><th>Actual ($K)</th><th>Δ</th></tr></thead><tbody>';
+      fin.months.forEach(function(m,i){
+        var diff = fin.actual[i]-fin.target[i];
+        html += '<tr><td>'+m+'</td><td>'+fin.target[i]+'</td><td>'+fin.actual[i]+'</td>'+
+                '<td style="color:var(--'+(diff>=0?'green':'red')+');font-weight:700;">'+(diff>=0?'+':'')+diff+'</td></tr>';
+      });
+      html += '</tbody></table><div class="fly-row"><span class="fly-lbl">Pipeline Value</span><span class="fly-val">'+d.pipelineValue+'</span></div>';
+    }
+    var flyTitle = type==='load'?'Project Load':type==='pres'?'Active Pursuits':'YTD Billing';
+    openFly(flyTitle, d.name+' · Capacity & Presales', html);
+  }
+
+  function buildAllocationTable(d) {
+    var u = d.utilization;
+    var n = u.months.length, from = Math.max(0, n-4);
+    var html = '<table class="sprint-tbl"><thead><tr><th>Project</th>';
+    for (var i=from;i<n;i++) html += '<th>'+u.months[i]+'</th>';
+    html += '</tr></thead><tbody>';
+    u.projects.forEach(function(proj, pi){
+      html += '<tr><td style="font-size:10px;">'+proj+'</td>';
+      for (var i=from;i<n;i++) {
+        var v = u.allocated[pi]?u.allocated[pi][i]||0:0;
+        html += '<td style="font-size:10px;font-weight:700;">'+v+'%</td>';
+      }
+      html += '</tr>';
+    });
+    html += '<tr><td style="font-size:10px;font-weight:700;border-top:1px solid var(--border);">Invoiced</td>';
+    for (var i=from;i<n;i++) {
+      html += '<td style="font-size:10px;font-weight:700;color:var(--orange);border-top:1px solid var(--border);">'+u.invoiced[i]+'%</td>';
+    }
+    html += '</tr></tbody></table>';
+    return html;
+  }
+
+  function openCapCardFly(p) {
+    var typeColor = function(t) {
+      return ({'Video Call':'#3B82F6','Phone Call':'#FF9933','Meeting':'#16A34A','Email':'#64748B',
+               'Proposal Sent':'#7C3AED','Demo':'#0891B2','Discovery Call':'#D97706','Intro Call':'#059669','Review Call':'#6B7280'}[t]||'#94A3B8');
+    };
+    var awaitedRag = (p.awaited||0)>20?'#DC2626':(p.awaited||0)>10?'#F59E0B':'#16A34A';
+    var stageBg = p.stage==='SOW Review'?'rgba(22,163,74,0.1)':p.stage==='Scoping'?'rgba(245,158,11,0.1)':'rgba(59,130,246,0.1)';
+    var stageCol= p.stage==='SOW Review'?'#065F46':p.stage==='Scoping'?'#92400E':'#1D4ED8';
+    function statChip(l,v,col) {
+      return '<div style="text-align:center;min-width:66px;"><div style="font-size:17px;font-weight:800;color:'+col+';">'+v+'</div>'+
+        '<div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);margin-top:2px;">'+l+'</div></div>';
+    }
+    var divider = '<div style="width:1px;background:var(--border);margin:0 4px;align-self:stretch;"></div>';
+    var statsRow = '<div style="display:flex;align-items:center;gap:4px;margin-bottom:14px;flex-wrap:wrap;">'+
+      statChip('Value',p.val,'var(--navy)')+divider+
+      statChip('Stage',p.stage,stageBg.replace('0.1)','1)').replace('rgba(','').replace(')',''),'#333')+divider+
+      statChip('Awaited',(p.awaited||0)+'d',awaitedRag)+divider+
+      statChip('Owner',p.owner||'—','var(--text)')+
+    '</div>';
+    // fix stageBg color for statChip text
+    statsRow = '<div style="display:flex;align-items:center;gap:4px;margin-bottom:14px;flex-wrap:wrap;">'+
+      statChip('Value',p.val,'var(--navy)')+divider+
+      '<div style="text-align:center;min-width:66px;"><div style="font-size:13px;font-weight:800;padding:2px 8px;background:'+stageBg+';color:'+stageCol+';border-radius:6px;display:inline-block;">'+p.stage+'</div>'+
+        '<div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);margin-top:4px;">Stage</div></div>'+divider+
+      statChip('Awaited',(p.awaited||0)+'d',awaitedRag)+divider+
+      statChip('Owner',p.owner||'—','var(--text)')+
+    '</div>';
+    var summaryBox = '<div style="background:rgba(255,153,51,0.07);border-left:3px solid #FF9933;border-radius:0 6px 6px 0;padding:9px 13px;margin-bottom:12px;">'+
+      '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#FF9933;margin-bottom:5px;">Opportunity Context</div>'+
+      '<div style="font-size:11px;color:var(--text);line-height:1.55;">'+p.flyNote+'</div>'+
+    '</div>';
+    var scopeRow = '<div style="background:'+(p.scope?'rgba(22,163,74,0.06)':'rgba(220,38,38,0.06)')+';border-left:3px solid '+(p.scope?'#16A34A':'#DC2626')+';border-radius:0 6px 6px 0;padding:7px 11px;margin-bottom:12px;">'+
+      '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:'+(p.scope?'#16A34A':'#DC2626')+';margin-bottom:2px;">Scope Book</div>'+
+      '<div style="font-size:11px;color:var(--text);">'+(p.scope?'Present — scope defined and signed off':'Missing — delivery risk if SOW proceeds without scope baseline')+'</div>'+
+    '</div>';
+    var lc = p.lastCall||{};
+    var lastCard = '<div style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px 13px;">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'+
+        '<span style="font-size:10px;font-weight:700;color:var(--navy);">Last Touchpoint</span>'+
+        '<span style="font-size:10px;color:var(--text-muted);">'+(lc.date||'—')+' · '+(lc.type||'—')+'</span>'+
+      '</div>'+
+      '<div style="font-size:11px;color:var(--text);line-height:1.5;">'+(lc.notes||'')+'</div>'+
+    '</div>';
+    var pinned = statsRow + summaryBox + scopeRow + lastCard;
+    // Activity timeline
+    var acts = p.activity||[];
+    var timelineCards = acts.map(function(ev,i){
+      var isFirst=i===0, isLast=i===acts.length-1;
+      var tc = typeColor(ev.type);
+      return '<div style="display:flex;gap:12px;">'+
+        '<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:18px;">'+
+          '<div style="width:12px;height:12px;border-radius:50%;background:'+(isFirst?'#FF9933':'var(--border)')+';border:2px solid '+(isFirst?'#FF9933':'var(--text-muted)')+';flex-shrink:0;margin-top:4px;"></div>'+
+          (!isLast?'<div style="flex:1;width:2px;background:var(--border);margin:4px 0;min-height:20px;"></div>':'')+
+        '</div>'+
+        '<div style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:'+(isLast?'0':'10px')+';">'+
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">'+
+            '<span style="font-size:11px;font-weight:700;color:var(--navy);">'+ev.title+'</span>'+
+            '<span style="font-size:9px;font-weight:700;padding:2px 7px;background:'+tc+'20;color:'+tc+';border-radius:10px;flex-shrink:0;margin-left:8px;">'+ev.type+'</span>'+
+          '</div>'+
+          '<div style="font-size:10px;color:var(--text-muted);margin-bottom:5px;">'+ev.date+'</div>'+
+          '<div style="font-size:11px;color:var(--text);line-height:1.5;">'+ev.notes+'</div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+    var daysRag = (p.daysSinceLastMeeting||0)>10?'#DC2626':(p.daysSinceLastMeeting||0)>5?'#F59E0B':'#16A34A';
+    var nextStep = p.stage==='SOW Review'?'Finalise SOW and get legal sign-off. Track in project register.':
+                   p.stage==='Scoping'?'Complete scope document before next client meeting. Assign BA owner.':
+                   'Confirm next meeting and send pre-read with capability deck.';
+    var actionItem = '<div style="margin-top:16px;background:rgba(220,38,38,0.04);border:1px solid rgba(220,38,38,0.2);border-radius:8px;padding:11px 14px;">'+
+      '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#DC2626;margin-bottom:7px;">⚡ Action Item</div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">'+
+        '<div style="font-size:11px;color:var(--text);line-height:1.5;flex:1;">'+
+          '<div style="margin-bottom:6px;"><strong>Pending with:</strong> '+(p.pendingWith||'—')+'</div>'+
+          '<div style="color:var(--text-muted);">'+nextStep+'</div>'+
+        '</div>'+
+        '<div style="text-align:center;flex-shrink:0;">'+
+          '<div style="font-size:20px;font-weight:800;color:'+daysRag+';">'+(p.daysSinceLastMeeting||0)+'d</div>'+
+          '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;color:var(--text-muted);">since last<br>meeting</div>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+    var body = '<div style="padding:4px 0;">'+
+      '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);margin-bottom:12px;">Activity Timeline</div>'+
+      timelineCards+actionItem+
+    '</div>';
+    window.openFlyoutPinned({ title:p.name, sub:p.acct+' · Presales Pursuit', pinned:pinned, body:body });
+  }
+
+  // Req tile flyouts — all 3 tiles open ONE combined flyout grouped by project
+  function openReqHealthFly(d) {
+    function pill(v, col) {
+      return '<span style="font-size:9px;font-weight:700;padding:1px 7px;border-radius:8px;background:'+col+'18;color:'+col+';">'+v+'</span>';
+    }
+    // summary chips
+    var totalChurn  = parseInt(d.tiles.churn.v)||0;
+    var totalAC     = parseInt(d.tiles.ac.v)||0;
+    var avgVer      = d.tiles.versions.v;
+    var churnCol  = totalChurn>5?'#DC2626':totalChurn>0?'#F59E0B':'#16A34A';
+    var acCol     = totalAC>5?'#DC2626':totalAC>0?'#F59E0B':'#16A34A';
+    var verVal    = parseFloat(avgVer)||0;
+    var verCol    = verVal>3?'#DC2626':verVal>2.5?'#F59E0B':'#16A34A';
+
+    var html = '<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">'+
+      '<div style="text-align:center;padding:5px 12px;background:'+churnCol+'18;border-radius:6px;">'+
+        '<div style="font-size:16px;font-weight:800;color:'+churnCol+';">'+totalChurn+'</div>'+
+        '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);margin-top:1px;">Total Churn</div>'+
+      '</div>'+
+      '<div style="text-align:center;padding:5px 12px;background:'+acCol+'18;border-radius:6px;">'+
+        '<div style="font-size:16px;font-weight:800;color:'+acCol+';">'+totalAC+'</div>'+
+        '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);margin-top:1px;">Missing ACs</div>'+
+      '</div>'+
+      '<div style="text-align:center;padding:5px 12px;background:'+verCol+'18;border-radius:6px;">'+
+        '<div style="font-size:16px;font-weight:800;color:'+verCol+';">'+avgVer+'</div>'+
+        '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);margin-top:1px;">Avg Versions</div>'+
+      '</div>'+
+    '</div>';
+
+    d.reqProjects.forEach(function(p) {
+      var worst = (p.churn>5||p.ac>5||p.versions>3)?'red':(p.churn>0||p.ac>0||p.versions>2.5)?'amber':'green';
+      var borderCol = worst==='red'?'#DC2626':worst==='amber'?'#F59E0B':'#16A34A';
+      var bgCol     = worst==='red'?'rgba(220,38,38,0.05)':worst==='amber'?'rgba(245,158,11,0.05)':'rgba(22,163,74,0.04)';
+
+      html += '<div style="border:1px solid var(--border);border-left:3px solid '+borderCol+';border-radius:0 8px 8px 0;background:'+bgCol+';padding:10px 12px;margin-bottom:10px;">';
+
+      // Project header
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'+
+        '<div>'+
+          '<div style="font-size:12px;font-weight:700;color:var(--navy);">'+p.name+'</div>'+
+          '<div style="font-size:10px;color:var(--text-muted);">'+p.acct+' · '+p.sprint+'</div>'+
+        '</div>'+
+        '<div style="display:flex;gap:5px;align-items:center;">'+
+          sparklineSVG(p.sparkline,50,16,'var(--'+(p.churn>0?'red':'green')+')')+
+          (p.breachFlag?'<i class="bi bi-exclamation-triangle-fill" style="color:#DC2626;font-size:11px;margin-left:4px;" title="Consecutive breach"></i>':'')+
+        '</div>'+
+      '</div>';
+
+      // Three metric rows
+      var churnC = p.churn>5?'#DC2626':p.churn>0?'#F59E0B':'#16A34A';
+      var acC    = p.ac>5?'#DC2626':p.ac>0?'#F59E0B':'#16A34A';
+      var verC   = p.versions>3?'#DC2626':p.versions>2.5?'#F59E0B':'#16A34A';
+
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;">'+
+        '<div style="padding:5px 8px;background:'+churnC+'12;border-radius:5px;text-align:center;">'+
+          '<div style="font-size:13px;font-weight:800;color:'+churnC+';">'+p.churn+'</div>'+
+          '<div style="font-size:9px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.3px;">Churn</div>'+
+        '</div>'+
+        '<div style="padding:5px 8px;background:'+acC+'12;border-radius:5px;text-align:center;">'+
+          '<div style="font-size:13px;font-weight:800;color:'+acC+';">'+p.ac+'</div>'+
+          '<div style="font-size:9px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.3px;">No-AC</div>'+
+        '</div>'+
+        '<div style="padding:5px 8px;background:'+verC+'12;border-radius:5px;text-align:center;">'+
+          '<div style="font-size:13px;font-weight:800;color:'+verC+';">'+p.versions+'</div>'+
+          '<div style="font-size:9px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.3px;">Versions</div>'+
+        '</div>'+
+      '</div>';
+
+      // Root cause + breach flag
+      html += '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">'+
+        '<span style="font-size:10px;color:var(--text-muted);">Root cause:</span>'+
+        rootTagHTML(p.rootCause)+
+        (p.breachFlag?'<span style="font-size:9px;color:#DC2626;font-weight:700;"><i class="bi bi-exclamation-triangle-fill"></i> Consecutive breach</span>':'')+
+      '</div>';
+
+      // Epics with story counts
+      if (p.epics&&p.epics.length) {
+        html += '<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">';
+        p.epics.forEach(function(e){
+          var eAcC = e.noAC>0?'#DC2626':e.inProgress>0?'#F59E0B':'#16A34A';
+          html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px dashed var(--border);">'+
+            '<span style="font-size:10px;font-weight:600;color:var(--text);">'+e.name+'</span>'+
+            '<span style="display:flex;gap:4px;">'+
+              (e.done>0?'<span style="font-size:9px;background:#D1FAE5;color:#065F46;padding:1px 6px;border-radius:8px;font-weight:700;">'+e.done+' done</span>':'')+
+              (e.inProgress>0?'<span style="font-size:9px;background:#FEF3C7;color:#92400E;padding:1px 6px;border-radius:8px;font-weight:700;">'+e.inProgress+' wip</span>':'')+
+              (e.noAC>0?'<span style="font-size:9px;background:#FEE2E2;color:#991B1B;padding:1px 6px;border-radius:8px;font-weight:700;">'+e.noAC+' no-AC</span>':'')+
+            '</span>'+
+          '</div>';
+        });
+        html += '</div>';
+      }
+
+      // Assessment note
+      if (p.flyNote) {
+        html += '<div style="margin-top:8px;font-size:10px;color:var(--text-muted);line-height:1.5;font-style:italic;">'+p.flyNote+'</div>';
+      }
+      html += '</div>';
+    });
+
+    openFly('Requirements Quality', d.name+' · All Projects', html);
+  }
+
+  function openReqTileFly(type, d) {
+    // fallback for any direct calls (template etc.)
+    openReqHealthFly(d);
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // CHARTS — C8 + C9
+  // ════════════════════════════════════════════════════════════════════════
+  var utilChart = null, finChart = null, chartsInited = false;
+
+  function initCharts(baKey) {
+    if (chartsInited) return;
+    chartsInited = true;
+    var d = BA[baKey]; if (!d) return;
+    var u = d.utilization, f = d.financial;
+
+    // ── Utilization: stacked project bars + bench + invoiced line ─────────
+    var utilEl = document.getElementById('chartUtil');
+    if (utilChart) utilChart.dispose();
+    utilChart = echarts.init(utilEl);
+    var utilSeries = u.projects.map(function(proj,i){
+      return { name:proj, type:'bar', stack:'alloc', data:u.allocated[i],
+               itemStyle:{color:u.colors[i]}, barMaxWidth:40 };
+    });
+    var benchData = u.months.map(function(_,mi){
+      var sum = u.allocated.reduce(function(s,arr){ return s+(arr[mi]||0); },0);
+      return Math.max(0, 100-sum);
+    });
+    utilSeries.push({ name:'Bench', type:'bar', stack:'alloc', data:benchData, barMaxWidth:40,
+      itemStyle:{color:'rgba(148,163,184,0.4)'}, emphasis:{itemStyle:{color:'rgba(148,163,184,0.65)'}} });
+    utilSeries.push({ name:'Invoiced %', type:'line', data:u.invoiced, smooth:true, z:10,
+      lineStyle:{color:'#FF9933',width:2.5}, symbol:'circle', symbolSize:7,
+      itemStyle:{color:'#FF9933'} });
+    utilChart.setOption({
+      tooltip:{trigger:'axis', axisPointer:{type:'shadow'}},
+      legend:{bottom:0, itemWidth:8, itemHeight:8, textStyle:{fontSize:9}},
+      grid:{left:38, right:14, top:8, bottom:42},
+      xAxis:{type:'category', data:u.months, axisLabel:{fontSize:9}},
+      yAxis:{type:'value', max:100, axisLabel:{fontSize:9, formatter:'{value}%'},
+             splitLine:{lineStyle:{type:'dashed',opacity:.4}}},
+      series: utilSeries
+    });
+
+    // ── Financial: stacked bars by account + target dashed + orange total ─
+    var finEl = document.getElementById('chartFin');
+    if (finChart) finChart.dispose();
+    finChart = echarts.init(finEl);
+    var finSeries = [];
+    if (f.accounts&&f.accountBilling) {
+      f.accounts.forEach(function(acct,i){
+        finSeries.push({ name:acct, type:'bar', data:f.accountBilling[i],
+          itemStyle:{color:f.accountColors[i]}, barMaxWidth:40 });
+      });
+    }
+    finSeries.push({ name:'Target', type:'line', data:f.target, smooth:true, z:10,
+      lineStyle:{type:'dashed',color:'rgba(0,32,96,0.55)',width:2},
+      symbol:'circle', symbolSize:5, itemStyle:{color:'rgba(0,32,96,0.55)'} });
+    finSeries.push({ name:'Actual Total', type:'line', data:f.actual, smooth:true, z:11,
+      lineStyle:{color:'#FF9933',width:2.5}, symbol:'circle', symbolSize:7,
+      itemStyle:{color:'#FF9933'} });
+    finChart.setOption({
+      tooltip:{trigger:'axis', axisPointer:{type:'shadow'}},
+      legend:{bottom:0, itemWidth:8, itemHeight:8, textStyle:{fontSize:9}},
+      grid:{left:38, right:14, top:8, bottom:42},
+      xAxis:{type:'category', data:f.months, axisLabel:{fontSize:9}},
+      yAxis:{type:'value', axisLabel:{fontSize:9, formatter:function(v){return '$'+v+'K';}},
+             splitLine:{lineStyle:{type:'dashed',opacity:.4}}},
+      series: finSeries
+    });
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // TAB SWITCH
+  // ════════════════════════════════════════════════════════════════════════
+  function showTab(id, el) {
+    document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+    document.querySelectorAll('.pane').forEach(function(p){ p.classList.remove('active'); });
+    el.classList.add('active');
+    document.getElementById('pane-'+id).classList.add('active');
+    if (id==='cap') setTimeout(function(){ initCharts(currentBA); }, 60);
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // FLYOUT + SIDEBAR
+  // ════════════════════════════════════════════════════════════════════════
+  function toggleEpic(id, btn) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var show = el.style.display === 'none';
+    el.style.display = show ? 'block' : 'none';
+    btn.textContent = show ? '−' : '+';
+    btn.style.background = show ? 'rgba(30,58,95,0.12)' : 'var(--bg)';
+    btn.style.color = show ? 'var(--navy)' : 'var(--text-muted)';
+  }
+
+  function toggleSprintMore(id, btn) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var show = el.style.display === 'none';
+    el.style.display = show ? 'block' : 'none';
+    btn.innerHTML = show
+      ? '<i class="bi bi-chevron-up"></i> Hide N+2 / N+3 Sprints'
+      : '<i class="bi bi-chevron-down"></i> Show N+2 / N+3 Sprints';
+  }
+
+  function openFly(title, sub, body) {
+    document.getElementById('flyTitle').textContent = title;
+    document.getElementById('flySub').textContent   = sub;
+    document.getElementById('flyBody').innerHTML    = body;
+    document.getElementById('flyOverlay').classList.add('open');
+    document.getElementById('flyPanel').classList.add('open');
+  }
+  function closeFly() {
+    document.getElementById('flyOverlay').classList.remove('open');
+    document.getElementById('flyPanel').classList.remove('open');
+  }
+  function toggleSidebar() {
+    var sb = document.querySelector('.sidebar');
+    if (sb) sb.classList.toggle('collapsed');
+    document.body.classList.toggle('sidebar-collapsed');
+  }
+
+  // Boot
+  renderPage(getParam('ba'));
+  </script>
+</body>
+</html>

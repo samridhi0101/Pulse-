@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="blue" data-mode="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pulse — Org Pulse · Nalashaa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .sys-health-strip {
+      position: fixed; top: var(--top-nav-h); left: var(--sidebar-w); right: 0; z-index: 80;
+      background: var(--navy); border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex; align-items: center; gap: 14px; padding: 5px 20px; font-size: 10px; color: rgba(255,255,255,0.75);
+      transition: left 0.22s;
+    }
+    body.sidebar-collapsed .sys-health-strip { left: 52px; }
+    .sh-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .sh-dot.green { background: #4ADE80; }
+    .sh-dot.amber { background: #FCD34D; }
+    .sh-dot.red   { background: #F87171; }
+    .sh-item { display: flex; align-items: center; gap: 4px; }
+    .sh-label { font-size: 9px; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 8px; }
+
+    .summary-banner {
+      background: linear-gradient(90deg, var(--navy), #0F2449); color: #fff;
+      border-radius: 10px; padding: 16px 20px; display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 16px;
+    }
+    .sb-title { font-size: 15px; font-weight: 700; }
+    .sb-sub   { font-size: 11px; opacity: 0.5; margin-top: 2px; }
+    .sb-stats { display: flex; gap: 20px; align-items: center; }
+    .sb-stat  { text-align: center; }
+    .sb-stat-val { font-size: 22px; font-weight: 800; }
+    .sb-stat-val.red   { color: #F87171; }
+    .sb-stat-val.amber { color: #FCD34D; }
+    .sb-stat-val.green { color: #4ADE80; }
+    .sb-stat-label { font-size: 9px; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+    .sb-divider { width: 1px; background: rgba(255,255,255,0.15); height: 36px; }
+
+    .section-header { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin: 14px 0 8px; }
+
+    .ai-brief { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; margin-top: 16px; }
+    .ai-brief-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .ai-brief-title  { font-size: 11px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.5px; }
+    .ai-brief-meta   { font-size: 10px; color: var(--text-muted); }
+    .ai-brief-body   { font-size: 12px; color: var(--text); line-height: 1.7; }
+    .ai-brief-body b { color: var(--navy); }
+
+    /* Upcoming mini-grid 4-col */
+    .dept-mini-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .dept-mini-card {
+      background: var(--card); border-radius: 8px; border: 1px solid var(--border);
+      padding: 10px 12px; opacity: 0.6; display: flex; align-items: center; gap: 8px;
+    }
+    .dept-mini-icon { font-size: 16px; flex-shrink: 0; }
+    .dept-mini-name { font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; }
+    .dept-mini-tag  { font-size: 9px; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+  <!-- TOP NAV -->
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:0;">
+      <button class="hamburger-btn" onclick="toggleSidebar()" title="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="pulse-logo">
+        <span class="pulse-icon">
+          <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1.5" y="2" width="25" height="17" rx="2.5" stroke="#FF9933" stroke-width="1.5"/>
+            <rect x="3.5" y="4" width="21" height="13" rx="1" fill="#FF9933" fill-opacity="0.07"/>
+            <line x1="14" y1="19" x2="14" y2="23.5" stroke="#FF9933" stroke-width="1.5"/>
+            <line x1="9" y1="23.5" x2="19" y2="23.5" stroke="#FF9933" stroke-width="1.8" stroke-linecap="round"/>
+            <polyline points="4,10.5 7,10.5 8.5,6.5 10,14.5 11.5,10.5 13,10.5 14,8 15,13 16.5,10.5 18,10.5 24,10.5"
+              stroke="#FF9933" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <!-- Theme switcher -->
+      <button class="theme-btn" onclick="toggleThemePicker()" title="Theme"><i class="bi bi-palette2"></i></button>
+      <!-- Feature Tickets -->
+      <button class="tickets-btn" onclick="toggleTickets()" title="Feature Tickets"><i class="bi bi-ticket"></i></button>
+      <button class="help-btn" onclick="toggleHelp()" title="Help">?</button>
+      <div class="alert-bell" onclick="toggleNotif()">
+        <i class="bi bi-bell-fill" style="font-size:16px;"></i>
+        <div class="badge">5</div>
+      </div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <!-- THEME PICKER -->
+  <div class="theme-picker" id="themePicker">
+    <div class="theme-picker-title">Colour Theme</div>
+    <div class="theme-swatches">
+      <div class="theme-swatch blue-swatch active" data-theme="blue" onclick="setTheme('blue')" title="Blue (Default)">
+        <i class="bi bi-check" style="color:#fff;font-size:16px;display:none;" id="chkBlue"></i>
+      </div>
+      <div class="theme-swatch teal-swatch" data-theme="teal" onclick="setTheme('teal')" title="Teal"></div>
+      <div class="theme-swatch violet-swatch" data-theme="violet" onclick="setTheme('violet')" title="Violet"></div>
+    </div>
+    <div class="theme-mode-row">
+      <span class="theme-mode-label">Mode: <span class="mode-label">Light</span></span>
+      <button class="theme-toggle" id="modeToggle" onclick="toggleDarkMode()"></button>
+    </div>
+  </div>
+
+  <!-- HELP OVERLAY + PANEL -->
+  <div class="help-overlay" id="helpOverlay" onclick="toggleHelp()"></div>
+  <div class="help-panel" id="helpPanel">
+    <div class="help-panel-header">
+      <span class="help-panel-title">Help &amp; Guide</span>
+      <span style="cursor:pointer;opacity:0.6;font-size:20px;" onclick="toggleHelp()">✕</span>
+    </div>
+    <div class="help-panel-body">
+      <div class="help-toc-section">
+        <div class="help-toc-title">Getting Started</div>
+        <div class="help-toc-item"><span class="help-toc-item-icon"><i class="bi bi-house-fill"></i></span><div><div class="help-toc-item-title">Org Pulse — Overview</div><div class="help-toc-item-desc">Your org-wide health dashboard. Click any department card to drill in.</div></div></div>
+        <div class="help-toc-item"><span class="help-toc-item-icon"><i class="bi bi-bell-fill"></i></span><div><div class="help-toc-item-title">Alerts &amp; Notifications</div><div class="help-toc-item-desc">Bell icon shows live KPI threshold breaches.</div></div></div>
+        <div class="help-toc-item"><span class="help-toc-item-icon"><i class="bi bi-palette2"></i></span><div><div class="help-toc-item-title">Theme Switcher</div><div class="help-toc-item-desc">Palette icon in top-right: choose Blue, Teal, or Violet. Toggle Light / Dark mode.</div></div></div>
+      </div>
+      <div class="help-toc-section">
+        <div class="help-toc-title">RAG Status</div>
+        <div class="help-toc-item"><span class="help-toc-item-icon" style="color:var(--red);">●</span><div><div class="help-toc-item-title">Red — Critical</div><div class="help-toc-item-desc">One or more KPIs breaching threshold. Immediate action required.</div></div></div>
+        <div class="help-toc-item"><span class="help-toc-item-icon" style="color:var(--amber);">●</span><div><div class="help-toc-item-title">Amber — At Risk</div><div class="help-toc-item-desc">KPIs approaching threshold. Monitor closely.</div></div></div>
+        <div class="help-toc-item"><span class="help-toc-item-icon" style="color:var(--green);">●</span><div><div class="help-toc-item-title">Green — On Track</div><div class="help-toc-item-desc">All KPIs within healthy range.</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATION PANEL -->
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-header">
+      <span>Notifications</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="notif-pin-btn" id="notifPinBtn" onclick="pinNotif()" title="Pin panel"><i class="bi bi-pin-angle"></i></button>
+        <span style="opacity:0.5;cursor:pointer;" onclick="toggleNotif()">✕</span>
+      </div>
+    </div>
+    <div class="notif-body">
+      <div class="notif-item"><div class="notif-type" style="color:var(--red);">Escalation</div><div class="notif-text">New escalation — MedTech Corp (Quality)</div><div class="notif-time">2 hours ago</div></div>
+      <div class="notif-item"><div class="notif-type" style="color:var(--red);">Action Item Overdue</div><div class="notif-text">Action overdue — BioSync commercial response</div><div class="notif-time">Yesterday</div></div>
+      <div class="notif-item"><div class="notif-type" style="color:var(--amber);">Attrition</div><div class="notif-text">Resignation — HLS Unit (Nisha Rao)</div><div class="notif-time">3 days ago</div></div>
+      <div class="notif-item"><div class="notif-type" style="color:var(--amber);">Pipeline</div><div class="notif-text">Sales pipeline coverage below target (1.8×)</div><div class="notif-time">4 days ago</div></div>
+      <div class="notif-item"><div class="notif-type" style="color:var(--amber);">Finance</div><div class="notif-text">₹8.4L overdue invoices aging past 60 days</div><div class="notif-time">5 days ago</div></div>
+    </div>
+  </div>
+
+  <!-- FEATURE TICKETS PANEL -->
+  <div class="tickets-overlay" id="ticketsOverlay" onclick="closeTickets()"></div>
+  <div class="tickets-panel" id="ticketsPanel">
+    <div class="tickets-panel-header">
+      <div><div style="font-size:13px;font-weight:700;">Feature Tickets</div><div style="font-size:11px;opacity:0.65;margin-top:2px;">Open requests &amp; change log</div></div>
+      <button class="flyout-close" onclick="closeTickets()">✕</button>
+    </div>
+    <div class="tickets-panel-body">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Open Tickets</div>
+      <table style="width:100%;font-size:11px;">
+        <thead><tr><th style="text-align:left;">Ticket</th><th>Priority</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><a href="feature-tickets.html" style="color:var(--blue);">BMD-411 — Add forecast confidence band to Projections</a></td><td><span class="badge badge-amber">High</span></td><td><span class="badge badge-muted">Open</span></td></tr>
+          <tr><td><a href="feature-tickets.html" style="color:var(--blue);">BMD-408 — P360 export to PDF</a></td><td><span class="badge badge-navy">Medium</span></td><td><span class="badge badge-green">In Progress</span></td></tr>
+          <tr><td><a href="feature-tickets.html" style="color:var(--blue);">BMD-402 — Historical session comparison</a></td><td><span class="badge badge-navy">Medium</span></td><td><span class="badge badge-muted">Open</span></td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:14px;"><a href="feature-tickets.html" class="btn btn-secondary" style="font-size:11px;">View all tickets →</a></div>
+    </div>
+  </div>
+
+  <!-- SYSTEM HEALTH STRIP -->
+  <div class="sys-health-strip">
+    <span class="sh-label">Sys Health</span>
+    <span class="sh-item"><span class="sh-dot green"></span>Uptime 99.94%</span>
+    <span class="sh-item"><span class="sh-dot green"></span>P1 Incidents: 0</span>
+    <span class="sh-item"><span class="sh-dot green"></span>Deploy Success 98.1%</span>
+    <span style="margin-left:auto;font-size:9px;opacity:0.35;">Last checked 07:00</span>
+  </div>
+
+  <!-- SIDEBAR -->
+    <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html" class="active"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+
+    <!-- Nalashaa branding -->
+    <div class="sidebar-brand">
+      <img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo">
+    </div>
+  </div>
+
+  <!-- MAIN (offset for sys-health strip) -->
+  <div class="main" style="padding-top:38px;padding-bottom:36px;">
+
+    <!-- Summary Banner -->
+    <div class="summary-banner">
+      <div>
+        <div class="sb-title">Overall Org Health</div>
+        <div class="sb-sub">11 departments · 3 KPI breaches · 2 critical alerts</div>
+      </div>
+      <div class="sb-divider"></div>
+      <div class="sb-stats">
+        <div class="sb-stat"><div class="sb-stat-val red">2</div><div class="sb-stat-label">Critical</div></div>
+        <div class="sb-divider"></div>
+        <div class="sb-stat"><div class="sb-stat-val amber">4</div><div class="sb-stat-label">At Risk</div></div>
+        <div class="sb-divider"></div>
+        <div class="sb-stat"><div class="sb-stat-val green">3</div><div class="sb-stat-label">On Track</div></div>
+        <div class="sb-divider"></div>
+        <div class="sb-stat"><div class="sb-stat-val" style="color:#94A3B8;">2</div><div class="sb-stat-label">Not Active</div></div>
+      </div>
+    </div>
+
+    <!-- Active Departments — 6-card grid -->
+    <div class="section-header">Active Departments</div>
+    <div class="dept-card-row" style="grid-template-columns:repeat(3,1fr);">
+
+      <a class="dept-card red" href="engineering.html">
+        <div class="dept-card-rag"><span class="badge badge-red">● Critical</span></div>
+        <div class="dept-card-icon"><i class="bi bi-building" style="color:var(--navy);font-size:22px;"></i></div>
+        <div class="dept-card-name">Engineering</div>
+        <div class="dept-card-tag">Delivery &amp; Productivity</div>
+        <div class="dept-card-kpis">
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">Red DMs</span><span class="dept-card-kpi-val red">1 of 4</span></div>
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">Avg P360</span><span class="dept-card-kpi-val amber">7.1</span></div>
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">YTD Billing</span><span class="dept-card-kpi-val">$11.0M</span></div>
+        </div>
+      </a>
+
+      <a class="dept-card amber" href="sales.html">
+        <div class="dept-card-rag"><span class="badge badge-amber">● At Risk</span></div>
+        <div class="dept-card-icon"><i class="bi bi-bar-chart-fill" style="color:var(--navy);font-size:22px;"></i></div>
+        <div class="dept-card-name">Sales</div>
+        <div class="dept-card-tag">Pipeline &amp; Conversion</div>
+        <div class="dept-card-kpis">
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">Pipeline</span><span class="dept-card-kpi-val">$5.1M</span></div>
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">Battle cards</span><span class="dept-card-kpi-val red">68%</span></div>
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">Win rate</span><span class="dept-card-kpi-val green">28%</span></div>
+        </div>
+      </a>
+
+      <a class="dept-card amber" href="hr.html">
+        <div class="dept-card-rag"><span class="badge badge-amber">● Watch</span></div>
+        <div class="dept-card-icon"><i class="bi bi-people-fill" style="color:var(--navy);font-size:22px;"></i></div>
+        <div class="dept-card-name">HR</div>
+        <div class="dept-card-tag">Workforce &amp; Engagement</div>
+        <div class="dept-card-kpis">
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">Attrition (12m)</span><span class="dept-card-kpi-val amber">18.4%</span></div>
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">1-on-1 adherence</span><span class="dept-card-kpi-val amber">78%</span></div>
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">Headcount</span><span class="dept-card-kpi-val">270</span></div>
+        </div>
+      </a>
+
+      <a class="dept-card amber" href="ta.html">
+        <div class="dept-card-rag"><span class="badge badge-amber">● Watch</span></div>
+        <div class="dept-card-icon"><i class="bi bi-person-plus-fill" style="color:var(--navy);font-size:22px;"></i></div>
+        <div class="dept-card-name">Talent Acquisition</div>
+        <div class="dept-card-tag">Hiring &amp; Funnel</div>
+        <div class="dept-card-kpis">
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">Open JRs</span><span class="dept-card-kpi-val">42</span></div>
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">JR TAT</span><span class="dept-card-kpi-val red">5.8d</span></div>
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">Time to hire</span><span class="dept-card-kpi-val amber">42d</span></div>
+        </div>
+      </a>
+
+      <a class="dept-card red" href="pmo.html">
+        <div class="dept-card-rag"><span class="badge badge-red">● Critical</span></div>
+        <div class="dept-card-icon"><i class="bi bi-clipboard-data-fill" style="color:var(--navy);font-size:22px;"></i></div>
+        <div class="dept-card-name">PMO</div>
+        <div class="dept-card-tag">Portfolio &amp; Risk</div>
+        <div class="dept-card-kpis">
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">At-risk Accts</span><span class="dept-card-kpi-val red">5 of 23</span></div>
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">Portfolio P360</span><span class="dept-card-kpi-val amber">7.1</span></div>
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">Critical Esc.</span><span class="dept-card-kpi-val red">2</span></div>
+        </div>
+      </a>
+
+      <a class="dept-card amber" href="account-management.html">
+        <div class="dept-card-rag"><span class="badge badge-amber">● Watch</span></div>
+        <div class="dept-card-icon"><i class="bi bi-briefcase-fill" style="color:var(--navy);font-size:22px;"></i></div>
+        <div class="dept-card-name">Account Mgmt</div>
+        <div class="dept-card-tag">Mining · Escalations · Forecast</div>
+        <div class="dept-card-kpis">
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">Open Esc.</span><span class="dept-card-kpi-val red">3</span></div>
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">Mining Active</span><span class="dept-card-kpi-val green">5</span></div>
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">Portfolio</span><span class="dept-card-kpi-val">$11.0M</span></div>
+        </div>
+      </a>
+
+      <a class="dept-card red" href="finance.html">
+        <div class="dept-card-rag"><span class="badge badge-red">● Critical</span></div>
+        <div class="dept-card-icon"><i class="bi bi-cash-coin" style="color:var(--navy);font-size:22px;"></i></div>
+        <div class="dept-card-name">Finance</div>
+        <div class="dept-card-tag">Revenue · Cost · AR</div>
+        <div class="dept-card-kpis">
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">vs Plan YTD</span><span class="dept-card-kpi-val amber">98%</span></div>
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">90+ Overdue</span><span class="dept-card-kpi-val red">$0.5M</span></div>
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">Margin</span><span class="dept-card-kpi-val green">28%</span></div>
+        </div>
+      </a>
+
+      <a class="dept-card amber" href="solutions.html">
+        <div class="dept-card-rag"><span class="badge badge-amber">● Watch</span></div>
+        <div class="dept-card-icon"><i class="bi bi-diagram-3-fill" style="color:var(--navy);font-size:22px;"></i></div>
+        <div class="dept-card-name">Solutions</div>
+        <div class="dept-card-tag">Artefacts · Requirements · Presales</div>
+        <div class="dept-card-kpis">
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">BRD Coverage</span><span class="dept-card-kpi-val amber">75%</span></div>
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">Sprint Churn</span><span class="dept-card-kpi-val red">24</span></div>
+          <div class="dept-card-kpi"><span class="dept-card-kpi-label">Presales Covered</span><span class="dept-card-kpi-val amber">4/6</span></div>
+        </div>
+      </a>
+
+    </div>
+
+    <!-- Claude Daily Brief -->
+    <div class="ai-brief">
+      <div class="ai-brief-header">
+        <div class="ai-brief-title">✦ Claude Daily Brief</div>
+        <div class="ai-brief-meta">Generated 07:00 IST · Apr 13, 2026</div>
+      </div>
+      <div class="ai-brief-body">
+        <b>Critical:</b> Engineering unit HLS (John Doe) is Red — 3 open escalations with MedTech Corp, 2 senior exits in HealthFirst US, M1 forecast at ₹36L vs ₹42L target.
+        &nbsp;&nbsp;<b>Watch:</b> Sales pipeline coverage at 1.8× (target 2.5×). Finance shows ₹8.4L overdue invoices ageing past 60 days.
+        &nbsp;&nbsp;<b>Positive:</b> HR attrition stable at 7.2%. Digital Platforms unit M1 forecast ₹2L ahead of target.
+        &nbsp;&nbsp;<b>Focus today:</b> Enter Engineering BMD review (HLS unit) — close D+AM action items overdue Apr 7–10.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- GLOBAL FOOTER -->
+  <div class="global-footer">
+    <span class="data-freshness"><span class="dot"></span>Pulse v1.0 · Data as of Apr 13, 2026 07:00 IST</span>
+    <span>© 2026 Nalashaa. All rights reserved.</span>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    function toggleHelp() {
+      document.getElementById('helpPanel').classList.toggle('open');
+      document.getElementById('helpOverlay').classList.toggle('open');
+    }
+  </script>
+</body>
+</html>

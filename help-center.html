@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="blue">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help Center — Pulse · Nalashaa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .help-shell { display: grid; grid-template-columns: 240px 1fr; gap: 18px; }
+    .help-rail { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 8px; height: fit-content; position: sticky; top: 78px; }
+    .help-rail-item { padding: 9px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    .help-rail-item.active { background: var(--bg); color: var(--navy); border-left: 3px solid var(--orange); padding-left: 9px; }
+    [data-mode="dark"] .help-rail-item.active { color: #fff; }
+    .help-pane { display: none; }
+    .help-pane.active { display: block; }
+    .help-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 12px; }
+    .help-card h3 { font-size: 15px; color: var(--navy); margin: 0 0 8px; font-weight: 700; }
+    [data-mode="dark"] .help-card h3 { color: #fff; }
+    .help-card p { font-size: 13px; color: var(--text); line-height: 1.6; margin: 8px 0; }
+    .glossary-row { padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .glossary-row:last-child { border-bottom: none; }
+    .glossary-term { font-size: 13px; font-weight: 700; color: var(--navy); }
+    [data-mode="dark"] .glossary-term { color: #fff; }
+    .glossary-def { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+    .release-row { padding: 12px 14px; background: var(--bg); border-left: 3px solid var(--orange); border-radius: 6px; margin-bottom: 10px; }
+    .release-ver { font-size: 13px; font-weight: 800; color: var(--navy); }
+    [data-mode="dark"] .release-ver { color: #fff; }
+    .release-date { font-size: 10px; color: var(--text-muted); }
+    .release-list { font-size: 11px; color: var(--text); margin-top: 6px; line-height: 1.6; }
+    .ask-hero { background: linear-gradient(135deg, rgba(255,153,51,0.10), rgba(0,176,240,0.10)); border-radius: 14px; padding: 24px; border: 1px dashed var(--border); margin-bottom: 16px; }
+    [data-look="modern"] .ask-hero { background: linear-gradient(135deg, rgba(230,81,0,0.12), rgba(20,184,166,0.12)); }
+    .ask-hero-title { font-size: 18px; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
+    [data-mode="dark"] .ask-hero-title { color: #fff; }
+    .ask-hero-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+    .ask-hero-input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; background: var(--card); color: var(--text); font-family: inherit; }
+    .quick-q { display: inline-block; padding: 5px 10px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; font-size: 11px; color: var(--text); margin: 4px 4px 0 0; cursor: pointer; }
+    .quick-q:hover { border-color: var(--orange); color: var(--orange); }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:0;">
+      <button class="hamburger-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <div class="pulse-logo">
+        <span class="pulse-icon"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="2" width="25" height="17" rx="2.5" stroke="#FF9933" stroke-width="1.5"/><line x1="14" y1="19" x2="14" y2="23.5" stroke="#FF9933" stroke-width="1.5"/><line x1="9" y1="23.5" x2="19" y2="23.5" stroke="#FF9933" stroke-width="1.8" stroke-linecap="round"/><polyline points="4,10.5 7,10.5 8.5,6.5 10,14.5 11.5,10.5 13,10.5 14,8 15,13 16.5,10.5 18,10.5 24,10.5" stroke="#FF9933" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg></span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <button class="help-btn">?</button>
+      <div class="alert-bell"><i class="bi bi-bell-fill" style="font-size:16px;"></i></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html" class="active"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+    <div class="sidebar-brand"><img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo"></div>
+  </div>
+
+  <div class="main" style="padding:18px 28px;">
+    <div class="dept-banner" style="background:linear-gradient(90deg, var(--blue), #0284C7);color:#fff;padding:14px 20px;border-radius:10px;margin-bottom:14px;"><div style="font-size:18px;font-weight:700;">Help Center</div><div style="font-size:12px;opacity:0.85;margin-top:2px;">Pulse documentation, FAQs, glossary, and contextual help</div></div>
+
+    <div class="ask-hero">
+      <div class="ask-hero-title"><i class="bi bi-stars"></i> Ask Pulse</div>
+      <div class="ask-hero-sub">Ask anything about your dashboards. Pulse uses your current page context to answer.</div>
+      <input class="ask-hero-input" placeholder="e.g., Why is Sales amber today? Which DM has the most red projects?" onkeydown="if(event.key==='Enter') askPulse(this.value)">
+      <div style="margin-top:10px;">
+        <span class="quick-q" onclick="askPulse('What is P360?')">What is P360?</span>
+        <span class="quick-q" onclick="askPulse('How do I set thresholds?')">How do I set thresholds?</span>
+        <span class="quick-q" onclick="askPulse('Why is my dashboard slow?')">Dashboard slow?</span>
+        <span class="quick-q" onclick="askPulse('How do I export to PDF?')">Export to PDF</span>
+        <span class="quick-q" onclick="askPulse('What is the Golden Ratio?')">Golden Ratio</span>
+      </div>
+    </div>
+
+    <div class="help-shell">
+      <div class="help-rail">
+        <div class="help-rail-item active" onclick="showHelp('start', this)"><i class="bi bi-rocket-takeoff-fill"></i> Getting Started</div>
+        <div class="help-rail-item" onclick="showHelp('glossary', this)"><i class="bi bi-book"></i> Glossary</div>
+        <div class="help-rail-item" onclick="showHelp('faq', this)"><i class="bi bi-question-circle-fill"></i> FAQs</div>
+        <div class="help-rail-item" onclick="showHelp('trouble', this)"><i class="bi bi-tools"></i> Troubleshooting</div>
+        <div class="help-rail-item" onclick="showHelp('er', this)"><i class="bi bi-diagram-3-fill"></i> Data Model</div>
+        <div class="help-rail-item" onclick="showHelp('release', this)"><i class="bi bi-stars"></i> Release Notes</div>
+        <div class="help-rail-item" onclick="showHelp('contact', this)"><i class="bi bi-envelope-fill"></i> Contact Support</div>
+      </div>
+
+      <div>
+        <!-- Getting Started -->
+        <div class="help-pane active" id="help-start">
+          <div class="help-card">
+            <h3>Welcome to Pulse v2.0</h3>
+            <p>Pulse is Nalashaa's operational intelligence platform — real-time dashboards across Engineering, Sales, HR, Talent Acquisition, PMO, and Finance, with the President's-eye view on Org Pulse.</p>
+            <p><strong>Drill-down pattern.</strong> Every metric is clickable. Clicks open a right-panel flyout with detail, never a new browser tab. Three drill-down levels: Org → Dept → Record.</p>
+            <p><strong>Themes.</strong> Top-right pill toggle switches between Classic/Modern (visual style) and Light/Dark (luminance). Your preference persists across sessions.</p>
+            <p><strong>Quick navigation.</strong> Press <code>Cmd+K</code> (or <code>Ctrl+K</code> on Windows) to open the command palette — fastest path to any page, metric, or command.</p>
+          </div>
+          <div class="help-card">
+            <h3>5-minute Tour</h3>
+            <p>1. Land on <a href="org-pulse.html">Org Pulse</a> — see compact dept cards with RAG status. Click any card to drill into that dashboard.</p>
+            <p>2. Read the <strong>Claude Daily Brief</strong> at the top — AI-summarized priorities for the day.</p>
+            <p>3. Use the bell icon for alerts; click an alert to jump to the breached KPI.</p>
+            <p>4. Try the <a href="kpi-thresholds.html">KPI Threshold Manager</a> — drag handles to set RAG breakpoints. Section background tints reflect the current band.</p>
+            <p>5. Configure your AI endpoint in <a href="settings.html">Settings → AI &amp; Endpoints</a>. Default is <code>http://localhost:8080/v1/brief</code>.</p>
+          </div>
+        </div>
+
+        <!-- Glossary -->
+        <div class="help-pane" id="help-glossary">
+          <div class="help-card">
+            <h3>Glossary — All KPIs &amp; Terms</h3>
+            <div class="glossary-row"><div class="glossary-term">P360 — Composite Score</div><div class="glossary-def">A 6-dimension project health score (Discipline · Quality · Communication · Risk · Stakeholder Trust · Velocity), each scored 0-10. Composite under 6.0 = Red.</div></div>
+            <div class="glossary-row"><div class="glossary-term">Golden Ratio</div><div class="glossary-def">Ratio of billable to non-billable headcount. Higher = leaner overhead. Target ≥ 1:7.</div></div>
+            <div class="glossary-row"><div class="glossary-term">Mining Threads</div><div class="glossary-def">Active deliverables aimed at expanding existing accounts (cross-sell, upsell, scope expansion).</div></div>
+            <div class="glossary-row"><div class="glossary-term">Account Escalation</div><div class="glossary-def">A formally raised concern from a client or internal stakeholder requiring DM action. Color-coded by severity (Critical / High / Medium / Low).</div></div>
+            <div class="glossary-row"><div class="glossary-term">BOFU</div><div class="glossary-def">Bottom-of-Funnel — the closing stage of a sales deal. BOFU duration = avg days a deal spends in this stage.</div></div>
+            <div class="glossary-row"><div class="glossary-term">TOFU</div><div class="glossary-def">Top-of-Funnel — newly captured leads not yet qualified.</div></div>
+            <div class="glossary-row"><div class="glossary-term">Sprint Velocity</div><div class="glossary-def">Story points completed per sprint. Trend across last 4 sprints indicates team health.</div></div>
+            <div class="glossary-row"><div class="glossary-term">Slip-through Rate</div><div class="glossary-def">% of new hires who exit within 90 days of joining. Lower is better.</div></div>
+            <div class="glossary-row"><div class="glossary-term">YTD Billing Forecast</div><div class="glossary-def">Year-to-date billed revenue against plan. Computed nightly from Tally + project actuals.</div></div>
+            <div class="glossary-row"><div class="glossary-term">RAG</div><div class="glossary-def">Red / Amber / Green — universal status convention. Red = breach requiring action; Amber = warning; Green = on track.</div></div>
+            <div class="glossary-row"><div class="glossary-term">SOW</div><div class="glossary-def">Statement of Work — contract artifact defining scope, timeline, and commercials for an engagement.</div></div>
+            <div class="glossary-row"><div class="glossary-term">DM</div><div class="glossary-def">Delivery Manager — owns 4-8 client projects; first line of accountability for project health.</div></div>
+          </div>
+        </div>
+
+        <!-- FAQs -->
+        <div class="help-pane" id="help-faq">
+          <div class="help-card">
+            <h3>Frequently Asked Questions</h3>
+            <p><strong>Q: How often does data refresh?</strong></p>
+            <p>By default, every 5 minutes. You can change this in <a href="settings.html">Settings → Data &amp; Refresh</a>. Some sources (Finance) sync nightly.</p>
+            <p><strong>Q: How do I export a page for the board?</strong></p>
+            <p>Click the Export icon in the top-right of any page. Choose PDF for board pack, Excel for raw data. Or press <code>Ctrl+P</code> for print-quality.</p>
+            <p><strong>Q: Why don't I see the Admin tab?</strong></p>
+            <p>Admin Console is restricted to users with the Admin role. Contact your Pulse administrator to elevate access.</p>
+            <p><strong>Q: Can I save a custom view?</strong></p>
+            <p>Yes — every dashboard supports Saved Views. Configure filters and date range, then click "Save view" in the page header. Manage saved views in Settings → Saved Views.</p>
+            <p><strong>Q: What's the difference between Classic and Modern?</strong></p>
+            <p>Classic preserves the v1 visual identity (Sky Blue accent, flat cards). Modern adds frosted-glass cards, deeper Pulse Orange (#E65100), and a Teal accent (#14B8A6) for info states. Functionality identical.</p>
+          </div>
+        </div>
+
+        <!-- Troubleshooting -->
+        <div class="help-pane" id="help-trouble">
+          <div class="help-card">
+            <h3>Troubleshooting</h3>
+            <p><strong>Dashboard shows "Data unavailable"</strong></p>
+            <p>One of your source systems is unreachable. Check Admin → Integrations for connection status. The dashboard will continue to show last known values until the source comes back.</p>
+            <p><strong>Theme toggle not persisting</strong></p>
+            <p>Pulse uses localStorage to remember your theme choice. If you're in Incognito/Private browsing, preferences won't persist. Switch to a regular window for persistence.</p>
+            <p><strong>Daily Brief is generic / placeholder</strong></p>
+            <p>The Claude AI endpoint is not yet configured. Go to Settings → AI &amp; Endpoints and set your endpoint URL plus API key. Default development endpoint: <code>http://localhost:8080/v1/brief</code>.</p>
+            <p><strong>Cmd+K not working</strong></p>
+            <p>Some browser extensions intercept Cmd+K (e.g., bookmark managers). Try Ctrl+K instead, or click the search icon in the top navigation.</p>
+          </div>
+        </div>
+
+        <!-- Data Model ER Diagram -->
+        <div class="help-pane" id="help-er">
+          <div class="help-card" style="padding:0;overflow:hidden;">
+            <div style="padding:14px 18px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--navy);">Pulse Data Model — Interactive ER v2.2</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">All modules · click any entity to explore fields &amp; relationships · searchable · navigable</div>
+              </div>
+              <a href="data-model.html" target="_blank" style="font-size:11px;font-weight:600;color:var(--navy);text-decoration:none;display:flex;align-items:center;gap:4px;padding:5px 10px;border:1px solid var(--border);border-radius:6px;flex-shrink:0;"><i class="bi bi-box-arrow-up-right"></i> Open full screen</a>
+            </div>
+            <iframe src="data-model.html" style="width:100%;height:680px;border:none;display:block;" title="Pulse Interactive ER Diagram"></iframe>
+          </div>
+        </div>
+
+        <!-- Release Notes -->
+        <div class="help-pane" id="help-release">
+          <div class="help-card">
+            <h3>Release Notes</h3>
+
+            <!-- v2.3 -->
+            <div class="release-row" style="border-left-color:var(--orange);">
+              <div class="release-ver">Pulse v2.3 <span class="release-date">· June 2026 · Current</span></div>
+              <div class="release-list">
+                <strong>Action Items &amp; Escalations — column + filter upgrade</strong><br>
+                · Department split out as a dedicated column in both tables (was embedded in owner name as "(AM)"/"(D)")<br>
+                · Category field added to Action Items (General · ESC · Mining · HR · Finance · PMO · TA)<br>
+                · Age column added to Escalations (computed from open_date vs today; RAG-coloured)<br>
+                · Column-header ▾ inline filter dropdowns on all filterable columns — Owner, Department, Category, Status, Delay bracket, Age bracket<br>
+                · Escalations page rebuilt as data-driven (ESC_DATA with dept + openDate fields); banner KPIs now live (Open count · External · Internal · Avg Age)<br>
+                · Add-row forms updated with Department and Category dropdowns<br>
+                <br>
+                <strong>Help Center — Data Model</strong><br>
+                · New "Data Model" menu item added (above Release Notes)<br>
+                · Pulse Interactive ER Diagram v2.2 embedded — all modules, navigable, searchable, click-to-explore<br>
+                <br>
+                <strong>FSD v5.8 — spec alignment with prototype v2.3</strong><br>
+                · Section ordering fixed (AM section 12 now correctly precedes Solutions 13)<br>
+                · Duplicate section numbering resolved (Login→14, Admin→15, Settings→16, KPI Threshold→17 … Decisions→27; changelogs→Appendix C/D/E)<br>
+                · 4 missing Org Pulse dept card specs added to Section 5.1 (TA, PMO, Account Mgmt, Solutions — cards 5–8; Claude Daily Brief renumbered to 9)<br>
+                · Engineering Portfolio Overview section added (Section 6.0 — documenting engineering.html DM list page)<br>
+                · TA Dashboard section rewritten to match flat-grid prototype (13 live KPI tiles replacing deferred 5-tab spec)<br>
+                · System Health section added (ops.html — Report Delivery Checklist, Scheduled Tasks, Infrastructure)<br>
+                · Project Command Centre section added (delivery.html)<br>
+                · HR tabs 8.2–8.5 status updated from Planned→Live; AM Tab 1 clarified as "Mining Threads + Escalations"
+              </div>
+            </div>
+
+            <!-- v2.2 -->
+            <div class="release-row">
+              <div class="release-ver">Pulse v2.2 <span class="release-date">· May 15, 2026</span></div>
+              <div class="release-list">
+                <strong>New modules</strong><br>
+                · Account Management dashboard — 3 tabs: Overview (AM cards + Mining swimlane + Escalations register) · Financials (YTD + M+1/2/3 forecast · AM persona filter) · P360<br>
+                · Solutions dashboard — BA unit overview (solutions.html) + per-BA detail (solutions-detail.html): Artifact Health · Requirements Quality · Capacity &amp; Presales<br>
+                <br>
+                <strong>Existing modules</strong><br>
+                · Sales: Inside Sales tab added as new Tab 1 (BDE scorecard · conversion rate · BDE performance chart · weekly trend · meeting outcome distribution · proposals awaited table); Deal Conversion moved to Deferred<br>
+                · Org Pulse: dept card redesign — icon-left/name-right grid, 1-row KPI strip; 8 dept cards (added Account Mgmt + Solutions)<br>
+                · Finance: AM persona filter on YTD Billing; M+1/M+2/M+3 cells colour-coded green/amber/red<br>
+                · Mining: flyout sprint panels (Current / Done / Next); inline Add Action Item form<br>
+                · Escalations: AM as primary owner; + Add Action Item in flyout<br>
+                · Action Items: 6-column table; 5 filter tiles; inline + New Item row; click-to-expand notes<br>
+                · KPI Thresholds: owner field changed to department names<br>
+                · Alerts: notif-panel items now navigate to alerts.html with scroll + highlight animation
+              </div>
+            </div>
+
+            <!-- v2.1 -->
+            <div class="release-row">
+              <div class="release-ver">Pulse v2.1 <span class="release-date">· May 11, 2026</span></div>
+              <div class="release-list">
+                <strong>HR module iteration (based on HR team feedback)</strong><br>
+                · Onboarding table: added BGV + Probation columns; 5-stage milestone circles with tooltips (Data Captured · Onboarding Plan Shared · HR Induction · BGV · KPIs Set); Manager Feedback (30/60/90) + Joiner Survey inner tabs in flyout<br>
+                · BGV Pending sub-tab removed — BGV is now a column; red banner shows joiners awaiting BGV &gt;14 days<br>
+                · Exits table: 7-stage milestone-circle pattern (Resignation · KT Plan · KT Sign-off · Exit Interview · Exit Survey · Asset Revoked · FnF)<br>
+                · Performance &amp; Comp: PMS Review (Q1·Q2·Q3·Q4) column added per employee<br>
+                · Workforce Health — Golden Ratio: 3-tier drill (dept landing → manager expand → team flyout); RAG re-graded to HR policy (≤6 Healthy · 7–9 Watch · &gt;9 Critical)<br>
+                · Bug fix: Golden Ratio grading corrected to match HR policy
+              </div>
+            </div>
+
+            <!-- v2.0 -->
+            <div class="release-row">
+              <div class="release-ver">Pulse v2.0 <span class="release-date">· May 6, 2026</span></div>
+              <div class="release-list">
+                · Split-screen login (dark hero left · white form right)<br>
+                · Canonical top navigation across all pages (palette · tickets · help · bell · avatar dropdown)<br>
+                · Theme system: Classic/Modern × Light/Dark = 4 combinations; Appeal + Mode merged into single palette dropdown<br>
+                · Avatar dropdown: Profile → settings.html · Sign out → index.html<br>
+                · System Health moved to footer; consistent data-freshness footer across all pages<br>
+                · Engineering portfolio page (DM list + YTD billing table + per-DM flyouts)<br>
+                · TA dashboard (13 live KPI tiles: Open JRs · JR TAT · Applications MTD · Screening rate · Offer Acceptance · Time to Hire · Slip Through · Hires Closed + more)<br>
+                · PMO portfolio dashboard (3 tabs: Engagement Health · Financials · Bench &amp; Resource)<br>
+                · Admin Console (Users · Roles · Audit · Org Defaults · Integrations &amp; SSO)<br>
+                · KPI Threshold Manager (slider UI · colour-tinted cards · sandbox preview · approval workflow)<br>
+                · Settings page (8 tabs: Profile · Appearance · AI &amp; Endpoints · Notifications · Data &amp; Refresh · Saved Views · Audit · Dropdown Config)<br>
+                · Help Center + Ask Pulse contextual help widget<br>
+                · System Health page (ops.html — Report Delivery Checklist · Scheduled Tasks · Infrastructure)<br>
+                · Project Command Centre (delivery.html — nav hub for all modules)<br>
+                · Info icons across all metric labels; WCAG 2.1 AA compliance; print stylesheet
+              </div>
+            </div>
+
+            <!-- v1.1 -->
+            <div class="release-row" style="border-left-color:#94A3B8;">
+              <div class="release-ver">Pulse v1.1 <span class="release-date">· April 2026</span></div>
+              <div class="release-list">
+                · DM Home with 5 tabs (Project Progress · Financials · Mining &amp; Escalations · P360 · People &amp; Resource)<br>
+                · Sales · HR · Finance dashboards<br>
+                · Right-panel flyout drill-down pattern<br>
+                · RAG threshold configuration (basic)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="help-pane" id="help-contact">
+          <div class="help-card">
+            <h3>Contact Support</h3>
+            <p><strong>Email:</strong> <a href="mailto:support@nalashaa.com">support@nalashaa.com</a></p>
+            <p><strong>Slack:</strong> #pulse-support (internal)</p>
+            <p><strong>Office hours:</strong> Mon–Fri 9 AM – 7 PM IST</p>
+            <p>For urgent production issues, use the Slack channel — a member of the Pulse engineering team will respond within 1 hour during office hours.</p>
+            <p>Found a bug? Click the Feature Tickets icon in the top-right to log it. The ticket is auto-tagged with the page you were on and your user agent.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    function showHelp(t, el) {
+      document.querySelectorAll('.help-rail-item').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.help-pane').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('help-' + t).classList.add('active');
+    }
+    function toggleSidebar() { var sb=document.querySelector('.sidebar'); if(sb) sb.classList.toggle('collapsed'); document.body.classList.toggle('sidebar-collapsed'); }
+  </script>
+</body>
+</html>

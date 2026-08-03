@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="blue">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PMO — Pulse · Nalashaa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <style>
+    .pmo-tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 18px; }
+    .pmo-tab { padding: 10px 14px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-muted); border-bottom: 3px solid transparent; margin-bottom: -2px; }
+    .pmo-tab.active { color: var(--navy); border-bottom-color: var(--orange); }
+    [data-mode="dark"] .pmo-tab.active { color: #fff; }
+    .pmo-pane { display: none; }
+    .pmo-pane.active { display: block; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px; }
+    .kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; border-left: 4px solid transparent; }
+    .kpi-card.green { border-left-color: var(--green); }
+    .kpi-card.amber { border-left-color: var(--amber); }
+    .kpi-card.red { border-left-color: var(--red); }
+    .kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; }
+    .kpi-value { font-size: 22px; font-weight: 800; color: var(--navy); }
+    [data-mode="dark"] .kpi-value { color: #fff; }
+    .kpi-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .section-title { font-size: 13px; font-weight: 700; color: var(--navy); margin: 14px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    [data-mode="dark"] .section-title { color: #fff; }
+    .pmo-tbl { width: 100%; font-size: 12px; border-collapse: collapse; background: var(--card); border-radius: 10px; overflow: hidden; }
+    .pmo-tbl th { padding: 10px 12px; background: var(--navy); color: #fff; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; text-align: left; }
+    .pmo-tbl td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+    .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+    .badge.green { background: #D1FAE5; color: #065F46; }
+    .badge.amber { background: #FEF3C7; color: #92400E; }
+    .badge.red { background: #FEE2E2; color: #991B1B; }
+    .heat-cell { display: inline-block; width: 28px; height: 28px; border-radius: 4px; text-align: center; line-height: 28px; font-size: 11px; font-weight: 700; color: #fff; }
+    .data-fresh { font-size: 10px; color: var(--text-muted); margin-bottom: 10px; }
+    .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    .toggle-window { display: inline-flex; gap: 0; background: var(--border); border-radius: 14px; padding: 2px; }
+    .toggle-window button { padding: 4px 10px; border: none; background: transparent; cursor: pointer; font-size: 10px; border-radius: 12px; color: var(--text); font-family: inherit; font-weight: 600; }
+    .toggle-window button.on { background: var(--orange); color: #fff; }
+    /* Engineering-style classes for verbatim Mining & Escalations tab */
+    .kc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; border-left: 4px solid transparent; cursor: pointer; transition: all 0.15s; }
+    .kc:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+    .kc.green { border-left-color: var(--green); } .kc.amber { border-left-color: var(--amber); } .kc.red { border-left-color: var(--red); }
+    .kc.static-tile { cursor: default; }
+    .kc.static-tile:hover { transform: none; box-shadow: none; }
+    .klbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; }
+    .kval { font-size: 22px; font-weight: 800; color: var(--navy); }
+    [data-mode="dark"] .kval { color: #fff; }
+    .ksub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .stitle { font-size: 13px; font-weight: 700; color: var(--navy); margin: 14px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    [data-mode="dark"] .stitle { color: #fff; }
+    .tbl { width: 100%; font-size: 12px; border-collapse: collapse; }
+    .tbl th { padding: 10px 12px; background: var(--navy); color: #fff; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; text-align: left; }
+    .tbl td { padding: 9px 12px; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .tbl tr:hover td { background: var(--bg); }
+    .card-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    /* Billing rows */
+    .billing-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .billing-row:hover { background: var(--bg); }
+    .billing-acct { width: 140px; font-weight: 700; font-size: 12px; }
+    .billing-bar-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; position: relative; overflow: hidden; }
+    .billing-bar-fill { height: 100%; border-radius: 4px; }
+    .billing-bar-fill.green { background: var(--green); }
+    .billing-bar-fill.amber { background: var(--amber); }
+    .billing-bar-fill.red { background: var(--red); }
+    .billing-amount { width: 100px; text-align: right; font-size: 12px; font-weight: 700; }
+    .billing-fcst { width: 130px; text-align: right; font-size: 11px; color: var(--text-muted); }
+    .tbl-scroll { overflow-y: auto; }
+    /* Mining + Escalations swimlane (copied from dm-home.html) */
+    .swim-title { font-size: 13px; font-weight: 700; padding: 8px 10px; border-radius: 6px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .swim-row { padding: 9px 12px; border-radius: 8px; margin-bottom: 6px; font-size: 12px; cursor: pointer; border-left: 3px solid var(--border); transition: all 0.15s; background: var(--bg); }
+    .swim-row:hover { transform: translateX(2px); }
+    .swim-row.late { border-left-color: var(--red); }
+    .swim-row.risk { border-left-color: var(--amber); }
+    .swim-row.track { border-left-color: var(--green); }
+    .swim-row strong { font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:0;">
+      <button class="hamburger-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <div class="pulse-logo">
+        <span class="pulse-icon"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="2" width="25" height="17" rx="2.5" stroke="#FF9933" stroke-width="1.5"/><line x1="14" y1="19" x2="14" y2="23.5" stroke="#FF9933" stroke-width="1.5"/><line x1="9" y1="23.5" x2="19" y2="23.5" stroke="#FF9933" stroke-width="1.8" stroke-linecap="round"/><polyline points="4,10.5 7,10.5 8.5,6.5 10,14.5 11.5,10.5 13,10.5 14,8 15,13 16.5,10.5 18,10.5 24,10.5" stroke="#FF9933" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg></span>
+        <span class="pulse-wordmark">Pulse</span>
+      </div>
+    </div>
+    <div class="top-nav-right">
+      <button class="help-btn">?</button>
+      <div class="alert-bell"><i class="bi bi-bell-fill" style="font-size:16px;"></i></div>
+      <div class="avatar" id="avatarBadge">JD</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html" class="active"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+    <div class="sidebar-brand"><img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo"></div>
+  </div>
+
+  <div class="main" style="padding:18px 28px;">
+    <div class="dept-meta-above"><i class="bi bi-clock"></i> Data as of 2026-05-05 09:14 · Source: Aggregated from DM views</div>
+    <div class="dept-banner">
+      <div class="dept-banner-top">
+        <div class="dept-banner-titleblock">
+          <div class="dept-banner-title">PMO <span class="info-i" data-tip-title="PMO" data-tip="Portfolio-level engagement health, billing oversight, and forward resource planning. Owned by PMO Head Karthik R.">i</span></div>
+          <div class="dept-banner-sub">Owner: Karthik R. · 12 active engagements · 8 accounts</div>
+        </div>
+        <div class="dept-banner-stats">
+          <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">7.1</div><div class="dept-banner-stat-lbl">Avg P360</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val red">1</div><div class="dept-banner-stat-lbl">Red Project</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val green">$11.0M</div><div class="dept-banner-stat-lbl">YTD Billing</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">10</div><div class="dept-banner-stat-lbl">On Bench</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val red">5</div><div class="dept-banner-stat-lbl">Roll-offs 30d</div></div>
+        <div class="dept-banner-pipe"></div>
+        <div class="dept-banner-stat"><div class="dept-banner-stat-val amber">94%</div><div class="dept-banner-stat-lbl">SOW Coverage</div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div class="pmo-tabs">
+      <div class="pmo-tab active" data-pane="eng"><i class="bi bi-heart-pulse-fill"></i> Engagement Health</div>
+      <div class="pmo-tab" data-pane="fin"><i class="bi bi-cash-stack"></i> Financials (Owner)</div>
+      <div class="pmo-tab" data-pane="bench"><i class="bi bi-people-fill"></i> Utilization</div>
+      <div class="pmo-tab" data-pane="mn"><i class="bi bi-bullseye"></i> Mining &amp; Escalations</div>
+    </div>
+
+    <!-- TAB 1: Engagement Health -->
+    <div class="pmo-pane active" id="pane-eng">
+      <div class="kpi-grid">
+        <div class="kpi-card amber static-tile"><div class="kpi-label">P360 Portfolio Avg</div><div class="kpi-value">7.1</div><div class="kpi-sub">↓ 0.3 vs last month</div></div>
+        <div class="kpi-card red" onclick="goToMnTab()" style="cursor:pointer;"><div class="kpi-label">At-Risk Accounts</div><div class="kpi-value">5</div><div class="kpi-sub">of 23 · click for register</div></div>
+        <div class="kpi-card amber" id="pmoCsatTile" style="cursor:pointer;"><div class="kpi-label">CSAT</div><div class="kpi-value">8</div><div class="kpi-sub">8 overdue · click for trend</div></div>
+        <div class="kpi-card green"><div class="kpi-label">SOW Coverage</div><div class="kpi-value">94%</div><div class="kpi-sub">Engagements with active SOW</div></div>
+      </div>
+
+      <div class="section-title">P360 Portfolio — 23 Accounts · click tile for breakdown</div>
+      <div id="p360-tile-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-bottom:8px;"></div>
+
+      <div class="stitle">Financial Outlook · YTD Billing per Account</div>
+      <div class="card-box">
+        <div class="tbl-scroll" style="max-height:340px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;">
+          <div class="billing-row" onclick="openFlyout({title:'MedTech · Billing',sub:'Phase 2 expansion · Renewal Q3 2026',body:'<p>Phase 2 expansion drives M+3 uptick. Renewal due Q3 2026.</p><p style=\'margin-top:8px;font-size:11px;color:#64748B;\'>AM: Sarah M. &nbsp;·&nbsp; PM: Vikram S.</p>'})"><div class="billing-acct">MedTech Corp</div><div class="billing-bar-track"><div class="billing-bar-fill amber" style="width:92%;"></div></div><div class="billing-amount">$1.44M</div><div class="billing-fcst">M+1 $0.14M</div></div>
+          <div class="billing-row" onclick="openFlyout({title:'HealthFirst · Billing',sub:'Renewal locked · Mobile App in mining',body:'<p>Renewal locked. Mobile App in mining ($0.10M).</p><p style=\'margin-top:8px;font-size:11px;color:#64748B;\'>AM: Sarah M. &nbsp;·&nbsp; PM: Anita M.</p>'})"><div class="billing-acct">HealthFirst Inc</div><div class="billing-bar-track"><div class="billing-bar-fill green" style="width:104%;"></div></div><div class="billing-amount">$1.25M</div><div class="billing-fcst">M+1 $0.12M</div></div>
+          <div class="billing-row" onclick="openFlyout({title:'BioGen · Billing',sub:'Phase 2 conflict unresolved · M+3 confidence low',body:'<p>Phase 2 scope conflict unresolved · M+3 confidence low.</p><p style=\'margin-top:8px;font-size:11px;color:#64748B;\'>AM: Ravi S. &nbsp;·&nbsp; PM: Karthik R.</p>'})"><div class="billing-acct">BioGen Labs</div><div class="billing-bar-track"><div class="billing-bar-fill red" style="width:82%;"></div></div><div class="billing-amount">$0.98M</div><div class="billing-fcst">M+1 $0.10M</div></div>
+          <div class="billing-row" onclick="openFlyout({title:'PharmCare · Billing',sub:'Add-on hires drove overrun · stable outlook',body:'<p>Stable forecast. Add-on hires drove overrun.</p><p style=\'margin-top:8px;font-size:11px;color:#64748B;\'>AM: Ravi S. &nbsp;·&nbsp; PM: Vikram S.</p>'})"><div class="billing-acct">PharmCare</div><div class="billing-bar-track"><div class="billing-bar-fill green" style="width:104%;"></div></div><div class="billing-amount">$1.37M</div><div class="billing-fcst">M+1 $0.14M</div></div>
+          <div class="billing-row" onclick="openFlyout({title:'WellnessOne · Billing',sub:'Renewal verbal received · expansion in mining',body:'<p>Renewal verbal received. Expansion in mining.</p><p style=\'margin-top:8px;font-size:11px;color:#64748B;\'>AM: Priya K. &nbsp;·&nbsp; PM: Anita M.</p>'})"><div class="billing-acct">WellnessOne</div><div class="billing-bar-track"><div class="billing-bar-fill green" style="width:96%;"></div></div><div class="billing-amount">$0.72M</div><div class="billing-fcst">M+1 $0.08M</div></div>
+          <div class="billing-row" onclick="openFlyout({title:'NeuroLab · Billing',sub:'Imaging integration ramping steadily',body:'<p>Imaging integration project ramping.</p><p style=\'margin-top:8px;font-size:11px;color:#64748B;\'>AM: Priya K. &nbsp;·&nbsp; PM: Karthik R.</p>'})"><div class="billing-acct">NeuroLab</div><div class="billing-bar-track"><div class="billing-bar-fill amber" style="width:88%;"></div></div><div class="billing-amount">$0.62M</div><div class="billing-fcst">M+1 $0.07M</div></div>
+          <div class="billing-row" onclick="openFlyout({title:'CardioTech · Billing',sub:'Healthy growth · custom dashboard on track',body:'<p>Healthy growth. Custom dashboard project.</p><p style=\'margin-top:8px;font-size:11px;color:#64748B;\'>AM: Priya K. &nbsp;·&nbsp; PM: Vikram S.</p>'})"><div class="billing-acct">CardioTech</div><div class="billing-bar-track"><div class="billing-bar-fill green" style="width:102%;"></div></div><div class="billing-amount">$0.84M</div><div class="billing-fcst">M+1 $0.09M</div></div>
+          <div class="billing-row" onclick="openFlyout({title:'PediaCare · Billing',sub:'Platform license negotiation pending',body:'<p>Platform license negotiation pending.</p><p style=\'margin-top:8px;font-size:11px;color:#64748B;\'>AM: Sarah M. &nbsp;·&nbsp; PM: Anita M.</p>'})"><div class="billing-acct">PediaCare</div><div class="billing-bar-track"><div class="billing-bar-fill amber" style="width:78%;"></div></div><div class="billing-amount">$0.42M</div><div class="billing-fcst">M+1 $0.05M</div></div>
+        </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 2: Financials -->
+    <div class="pmo-pane" id="pane-fin">
+      <div class="kpi-grid">
+        <div class="kpi-card green static-tile"><div class="kpi-label">YTD Billing — Portfolio</div><div class="kpi-value">$11.0M</div><div class="kpi-sub">96% vs $11.5M plan · ↑ 12% YoY</div></div>
+        <div class="kpi-card amber static-tile"><div class="kpi-label">M+1 Forecast</div><div class="kpi-value">$2.20M</div><div class="kpi-sub">vs target $2.30M · 95% confidence</div></div>
+        <div class="kpi-card green static-tile"><div class="kpi-label">M+2 Forecast</div><div class="kpi-value">$2.30M</div><div class="kpi-sub">82% confidence</div></div>
+        <div class="kpi-card amber static-tile"><div class="kpi-label">M+3 Forecast</div><div class="kpi-value">$2.40M</div><div class="kpi-sub">68% confidence — pipeline-dependent</div></div>
+      </div>
+      <div class="section-title">Portfolio Billing Trend <span class="toggle-window"><button class="on" onclick="setPmoBillRange('1M', this)">MON</button><button onclick="setPmoBillRange('1Q', this)">QTR</button></span></div>
+      <div class="chart-card" style="cursor:pointer;" onclick="openPmoYtdBillingFlyout()" title="Click for account breakdown">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-size:11px;color:var(--text-muted);">Click for account-level billing breakdown</span>
+          <span style="font-size:10px;color:var(--orange);font-weight:700;"><i class="bi bi-box-arrow-up-right"></i> Drill down</span>
+        </div>
+        <div id="billing-chart" style="height:260px;"></div>
+      </div>
+
+      <div class="section-title">Portfolio Forecast · YTD + M+1 / M+2 / M+3 <span style="font-size:11px;font-weight:500;color:var(--text-muted);text-transform:none;letter-spacing:0;">· Click any row for detail</span></div>
+      <table class="pmo-tbl" id="pmo-forecast-tbl">
+        <thead><tr><th>Account</th><th>YTD Plan</th><th>YTD Actual</th><th>YTD Variance</th><th>M+1 (F)</th><th>M+2 (F)</th><th>M+3 (F)</th></tr></thead>
+        <tbody>
+          <tr style="cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openPmoPortfolioFlyout(0)"><td><strong>MedTech Corp</strong></td><td>$2.40M</td><td>$2.30M</td><td><span style="color:var(--red);font-weight:700;">-$0.10M</span></td><td>$0.46M</td><td>$0.48M</td><td>$0.50M</td></tr>
+          <tr style="cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openPmoPortfolioFlyout(1)"><td><strong>HealthFirst Inc</strong></td><td>$1.90M</td><td>$2.00M</td><td><span style="color:var(--green);font-weight:700;">+$0.10M</span></td><td>$0.40M</td><td>$0.41M</td><td>$0.42M</td></tr>
+          <tr style="cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openPmoPortfolioFlyout(2)"><td><strong>BioGen Labs</strong></td><td>$1.60M</td><td>$1.30M</td><td><span style="color:var(--red);font-weight:700;">-$0.30M</span></td><td>$0.28M</td><td>$0.30M</td><td>$0.32M</td></tr>
+          <tr style="cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openPmoPortfolioFlyout(3)"><td><strong>PharmCare</strong></td><td>$1.70M</td><td>$1.80M</td><td><span style="color:var(--green);font-weight:700;">+$0.10M</span></td><td>$0.36M</td><td>$0.36M</td><td>$0.37M</td></tr>
+          <tr style="cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openPmoPortfolioFlyout(4)"><td><strong>WellnessOne</strong></td><td>$1.10M</td><td>$1.00M</td><td><span style="color:var(--amber);font-weight:700;">-$0.10M</span></td><td>$0.22M</td><td>$0.23M</td><td>$0.24M</td></tr>
+          <tr style="cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openPmoPortfolioFlyout(5)"><td><strong>NeuroLab</strong></td><td>$0.90M</td><td>$0.85M</td><td><span style="color:var(--amber);font-weight:700;">-$0.05M</span></td><td>$0.18M</td><td>$0.19M</td><td>$0.20M</td></tr>
+          <tr style="cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openPmoPortfolioFlyout(6)"><td><strong>CardioTech</strong></td><td>$1.30M</td><td>$1.35M</td><td><span style="color:var(--green);font-weight:700;">+$0.05M</span></td><td>$0.27M</td><td>$0.27M</td><td>$0.28M</td></tr>
+          <tr style="cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openPmoPortfolioFlyout(7)"><td><strong>PediaCare</strong></td><td>$0.60M</td><td>$0.40M</td><td><span style="color:var(--red);font-weight:700;">-$0.20M</span></td><td>$0.08M</td><td>$0.09M</td><td>$0.10M</td></tr>
+        </tbody>
+      </table>
+
+    </div>
+
+    <!-- TAB 3: Bench & Resource -->
+    <div class="pmo-pane" id="pane-bench">
+      <div class="kpi-grid">
+        <div class="kpi-card amber static-tile"><div class="kpi-label">On Bench (Total)</div><div class="kpi-value">10</div><div class="kpi-sub">3 active &gt; 30d</div></div>
+        <div class="kpi-card red static-tile"><div class="kpi-label">Roll-offs Next 30d</div><div class="kpi-value">5</div><div class="kpi-sub">2 critical skills</div></div>
+        <div class="kpi-card amber static-tile"><div class="kpi-label">Roll-offs 60d</div><div class="kpi-value">8</div><div class="kpi-sub">3 critical skills</div></div>
+        <div class="kpi-card green static-tile"><div class="kpi-label">Roll-offs 90d</div><div class="kpi-value">7</div><div class="kpi-sub">1 critical skill</div></div>
+      </div>
+
+      <div class="section-title">Workforce Utilization</div>
+      <div class="card-box" style="padding:14px;">
+        <div id="pmo-util-content"></div>
+      </div>
+
+      <div class="section-title">Upcoming Roll-offs · Timeline</div>
+      <div class="seg-tabs">
+        <span class="seg-tab red active" onclick="roSwitch('30', this)">30-day (5)</span>
+        <span class="seg-tab amber" onclick="roSwitch('60', this)">60-day (8)</span>
+        <span class="seg-tab green" onclick="roSwitch('90', this)">90-day (7)</span>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+        <div id="ro-30" class="ro-pane">
+          <table class="pmo-tbl">
+            <thead><tr><th>Employee</th><th>Project</th><th>Roll-off Date</th><th>Skill</th><th>Reallocation</th></tr></thead>
+            <tbody>
+              <tr><td><strong>K. Rao</strong></td><td>MedTech Corp</td><td>May 18</td><td>Senior Java</td><td><span class="badge amber">Pending</span></td></tr>
+              <tr><td><strong>P. Singh</strong></td><td>HealthFirst Inc</td><td>May 22</td><td>QA Lead</td><td><span class="badge green">Allocated</span></td></tr>
+              <tr><td><strong>R. Mehta</strong></td><td>PharmCare</td><td>Jun 02</td><td>Data Engineer</td><td><span class="badge red">No match</span></td></tr>
+              <tr><td><strong>S. Iyer</strong></td><td>WellnessOne</td><td>Jun 04</td><td>UX Designer</td><td><span class="badge green">Allocated</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="ro-60" class="ro-pane" style="display:none;">
+          <table class="pmo-tbl">
+            <thead><tr><th>Employee</th><th>Project</th><th>Roll-off Date</th><th>Skill</th><th>Reallocation</th></tr></thead>
+            <tbody>
+              <tr><td><strong>T. Sen</strong></td><td>BioGen Labs</td><td>Jun 18</td><td>Senior React</td><td><span class="badge amber">Pending</span></td></tr>
+              <tr><td><strong>U. Joshi</strong></td><td>NeuroLab</td><td>Jun 25</td><td>DevOps</td><td><span class="badge green">Allocated</span></td></tr>
+              <tr><td><strong>V. Khan</strong></td><td>CardioTech</td><td>Jul 02</td><td>Mobile Dev</td><td><span class="badge red">No match</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="ro-90" class="ro-pane" style="display:none;">
+          <table class="pmo-tbl">
+            <thead><tr><th>Employee</th><th>Project</th><th>Roll-off Date</th><th>Skill</th><th>Reallocation</th></tr></thead>
+            <tbody>
+              <tr><td><strong>W. Naidu</strong></td><td>OrthoFix</td><td>Jul 18</td><td>Tech Lead</td><td><span class="badge green">Allocated</span></td></tr>
+              <tr><td><strong>X. Reddy</strong></td><td>DermaPlus</td><td>Jul 28</td><td>Architect</td><td><span class="badge amber">Pending</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+<!-- TAB 4: MINING & ESCALATIONS — VERBATIM copy from Engineering (dm-home.html) -->
+    <div class="pmo-pane" id="pane-mn">
+      <div class="kgrid">
+        <div class="kc green static-tile"><div class="klbl">Mining Threads</div><div class="kval">8</div><div class="ksub">4 on track · 2 risk · 2 late</div></div>
+        <div class="kc red static-tile"><div class="klbl">Escalations</div><div class="kval">7</div><div class="ksub">2 critical · 5 high</div></div>
+        <div class="kc green static-tile"><div class="klbl">Mining Pipeline Value</div><div class="kval">$0.74M</div><div class="ksub">In motion</div></div>
+        <div class="kc amber static-tile"><div class="klbl">At-Risk Threads</div><div class="kval">2</div><div class="ksub">BioGen Phase 2 · HealthFirst Mobile</div></div>
+      </div>
+
+      <div class="stitle"><span><i class="bi bi-bullseye"></i> Mining Threads · Swimlane by Status</span><span style="font-size:11px;font-weight:600;"><span style="color:var(--green);">● Track 4</span>  ·  <span style="color:var(--amber);">● Risk 2</span>  ·  <span style="color:var(--red);">● Late 2</span></span></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.5px;padding-bottom:8px;border-bottom:2px solid #D1FAE5;margin-bottom:10px;">On Track · 4</div>
+          <div class="swim-row track" onclick="openMiningThread('MedTech Corp · Module Demo')"><strong>MedTech · Module Demo</strong><br><span style="font-size:10px;">$0.25M · Demo May 12</span></div>
+          <div class="swim-row track" onclick="openMiningThread('HealthFirst · DR Setup')"><strong>HealthFirst · DR Setup</strong><br><span style="font-size:10px;">$0.10M · SOW review</span></div>
+          <div class="swim-row track" onclick="openMiningThread('PharmCare · UAT Phase 2')"><strong>PharmCare · UAT Phase 2</strong><br><span style="font-size:10px;">$0.06M</span></div>
+          <div class="swim-row track" onclick="openMiningThread('MedTech · DevOps add-on')"><strong>MedTech · DevOps add-on</strong><br><span style="font-size:10px;">$0.04M</span></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:0.5px;padding-bottom:8px;border-bottom:2px solid #FEF3C7;margin-bottom:10px;">At Risk · 2</div>
+          <div class="swim-row risk" onclick="openMiningThread('BioGen · Phase 2')"><strong>BioGen · Phase 2</strong><br><span style="font-size:10px;">$0.17M · Stakeholder turnover</span></div>
+          <div class="swim-row risk" onclick="openMiningThread('HealthFirst · Mobile App')"><strong>HealthFirst · Mobile App</strong><br><span style="font-size:10px;">$0.12M · Roadmap conflict</span></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:0.5px;padding-bottom:8px;border-bottom:2px solid #FEE2E2;margin-bottom:10px;">Late · 2</div>
+          <div class="swim-row late" onclick="openMiningThread('PharmCare · Analytics POC')"><strong>PharmCare · Analytics POC</strong><br><span style="font-size:10px;">$0.07M · POC reset</span></div>
+          <div class="swim-row late" onclick="openMiningThread('BioGen · BI Dashboard')"><strong>BioGen · BI Dashboard</strong><br><span style="font-size:10px;">$0.06M · Spec stalled</span></div>
+        </div>
+      </div>
+
+      <div class="stitle"><span><i class="bi bi-exclamation-octagon-fill"></i> Account Escalations Register</span></div>
+      <div class="card-box" style="padding:0;overflow:hidden;">
+      <table class="tbl" style="width:100%;font-size:12px;">
+        <thead><tr><th>Account</th><th>PM</th><th>Escalation</th><th>Severity</th><th>Age</th><th>Last Update</th><th>Next Action</th></tr></thead>
+        <tbody>
+          <tr onclick="openEscalation('MedTech UAT Slip')"><td><strong>MedTech Corp</strong></td><td>Priya M.</td><td>UAT Window Slip</td><td>Critical</td><td>14d</td><td>Apr 22</td><td>Align UAT window May 8</td></tr>
+          <tr onclick="openEscalation('BioGen Scope Conflict')"><td><strong>BioGen Labs</strong></td><td>D. Patel</td><td>Phase 2 Scope Conflict</td><td>Critical</td><td>9d</td><td>Apr 26</td><td>CIO alignment</td></tr>
+          <tr onclick="openEscalation('PharmCare QA')"><td><strong>PharmCare</strong></td><td>Arjun N.</td><td>QA Regression</td><td>High</td><td>5d</td><td>May 2</td><td>Run regression May 9</td></tr>
+          <tr onclick="openEscalation('HealthFirst Capacity')"><td><strong>HealthFirst Inc</strong></td><td>Vikram J.</td><td>Capacity Gap</td><td>High</td><td>11d</td><td>Apr 24</td><td>Onboard 2 hires by May 20</td></tr>
+          <tr onclick="openEscalation('MedTech Perf')"><td><strong>MedTech Corp</strong></td><td>Priya M.</td><td>Perf Regression</td><td>High</td><td>3d</td><td>May 2</td><td>Hotfix deploy May 7</td></tr>
+          <tr onclick="openEscalation('BioGen Test Env')"><td><strong>BioGen Labs</strong></td><td>D. Patel</td><td>Test Env Capacity</td><td>High</td><td>4d</td><td>May 1</td><td>Scale env by May 6</td></tr>
+          <tr onclick="openEscalation('PharmCare Backlog')"><td><strong>PharmCare</strong></td><td>Arjun N.</td><td>Backlog Grooming</td><td>High</td><td>5d</td><td>May 3</td><td>Weekly cadence</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+</div>
+  </div>
+
+  <script src="shared.js?v=2.3r2"></script>
+  <script src="dm-flyouts.js?v=2.3r2"></script>
+  <script>
+    function showTab(t, el) {
+      document.querySelectorAll('.pmo-tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.pmo-pane').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('pane-' + t).classList.add('active');
+    }
+    window.roSwitch = function(t, el) {
+      el.parentElement.querySelectorAll('.seg-tab').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      ['30','60','90'].forEach(n => { const p = document.getElementById('ro-' + n); if (p) p.style.display = (n === t) ? 'block' : 'none'; });
+    };
+    window.goToMnTab = function() {
+      document.querySelectorAll('.pmo-tab').forEach(t => { if (t.textContent.includes('Mining')) t.click(); });
+    };
+    function toggleSidebar() { var sb=document.querySelector('.sidebar'); if(sb) sb.classList.toggle('collapsed'); document.body.classList.toggle('sidebar-collapsed'); }
+
+    // P360 Portfolio — 23 account tiles, click → openP360 from dm-flyouts.js
+    const PMO_P360 = [
+      { a:'MedTech Corp', dm:'Rajesh K.', pm:'Kavya Sharma', score:5.4, weak:[['Risk',4.8],['Discipline',5.2]], val:'$3.41M' },
+      { a:'HealthFirst Inc', dm:'Anita M.', pm:'Vikram J.', score:5.8, weak:[['Risk',5.2],['Velocity',5.6]], val:'$2.50M' },
+      { a:'BioGen Labs', dm:'Karthik R.', pm:'D. Patel', score:6.2, weak:[['Comm',5.9]], val:'$0.98M' },
+      { a:'PharmCare', dm:'Vikram S.', pm:'Arjun N.', score:6.4, weak:[['Quality',5.8]], val:'$1.37M' },
+      { a:'WellnessOne', dm:'Sunita R.', pm:'K. Rao', score:6.6, weak:[['Velocity',6.0]], val:'$0.72M' },
+      { a:'NeuroLab', dm:'Maya R.', pm:'P. Singh', score:7.1, weak:[['Discipline',6.4]], val:'$0.85M' },
+      { a:'CardioTech', dm:'John Doe', pm:'A. Khan', score:7.4, weak:[['Comm',6.8]], val:'$1.35M' },
+      { a:'PediaCare', dm:'Priya M.', pm:'R. Mehta', score:6.9, weak:[['Risk',6.1]], val:'$0.40M' },
+      { a:'OncoSys', dm:'D. Patel', pm:'M. Joshi', score:7.6, weak:[['Velocity',6.9]], val:'$1.10M' },
+      { a:'OrthoFix', dm:'Karthik R.', pm:'L. Krishnan', score:7.8, weak:[], val:'$0.95M' },
+      { a:'DermaPlus', dm:'Vikram J.', pm:'B. Kumar', score:7.5, weak:[['Comm',6.7]], val:'$0.62M' },
+      { a:'GeneSeq', dm:'Sunita R.', pm:'C. Iyer', score:8.1, weak:[], val:'$1.20M' },
+      { a:'OphthaCare', dm:'Anita M.', pm:'T. Sinha', score:7.9, weak:[], val:'$0.58M' },
+      { a:'RenalPlus', dm:'Maya R.', pm:'U. Khan', score:7.3, weak:[['Risk',6.6]], val:'$0.71M' },
+      { a:'PulmoCare', dm:'John Doe', pm:'N. Pillai', score:8.3, weak:[], val:'$0.88M' },
+      { a:'EndoLink', dm:'Priya M.', pm:'F. Nair', score:7.7, weak:[], val:'$0.49M' },
+      { a:'OrthoCare', dm:'D. Patel', pm:'G. Sen', score:8.0, weak:[], val:'$0.93M' },
+      { a:'DentalNet', dm:'Vikram S.', pm:'H. Sharma', score:7.4, weak:[['Discipline',6.8]], val:'$0.55M' },
+      { a:'SkinCareDirect', dm:'Karthik R.', pm:'I. Joshi', score:8.2, weak:[], val:'$0.42M' },
+      { a:'VitalSigns', dm:'Sunita R.', pm:'J. Khan', score:7.6, weak:[['Trust',6.9]], val:'$0.67M' },
+      { a:'CarePath', dm:'Maya R.', pm:'K. Verma', score:8.4, weak:[], val:'$1.05M' },
+      { a:'MediTrack', dm:'Anita M.', pm:'L. Pillai', score:7.0, weak:[['Comm',6.4]], val:'$0.78M' },
+      { a:'ClinicEdge', dm:'John Doe', pm:'M. Sharma', score:7.8, weak:[], val:'$0.96M' }
+    ];
+    const _p360Rag = v => v < 6 ? 'red' : (v < 7.5 ? 'amber' : 'green');
+    function _pmoToEngDims(p) {
+      const get = (n, fb) => { const w = p.weak.find(x => x[0] === n); return w ? w[1] : fb; };
+      return [get('Trust', p.score), get('Discipline', p.score), get('Quality', p.score), get('Risk', p.score), get('Comm', p.score)];
+    }
+    document.getElementById('p360-tile-grid').innerHTML = PMO_P360.map(p => {
+      const rag = _p360Rag(p.score);
+      const dims = p.weak.length ? p.weak.map(w => `<div class="p360-mini-dim ${_p360Rag(w[1])}"><span>${w[0]} ${w[1]}</span></div>`).join('') : `<div class="p360-mini-dim green"><span>All Dimensions Green</span></div>`;
+      const engDims = JSON.stringify(_pmoToEngDims(p));
+      return `<div class="p360-row ${rag}" onclick='openP360(${JSON.stringify(p.a)}, ${p.score}, ${engDims})'>
+        <div class="p360-score-big ${rag}">${p.score}</div>
+        <div class="p360-row-info">
+          <div class="p360-row-title">${p.a}</div>
+          <div class="p360-row-sub">DM: ${p.dm} · PM: ${p.pm} · ${p.val}</div>
+          <div class="p360-mini-dims">${dims}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    // PMO Utilization — Client-facing util + Internal util cols, click name → flyout
+    const PMO_UTIL_DATA = {
+      bench: [
+        { id:'NLS-1042', n:'A. Rao', skill:'Java', dur:'14d', client:'0%', internal:'40%', clientProj:'—', intProj:'Internal LMS training', notes:'Awaiting MedTech ramp' },
+        { id:'NLS-1108', n:'C. Iyer', skill:'React', dur:'8d', client:'0%', internal:'25%', clientProj:'—', intProj:'POC: recruiting portal', notes:'Coming off PharmCare' },
+        { id:'NLS-1071', n:'F. Nair', skill:'Data Eng', dur:'22d', client:'0%', internal:'0%', clientProj:'—', intProj:'—', notes:'Specialty mismatch — long bench' },
+        { id:'NLS-1136', n:'G. Sen', skill:'UX', dur:'5d', client:'0%', internal:'60%', clientProj:'—', intProj:'Pulse internal redesign', notes:'Awaiting BioGen Phase 2' },
+        { id:'NLS-1183', n:'P. Singh', skill:'DevOps', dur:'9d', client:'0%', internal:'30%', clientProj:'—', intProj:'CI/CD upgrade', notes:'Awaiting CardioTech ramp' },
+        { id:'NLS-1054', n:'R. Pillai', skill:'Mobile', dur:'18d', client:'0%', internal:'0%', clientProj:'—', intProj:'—', notes:'Awaiting OrthoFix' },
+        { id:'NLS-1149', n:'S. Iyer', skill:'QA', dur:'11d', client:'0%', internal:'45%', clientProj:'—', intProj:'QA automation framework', notes:'Coming off WellnessOne' },
+        { id:'NLS-1208', n:'T. Sen', skill:'Senior React', dur:'4d', client:'0%', internal:'15%', clientProj:'—', intProj:'Hackathon prep', notes:'Just rolled off' },
+        { id:'NLS-1217', n:'U. Joshi', skill:'DevOps', dur:'7d', client:'0%', internal:'0%', clientProj:'—', intProj:'—', notes:'Awaiting NeuroLab' },
+        { id:'NLS-1224', n:'V. Khan', skill:'Mobile Dev', dur:'13d', client:'0%', internal:'20%', clientProj:'—', intProj:'Tech radar', notes:'Pipeline bench' }
+      ],
+      ok: [
+        { id:'NLS-1003', n:'Kavya Sharma', skill:'Tech Lead', dur:'92%', client:'92%', internal:'8%', clientProj:'MedTech · EMR', intProj:'Architecture guild', notes:'MedTech sprint pod' },
+        { id:'NLS-1014', n:'Priya M.', skill:'Platform Lead', dur:'94%', client:'78%', internal:'16%', clientProj:'HealthFirst, BioGen', intProj:'Platform CoE', notes:'Cross-account' },
+        { id:'NLS-1019', n:'Vikram J.', skill:'Web Lead', dur:'92%', client:'92%', internal:'0%', clientProj:'HealthFirst Patient Portal', intProj:'—', notes:'HealthFirst' },
+        { id:'NLS-1023', n:'Maya R.', skill:'Mobile Lead', dur:'90%', client:'82%', internal:'8%', clientProj:'HealthFirst Mobile', intProj:'Mobile guild', notes:'HealthFirst' },
+        { id:'NLS-1031', n:'D. Patel', skill:'QA Lead', dur:'88%', client:'88%', internal:'0%', clientProj:'BioGen Phase 2', intProj:'—', notes:'BioGen' },
+        { id:'—', n:'... 247 more', skill:'-', dur:'-', client:'-', internal:'-', clientProj:'-', intProj:'-', notes:'Org utilized list (252 total)' }
+      ],
+      over: [
+        { id:'NLS-1007', n:'Rajesh K.', skill:'QA Pod Mgr', dur:'118%', client:'108%', internal:'10%', clientProj:'MedTech + PharmCare', intProj:'QA CoE chair', notes:'Covering 2 projects · burnout risk' },
+        { id:'NLS-1012', n:'H. Sharma', skill:'DevOps Sr.', dur:'124%', client:'118%', internal:'6%', clientProj:'HealthFirst, CardioTech', intProj:'CI/CD upgrade', notes:'Sole DevOps · backfill needed' },
+        { id:'NLS-1028', n:'S. Naidu', skill:'DevOps Sr.', dur:'114%', client:'114%', internal:'0%', clientProj:'NeuroLab + OrthoFix', intProj:'—', notes:'Critical role · backfill in motion' },
+        { id:'NLS-1037', n:'B. Kumar', skill:'Senior Java', dur:'112%', client:'104%', internal:'8%', clientProj:'BioGen (2 sprint pods)', intProj:'Java guild lead', notes:'2 active sprint pods' },
+        { id:'—', n:'... 4 more', skill:'-', dur:'-', client:'-', internal:'-', clientProj:'-', intProj:'-', notes:'Org over-allocated list (8 total)' }
+      ]
+    };
+    function pmoUtil() {
+      const seg = window._pmoUtilSeg || 'bench';
+      const sublbl = seg === 'bench' ? 'Days on Bench' : 'Total Util';
+      const rows = PMO_UTIL_DATA[seg].map(d => {
+        const isAgg = d.id === '—';
+        const click = isAgg ? '' : `onclick="openPersonProjects('${d.n}','${seg}')" style="cursor:pointer;"`;
+        return `<tr ${click}><td style="font-family:monospace;font-size:11px;">${d.id}</td><td><strong>${d.n}</strong></td><td>${d.skill}</td><td>${d.client}</td><td>${d.internal}</td><td>${d.dur}</td><td>${d.notes}</td></tr>`;
+      }).join('');
+      return `<div class="seg-tabs"><span class="seg-tab amber ${seg==='bench'?'active':''}" onclick="setPmoUtilSeg('bench')">On Bench (10)</span>
+          <span class="seg-tab green ${seg==='ok'?'active':''}" onclick="setPmoUtilSeg('ok')">Utilized (252)</span>
+          <span class="seg-tab red ${seg==='over'?'active':''}" onclick="setPmoUtilSeg('over')">Over-utilized (8)</span>
+        </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;"><strong>Client Util %</strong> = billable allocation · <strong>Internal Util %</strong> = CoE/R&amp;D/training. Click name for project detail.</div>
+      <table class="pmo-tbl"><thead><tr><th>Emp ID</th><th>Employee</th><th>Skill</th><th>Client Util %</th><th>Internal Util %</th><th>${sublbl}</th><th>Notes</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    window.setPmoUtilSeg = function(s) { window._pmoUtilSeg = s; document.getElementById('pmo-util-content').innerHTML = pmoUtil(); };
+    window.openPersonProjects = function(name, seg) {
+      const d = PMO_UTIL_DATA[seg].find(x => x.n === name); if (!d) return;
+      const segLbl = seg === 'bench' ? 'On Bench' : (seg === 'ok' ? 'Utilized' : 'Over-utilized');
+      const segCls = seg === 'bench' ? 'amber' : (seg === 'ok' ? 'green' : 'red');
+      openFlyoutPinned({
+        title: name + ' · Project Associations',
+        sub: `${d.id} · ${d.skill} · ${segLbl}`,
+        pinned: `<div class="fly-insight"><strong>Client Util:</strong> ${d.client} · <strong>Internal Util:</strong> ${d.internal} · <span class="g-tag ${segCls}">${segLbl}</span></div>`,
+        body: `<div class="g-section-title" style="text-align:left;">Client-facing</div>
+        <table class="g-tbl" style="text-align:left;"><thead><tr><th style="text-align:left;">Account / Project</th><th style="text-align:left;">Allocation</th></tr></thead><tbody>
+        <tr><td>${d.clientProj === '—' ? '<em style="color:var(--text-muted);">No client project</em>' : d.clientProj}</td><td>${d.client}</td></tr>
+        </tbody></table>
+        <div class="g-section-title" style="text-align:left;margin-top:14px;">Internal</div>
+        <table class="g-tbl" style="text-align:left;"><thead><tr><th style="text-align:left;">Project</th><th style="text-align:left;">Allocation</th></tr></thead><tbody>
+        <tr><td>${d.intProj === '—' ? '<em style="color:var(--text-muted);">No internal project</em>' : d.intProj}</td><td>${d.internal}</td></tr>
+        </tbody></table>`
+      });
+    };
+    document.getElementById('pmo-util-content').innerHTML = pmoUtil();
+    // Billing chart — deferred init + 1M/1Q toggle
+    let bc = null;
+    let pmoBillRange = '1M';
+    const PMO_BILL_DATA = {
+      '1M': {
+        x: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+        plan:[2.0,2.05,2.10,2.15,2.20,2.22,2.25,2.30,2.32,2.35,2.38,2.40],
+        actual:[1.95,2.10,2.05,2.10,2.12,null,null,null,null,null,null,null],
+        cogs:[1.42,1.48,1.46,1.49,1.47,1.50,1.52,1.54,1.55,1.57,1.58,1.60],
+        forecast:[null,null,null,null,2.12,2.20,2.30,2.36,2.40,2.42,2.44,2.46]
+      },
+      '1Q': {
+        x: ['Q1','Q2','Q3','Q4'],
+        plan:[6.15,6.57,6.92,7.13],
+        actual:[6.10,2.10,null,null],
+        cogs:[4.36,4.50,4.66,4.75],
+        forecast:[null,2.20*3, null, null]
+      }
+    };
+    function drawPmoBill() {
+      const el = document.getElementById('billing-chart'); if (!el) return;
+      if (!bc) bc = echarts.init(el);
+      const d = PMO_BILL_DATA[pmoBillRange];
+      bc.setOption({
+        grid: { left: 50, right: 30, top: 44, bottom: 30 },
+        tooltip: { trigger: 'axis' },
+        legend: { top: 6, right: 10, textStyle: { fontSize: 10 } },
+        xAxis: { type: 'category', data: d.x, axisLine: { lineStyle: { color: '#94A3B8' } } },
+        yAxis: { type: 'value', name: '$ M', axisLine: { lineStyle: { color: '#94A3B8' } }, splitLine: { lineStyle: { color: '#E2E8F0' } } },
+        series: [
+          { name: 'Plan', type: 'line', data: d.plan, lineStyle: { color: '#94A3B8', type: 'dashed' }, symbol: 'circle' },
+          { name: 'Actual', type: 'line', data: d.actual, lineStyle: { color: '#FF9933', width: 3 }, areaStyle: { color: 'rgba(255,153,51,0.15)' }, symbol: 'circle' },
+          { name: 'COGS', type: 'line', data: d.cogs, lineStyle: { color: '#DC2626', width: 2 }, symbol: 'circle' },
+          { name: 'Forecast', type: 'line', data: d.forecast, lineStyle: { color: '#00B0F0', width: 2, type: 'dotted' }, symbol: 'circle' }
+        ]
+      }, true);
+    }
+    function initBillingChart() { drawPmoBill(); }
+    window.setPmoBillRange = function(r, btn) {
+      pmoBillRange = r;
+      btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      drawPmoBill();
+    };
+    function showTabExtended(t, el) { showTab(t, el); if (t === 'fin') setTimeout(initBillingChart, 50); }
+    window.addEventListener('resize', () => { if (bc) bc.resize(); });
+    // === CSAT flyout — table + multi-line trend chart for all 23 accounts ===
+    const PMO_CSAT_DATA = [
+      { acct:'MedTech Corp', last:'62 days ago', nudges:3, trend:[3.4,3.6,3.5,3.2,3.0,null] },
+      { acct:'BioGen Labs',  last:'54 days ago', nudges:2, trend:[3.8,3.6,3.5,3.4,3.2,null] },
+      { acct:'OrthoFix', last:'42 days ago', nudges:1, trend:[4.2,4.1,4.0,4.0,3.8,null] },
+      { acct:'OncoSys', last:'48 days ago', nudges:2, trend:[4.0,4.1,4.0,3.9,4.0,null] },
+      { acct:'DermaPlus', last:'38 days ago', nudges:1, trend:[4.5,4.4,4.3,4.4,4.4,null] },
+      { acct:'HealthFirst Inc', last:'18 days ago', nudges:0, trend:[4.6,4.5,4.4,4.5,4.6,4.7] },
+      { acct:'PharmCare', last:'12 days ago', nudges:0, trend:[4.0,4.1,4.2,4.0,4.1,4.0] },
+      { acct:'WellnessOne', last:'25 days ago', nudges:0, trend:[3.6,3.8,3.9,4.0,4.1,4.2] },
+      { acct:'NeuroLab', last:'9 days ago', nudges:0, trend:[4.2,4.3,4.3,4.4,4.5,4.6] },
+      { acct:'CardioTech', last:'14 days ago', nudges:0, trend:[4.4,4.5,4.5,4.5,4.6,4.6] },
+      { acct:'PediaCare', last:'21 days ago', nudges:0, trend:[3.9,4.0,4.0,4.1,4.1,4.2] },
+      { acct:'GeneSeq', last:'7 days ago', nudges:0, trend:[4.5,4.5,4.6,4.6,4.7,4.7] },
+      { acct:'OphthaCare', last:'15 days ago', nudges:0, trend:[4.3,4.3,4.4,4.4,4.5,4.5] },
+      { acct:'RenalPlus', last:'19 days ago', nudges:0, trend:[4.0,4.0,4.1,4.2,4.2,4.3] },
+      { acct:'PulmoCare', last:'11 days ago', nudges:0, trend:[4.5,4.6,4.6,4.7,4.7,4.8] },
+      { acct:'EndoLink', last:'13 days ago', nudges:0, trend:[4.2,4.3,4.4,4.4,4.4,4.5] },
+      { acct:'OrthoCare', last:'8 days ago', nudges:0, trend:[4.4,4.4,4.5,4.5,4.6,4.6] },
+      { acct:'DentalNet', last:'22 days ago', nudges:0, trend:[4.0,4.1,4.1,4.2,4.2,4.3] },
+      { acct:'SkinCareDirect', last:'10 days ago', nudges:0, trend:[4.5,4.6,4.6,4.7,4.7,4.7] },
+      { acct:'VitalSigns', last:'17 days ago', nudges:0, trend:[4.1,4.2,4.2,4.3,4.3,4.3] },
+      { acct:'CarePath', last:'6 days ago', nudges:0, trend:[4.6,4.6,4.7,4.7,4.8,4.8] },
+      { acct:'MediTrack', last:'24 days ago', nudges:0, trend:[3.9,4.0,4.0,4.0,4.1,4.1] },
+      { acct:'ClinicEdge', last:'16 days ago', nudges:0, trend:[4.3,4.4,4.4,4.5,4.5,4.6] }
+    ];
+    const PMO_CSAT_QLABELS = ['Q1 25-26','Q2 25-26','Q3 25-26','Q4 25-26','Q1 26-27','Q2 26-27'];
+    function _csatTag(v) {
+      if (v == null) return '<span class="g-tag red">— overdue</span>';
+      const c = v < 3.5 ? 'red' : (v < 4.2 ? 'amber' : 'green');
+      return `<span class="g-tag ${c}">${v.toFixed(1)}</span>`;
+    }
+    window.openPmoCSAT = function() {
+      console.log('[openPmoCSAT] called · data items:', PMO_CSAT_DATA.length);
+      const Q1 = 4, Q4 = 3;
+      const rows = PMO_CSAT_DATA.map(r => `<tr><td><strong>${r.acct}</strong></td><td>${r.last}</td><td>${r.nudges}</td><td>${_csatTag(r.trend[Q1])}</td><td>${_csatTag(r.trend[Q4])}</td></tr>`).join('');
+      const tbl = `<div class="g-section-title" style="text-align:left;">Account · Last CSAT sent · Nudges · Q1 (recent) · Q4 (prior)</div>
+        <table class="g-tbl" style="text-align:left;"><thead><tr><th style="text-align:left;">Account</th><th style="text-align:left;">Last CSAT sent</th><th style="text-align:left;">Nudges</th><th style="text-align:left;">Q1 26-27</th><th style="text-align:left;">Q4 25-26</th></tr></thead><tbody>${rows}</tbody></table>`;
+      const chart = `<div class="g-section-title" style="text-align:left;margin-top:18px;">CSAT Trend · 23 accounts · last 6 quarters · hover line for account</div><div id="pmoCsatChart" style="height:340px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px;"></div>`;
+      openFlyoutPinned({
+        title: 'CSAT',
+        sub: `${PMO_CSAT_DATA.filter(r => r.trend[5] === null).length} overdue · ${PMO_CSAT_DATA.length} accounts tracked`,
+        pinned: `<div class="fly-insight"><strong>Source:</strong> CSAT survey portal · 1-5 scale · target ≥4.0.</div>`,
+        body: tbl + chart
+      });
+      setTimeout(() => {
+        const el = document.getElementById('pmoCsatChart'); if (!el || !window.echarts) return;
+        const ch = echarts.init(el);
+        const palette = ['#FF9933','#0EA5E9','#16A34A','#DC2626','#9333EA','#F59E0B','#0284C7','#10B981','#EF4444','#8B5CF6','#F97316','#06B6D4','#22C55E','#EC4899','#A855F7','#FBBF24','#14B8A6','#F43F5E','#3B82F6','#84CC16','#D946EF','#EAB308','#06B6D4'];
+        ch.setOption({
+          grid: { left: 38, right: 12, top: 18, bottom: 28 },
+          tooltip: { trigger: 'axis', axisPointer: { type: 'cross' }, textStyle: { fontSize: 10 } },
+          xAxis: { type: 'category', data: PMO_CSAT_QLABELS, axisLabel: { fontSize: 9 } },
+          yAxis: { type: 'value', min: 2.5, max: 5, interval: 0.5, axisLabel: { fontSize: 9 } },
+          series: PMO_CSAT_DATA.map((r, i) => ({ name: r.acct, type: 'line', data: r.trend, lineStyle: { color: palette[i % palette.length], width: 1.4 }, itemStyle: { color: palette[i % palette.length] }, symbol: 'circle', symbolSize: 4, smooth: true, connectNulls: false }))
+        });
+      }, 80);
+    };
+  </script>
+
+
+
+
+<script>
+const PMO_KPI_FLYOUTS = {
+  'P360 Portfolio Avg': { sub:'7.1 across 23 accounts', body:`<div class="g-section-title">Top 8 accounts by P360</div>
+  <table class="g-tbl"><thead><tr><th>Account</th><th>Score</th><th>Trend</th></tr></thead><tbody>
+  <tr><td>WellnessOne</td><td>8.7</td><td><span class="g-tag green">↑</span></td></tr>
+  <tr><td>HealthFirst</td><td>8.4</td><td><span class="g-tag green">↑</span></td></tr>
+  <tr><td>NeuroLab</td><td>7.8</td><td><span class="g-tag green">=</span></td></tr>
+  <tr><td>PharmCare</td><td>7.4</td><td><span class="g-tag amber">=</span></td></tr>
+  <tr><td>MedTech Corp</td><td>6.8</td><td><span class="g-tag amber">↓</span></td></tr>
+  <tr><td>BioGen Labs</td><td>5.4</td><td><span class="g-tag red">↓</span></td></tr>
+  </tbody></table>` },
+  'At-Risk Accounts': { sub:'5 of 23 portfolio · click for accounts', body:`<div class="g-section-title">At-risk accounts · Manager · Value · Reason</div>
+  <table class="g-tbl"><thead><tr><th>Account</th><th>Manager</th><th>Value</th><th>Risk reason</th></tr></thead><tbody>
+  <tr><td>MedTech Corp</td><td>Rajesh K.</td><td>$3.41M</td><td>UAT slipped 2 weeks · scope change</td></tr>
+  <tr><td>HealthFirst Inc</td><td>Anita M.</td><td>$1.25M</td><td>Two senior exits · capacity gap</td></tr>
+  <tr><td>BioGen Labs</td><td>Karthik R.</td><td>$0.98M</td><td>Communication gaps · stakeholder turnover</td></tr>
+  <tr><td>PharmCare</td><td>Vikram S.</td><td>$1.37M</td><td>Quality regressions · QA hire pending</td></tr>
+  <tr><td>WellnessOne</td><td>Sunita R.</td><td>$0.72M</td><td>Velocity below target · backlog grooming</td></tr>
+  </tbody></table>` },
+  'CSAT Overdue Nudges': { sub:'8 overdue · click for accounts',
+  body:`<div class="g-section-title">Account · Manager · Days since last CSAT · Nudges</div>
+  <table class="g-tbl"><thead><tr><th>Account</th><th>Manager</th><th>Last CSAT sent</th><th>Nudges given</th><th>Last score</th></tr></thead><tbody>
+  <tr><td>MedTech Corp</td><td>Rajesh K.</td><td>62 days ago</td><td>3</td><td>—</td></tr>
+  <tr><td>BioGen Labs</td><td>Karthik R.</td><td>54 days ago</td><td>2</td><td>3.2/5</td></tr>
+  <tr><td>OncoSys</td><td>Rajesh K.</td><td>48 days ago</td><td>2</td><td>4.0/5</td></tr>
+  <tr><td>OrthoFix</td><td>Anita M.</td><td>42 days ago</td><td>1</td><td>—</td></tr>
+  <tr><td>DermaPlus</td><td>Anita M.</td><td>38 days ago</td><td>1</td><td>4.4/5</td></tr>
+  </tbody></table>` },
+  'SOW Coverage': { sub:'94% engagements with SOW',
+  body:`<div class="g-section-title" style="color:var(--amber);">SOW Expiry Watchlist · Renewal action needed</div>
+  <table class="g-tbl" style="border:1px solid #FEF3C7;"><thead><tr style="background:#FEF3C7;"><th style="background:#FEF3C7 !important;color:#92400E !important;">Account</th><th style="background:#FEF3C7 !important;color:#92400E !important;">SOW expires</th><th style="background:#FEF3C7 !important;color:#92400E !important;">SOW value</th><th style="background:#FEF3C7 !important;color:#92400E !important;">Monthly billing</th></tr></thead><tbody>
+  <tr style="background:rgba(254,243,199,0.3);"><td>MedTech Corp</td><td>Jun 30, 2026</td><td>$3.84M</td><td>$0.25M</td></tr>
+  <tr style="background:rgba(254,243,199,0.3);"><td>BioGen Labs</td><td>Jul 15, 2026</td><td>$2.16M</td><td>$0.12M</td></tr>
+  <tr style="background:rgba(254,243,199,0.3);"><td>HealthFirst Inc</td><td>Aug 22, 2026</td><td>$1.92M</td><td>$0.22M</td></tr>
+  <tr style="background:rgba(254,243,199,0.3);"><td>NeuroLab</td><td>Sep 10, 2026</td><td>$0.96M</td><td>$0.10M</td></tr>
+  </tbody></table>
+  <div class="g-section-title" style="color:var(--red);margin-top:14px;">Engagements without active SOW · Critical</div>
+  <table class="g-tbl" style="border:1px solid #FEE2E2;"><thead><tr style="background:#FEE2E2;"><th style="background:#FEE2E2 !important;color:#991B1B !important;">Account</th><th style="background:#FEE2E2 !important;color:#991B1B !important;">Status</th><th style="background:#FEE2E2 !important;color:#991B1B !important;">Days without SOW</th><th style="background:#FEE2E2 !important;color:#991B1B !important;">Owner</th></tr></thead><tbody>
+  <tr style="background:rgba(254,226,226,0.3);"><td>OncoSys</td><td>Drafting</td><td>18d</td><td>Rajesh K.</td></tr>
+  <tr style="background:rgba(254,226,226,0.3);"><td>DermaPlus</td><td>Renewing</td><td>12d</td><td>Anita M.</td></tr>
+  </tbody></table>` },
+  'Open Escalation Age': { sub:'7.4 days avg', body:'<p>Distribution: 0-3d (4) · 3-7d (8) · 7-14d (6) · 14d+ (3). Click <i>Critical Escalations</i> tile in Engineering for full list.</p>' },
+  'YTD Billing — Portfolio': { sub:'$11.0M · 96% vs plan',
+  body:`<div class="g-section-title">YTD billing per account</div>
+  <table class="g-tbl"><thead><tr><th>Account</th><th>YTD Plan</th><th>YTD Actual</th><th>%</th></tr></thead><tbody>
+  <tr><td>MedTech Corp</td><td>$3.36M</td><td>$3.41M</td><td><span class="g-tag green">102%</span></td></tr>
+  <tr><td>HealthFirst Inc</td><td>$2.40M</td><td>$2.50M</td><td><span class="g-tag green">104%</span></td></tr>
+  <tr><td>BioGen Labs</td><td>$1.20M</td><td>$0.98M</td><td><span class="g-tag red">82%</span></td></tr>
+  <tr><td>PharmCare</td><td>$1.32M</td><td>$1.37M</td><td><span class="g-tag green">104%</span></td></tr>
+  <tr><td>WellnessOne</td><td>$0.84M</td><td>$0.72M</td><td><span class="g-tag amber">86%</span></td></tr>
+  </tbody></table>` },
+  'M+1 Forecast': { sub:'$2.20M · 95% confidence', body:'<p>By account: MedTech $0.46M · HealthFirst $0.40M · PharmCare $0.36M · BioGen $0.28M.</p>' },
+  'M+2 Forecast': { sub:'$2.30M', body:'<p>Pipeline-dependent on BioGen Phase 2 confirmation.</p>' },
+  'M+3 Forecast': { sub:'$2.40M · 68% confidence', body:'<p>Soft — depends on MedTech expansion close.</p>' },
+  'Billing Data Accuracy': { sub:'Click for invoice errors',
+  body:`<div class="g-section-title">Errors in last month's invoices</div>
+  <table class="g-tbl"><thead><tr><th>Invoice</th><th>Account</th><th>Issue</th><th>Amount</th><th>Status</th></tr></thead><tbody>
+  <tr><td>INV-2026-0142</td><td>MedTech Corp</td><td>PO mismatch</td><td>$0.29M</td><td><span class="g-tag red">Disputed</span></td></tr>
+  <tr><td>INV-2026-0118</td><td>HealthFirst</td><td>Amount mismatch</td><td>$0.12M</td><td><span class="g-tag red">PO mismatch</span></td></tr>
+  <tr><td>INV-2026-0166</td><td>BioGen Labs</td><td>Timing mismatch</td><td>$0.06M</td><td><span class="g-tag amber">Investigating</span></td></tr>
+  </tbody></table>` },
+  'On Bench (Total)': { sub:'28 across portfolio · 12 long-bench',
+  body:`<div class="g-section-title">Top 10 by skill</div>
+  <table class="g-tbl"><thead><tr><th>Skill</th><th>Count</th><th>Avg duration</th></tr></thead><tbody>
+  <tr><td>Senior Java</td><td>6</td><td>22d</td></tr>
+  <tr><td>Data Engineer</td><td>4</td><td>32d</td></tr>
+  <tr><td>QA</td><td>5</td><td>14d</td></tr>
+  <tr><td>UX</td><td>3</td><td>18d</td></tr>
+  </tbody></table>` },
+  'Roll-offs Next 30d': { sub:'14 · 3 critical skills',
+  body:`<div class="g-section-title">Roll-off list</div>
+  <table class="g-tbl"><thead><tr><th>Employee</th><th>Project</th><th>Date</th><th>Skill</th></tr></thead><tbody>
+  <tr><td>K. Rao</td><td>MedTech</td><td>May 18</td><td>Senior Java</td></tr>
+  <tr><td>P. Singh</td><td>HealthFirst</td><td>May 22</td><td>QA Lead</td></tr>
+  <tr><td>R. Mehta</td><td>PharmCare</td><td>Jun 02</td><td>Data Engineer</td></tr>
+  </tbody></table>` },
+  'Roll-offs 60d': { sub:'22', body:'<p>Click roll-off table on the page for full list.</p>' },
+  'Roll-offs 90d': { sub:'18', body:'<p>Click roll-off table on the page for full list.</p>' }
+};
+
+(function() {
+  document.querySelectorAll('.kpi-card').forEach(card => {
+    if (card.classList.contains('static-tile')) return;
+    const lbl = card.querySelector('.kpi-label')?.textContent.trim().replace(/i$/, '').trim();
+    const val = card.querySelector('.kpi-value')?.textContent.trim();
+    const data = PMO_KPI_FLYOUTS[lbl];
+    card.style.cursor = 'pointer';
+    card.onclick = () => {
+      // Special-case routes for rich flyouts
+      if (lbl === 'On Bench (Total)' && typeof openOnBenchSummary === 'function') { openOnBenchSummary(); return; }
+      if (data) openFlyout({title: lbl, sub: val + ' · ' + data.sub, body: data.body});
+      else openFlyout({title: lbl, sub: val, body: '<p>Detail view.</p>'});
+    };
+  });
+  document.querySelectorAll('.pmo-tbl tbody tr').forEach(row => {
+    if (row.onclick) return;
+    row.style.cursor = 'pointer';
+    const acct = row.querySelector('td')?.textContent.trim();
+    row.onclick = () => openFlyout({
+      title: acct, sub: 'Account detail',
+      body: `<div class="g-section-title">Account profile</div>
+      <table class="g-tbl"><tbody>
+      <tr><td><strong>Manager</strong></td><td>${row.cells[1]?.textContent || '—'}</td></tr>
+      <tr><td><strong>P360</strong></td><td>${row.cells[2]?.textContent || '—'}</td></tr>
+      <tr><td><strong>Risk</strong></td><td>${row.cells[3]?.textContent || '—'}</td></tr>
+      </tbody></table>
+      <div class="g-section-title">Recent timeline</div>
+      <p>· Last steering call · Recent escalations · Mining threads</p>`
+    });
+  });
+  // P360 heatmap row coloring — color row labels by composite
+  // Run after the heatmap renders
+  setTimeout(() => {
+    document.querySelectorAll('#p360-heatmap tr').forEach(tr => {
+      const cells = tr.querySelectorAll('.heat-cell');
+      if (!cells.length) return;
+      const vals = Array.from(cells).map(c => parseFloat(c.textContent));
+      const avg = vals.reduce((a,b)=>a+b,0) / vals.length;
+      const firstCell = tr.querySelector('td');
+      if (firstCell) {
+        if (avg < 6) firstCell.style.background = '#FEE2E2';
+        else if (avg < 7.5) firstCell.style.background = '#FEF3C7';
+        else firstCell.style.background = '#D1FAE5';
+        firstCell.style.borderRadius = '4px';
+        firstCell.style.padding = '4px 8px';
+      }
+    });
+  }, 200);
+})();
+</script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    });
+  </script>
+
+<script>
+window.openBenchCell = function(skill, bucket, count) {
+  const namesByRole = {
+    'Java': ['Kavya Sharma','B. Kumar','A. Rao','P. Reddy','L. Krishnan'],
+    'React': ['C. Iyer','D. Naidu','M. Bhatia','N. Pillai','O. Banerjee'],
+    'QA': ['D. Patel','E. Singh','M. Joshi','R. Bhatia','T. Sen'],
+    'DevOps': ['H. Sharma','U. Joshi','V. Khan','W. Naidu','X. Reddy'],
+    'Data Eng': ['F. Nair','S. Krishna','I. Joshi','R. Mehta','T. Patel'],
+    'UX': ['G. Sen','M. Bhatia','U. Joshi','Y. Pillai','Z. Khan'],
+    'Mobile': ['Maya R.','D. Ramesh','I. Joshi','J. Khan','K. Verma']
+  };
+  const names = namesByRole[skill] || ['A. Rao','B. Kumar','C. Iyer'];
+  openFlyoutPinned({title: skill + ' · ' + bucket, sub: count + ' on bench',
+    pinned: `<div class="fly-insight"><strong>People available:</strong> ${count} ${skill} engineer${count>1?'s':''} on bench for ${bucket}. Click + to drill into individuals.</div>`,
+    body: `<table class="g-tbl"><thead><tr><th></th><th>Engineer</th><th>Days on bench</th><th>Last project</th><th>Status</th></tr></thead><tbody>
+    ${names.slice(0, count).map((n, i) => {
+      const days = Math.floor(Math.random()*60)+1;
+      const proj = ['MedTech', 'HealthFirst', 'BioGen', 'PharmCare', 'WellnessOne'][i % 5];
+      const note = days > 30 ? 'Long bench · specialty mismatch' : (days > 14 ? 'Awaiting allocation' : 'Recently rolled off');
+      return `<tr onclick="openBenchPerson('${n}', '${skill}', ${days}, '${proj}')"><td>+</td><td>${n}</td><td>${days}d</td><td>${proj}</td><td>${note}</td></tr>`;
+    }).join('')}
+    </tbody></table>`});
+};
+window.openBenchPerson = function(name, skill, days, lastProj) {
+  openFlyoutPinned({title: name + ' · Bench Detail', sub: skill + ' · ' + days + 'd on bench',
+    pinned: `<div class="fly-insight"><strong>${name}</strong> · ${skill} · last on ${lastProj} · ${days} days bench duration.</div>`,
+    body: `<div class="g-section-title">Profile</div>
+    <table class="g-tbl"><tbody>
+    <tr><td><strong>Skill</strong></td><td>${skill}</td></tr>
+    <tr><td><strong>Last Project</strong></td><td>${lastProj}</td></tr>
+    <tr><td><strong>Days on bench</strong></td><td>${days}d</td></tr>
+    <tr><td><strong>Available from</strong></td><td>Immediate</td></tr>
+    <tr><td><strong>Skills tagged</strong></td><td>${skill}, Cloud, CI/CD, REST APIs</td></tr>
+    <tr><td><strong>Recent training</strong></td><td>${skill === 'Java' ? 'Spring Boot 3.0 (Apr)' : 'AWS Solutions Architect (Mar)'}</td></tr>
+    </tbody></table>
+    <div class="g-section-title">Recommended next allocation</div>
+    <p>Based on skills + availability: ${skill === 'Java' ? 'PharmCare expansion (Phase 2 starting May 18)' : 'OncoSys platform build'}</p>`
+  });
+};
+</script>
+
+<script>/* roSwitch moved to main script block */</script>
+
+
+<script>
+window.addEventListener("DOMContentLoaded",function(){
+  // Robust tab handler — bypasses inline onclick eaten by Edge file:// quirks
+  document.querySelectorAll('.pmo-tab').forEach(function(t){
+    t.addEventListener('click', function(){
+      var pane = t.getAttribute('data-pane');
+      console.log('[pmo.html v2.4] tab click:', pane);
+      document.querySelectorAll('.pmo-tab').forEach(function(x){ x.classList.remove('active'); });
+      document.querySelectorAll('.pmo-pane').forEach(function(x){ x.classList.remove('active'); });
+      t.classList.add('active');
+      var p = document.getElementById('pane-'+pane);
+      if (p) { p.classList.add('active'); console.log('[pmo.html v2.4] activated pane-'+pane); }
+      else console.error('[pmo.html v2.4] pane-'+pane+' NOT FOUND');
+      if (pane === 'fin' && typeof initBillingChart === 'function') setTimeout(initBillingChart, 50);
+    });
+  });
+  console.log("[pmo.html v2.3.r2] openPmoCSAT defined:",typeof window.openPmoCSAT,"· PMO_CSAT_DATA len:",(typeof PMO_CSAT_DATA!=="undefined"?PMO_CSAT_DATA.length:"undefined"));
+  var csatTile = document.getElementById("pmoCsatTile");
+  console.log("[pmo.html v2.3.r2] csatTile found:", !!csatTile);
+  if (csatTile) {
+    csatTile.addEventListener("click", function(ev){
+      console.log("[pmo.html v2.3.r2] CSAT click fired via addEventListener");
+      if (typeof window.openPmoCSAT === "function") window.openPmoCSAT();
+      else console.error("openPmoCSAT not a function!");
+    });
+  }
+});
+</script>
+
+<div id="pmo-portfolio-overlay" class="flyout-overlay" onclick="closePmoPortfolioFlyout()"></div>
+<div id="pmo-portfolio-flyout" class="flyout" style="width:500px;right:-600px;">
+  <div class="flyout-header">
+    <span id="ppf-title">Account Detail</span>
+    <button class="flyout-close" onclick="closePmoPortfolioFlyout()">&#10005;</button>
+  </div>
+  <div class="flyout-body" id="ppf-body"></div>
+</div>
+<div id="pmo-ytd-overlay" class="flyout-overlay" onclick="closePmoYtdFlyout()"></div>
+<div id="pmo-ytd-flyout" class="flyout" style="width:480px;right:-600px;">
+  <div class="flyout-header">
+    <span>YTD Billing — Account Breakdown</span>
+    <button class="flyout-close" onclick="closePmoYtdFlyout()">&#10005;</button>
+  </div>
+  <div class="flyout-body" id="ppf-ytd-body"></div>
+</div>
+
+<script>
+(function(){
+var AV_COLORS=['#1e3a5f','#0369a1','#7c3aed','#047857','#b45309','#be123c','#0f766e','#6d28d9'];
+function avColor(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return AV_COLORS[Math.abs(h)%AV_COLORS.length];}
+
+function _epicCard(e){
+  var sm={planned:{c:'var(--green)',bg:'#dcfce7',lbl:'Planned'},'in-progress':{c:'#92400e',bg:'#fef3c7',lbl:'In Progress'},'at-risk':{c:'var(--red)',bg:'#fee2e2',lbl:'At Risk'},blocked:{c:'#581c87',bg:'#f3e8ff',lbl:'Blocked'}};
+  var ss=sm[e.st]||sm.planned;
+  var bc=e.st==='planned'?'var(--green)':(e.st==='in-progress'?'var(--amber)':(e.st==='blocked'?'#7c3aed':'var(--red)'));
+  return '<div style="background:var(--card);border:1px solid var(--border);border-left:3px solid '+bc+';border-radius:8px;padding:10px 12px;margin-bottom:8px;">'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">'
+    +'<div style="flex:1;min-width:0;"><div style="font-size:10px;font-family:monospace;color:var(--text-muted);">'+e.id+' · '+e.track+'</div>'
+    +'<div style="font-size:12px;font-weight:700;color:var(--navy);margin-top:2px;">'+e.title+'</div>'
+    +'<div style="font-size:10px;color:var(--text-muted);margin-top:3px;">Owner: '+e.owner+' · '+e.pts+' pts</div></div>'
+    +'<span style="flex-shrink:0;background:'+ss.bg+';color:'+ss.c+';padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;">'+ss.lbl+'</span>'
+    +'</div></div>';
+}
+
+var PMO_PORTFOLIO=[
+  {acct:"MedTech Corp",   dm:"Priya S.", plan:2.40,actual:2.30,rag:"G",rev3m:[2.28,2.46,2.40],
+   escItems:[],
+   aiItems:[{title:"Update project status report",owner:"Arjun K.",due:"Jun 6",status:"Open"}],
+   team:[{n:"Arjun K.",r:"PM",av:"AK"},{n:"Nadia R.",r:"BA",av:"NR"},{n:"Rahul T.",r:"Dev Lead",av:"RT"},{n:"Sona M.",r:"QA",av:"SM"}],
+   releases:[{v:"v3.1",d:"Jun 10",s:"On Track",epics:[{id:"EPIC-1041",title:"Patient onboarding revamp",track:"Backend",owner:"Rahul T.",pts:20,st:"in-progress"},{id:"EPIC-1038",title:"Reporting dashboard v2",track:"Full-stack",owner:"Nadia R.",pts:15,st:"planned"}]},
+             {v:"v3.2",d:"Aug 5",s:"Planned",epics:[{id:"EPIC-1055",title:"HL7 integration",track:"Integration",owner:"Arjun K.",pts:18,st:"planned"}]}]},
+  {acct:"HealthFirst Inc",dm:"Ravi M.",  plan:1.90,actual:2.00,rag:"G",rev3m:[1.74,1.86,2.00],
+   escItems:[{title:"SLA breach on ticket resolution",cat:"Quality of Deliverables",owner:"Deepa L.",days:8,sev:"High"}],
+   aiItems:[{title:"SLA remediation plan",owner:"Deepa L.",due:"Jun 5",status:"Open"},{title:"Weekly SLA dashboard",owner:"Kiran B.",due:"Jun 8",status:"In Progress"}],
+   team:[{n:"Deepa L.",r:"PM",av:"DL"},{n:"Kiran B.",r:"Dev Lead",av:"KB"},{n:"Tanya S.",r:"QA",av:"TS"}],
+   releases:[{v:"v2.4",d:"May 28",s:"At Risk",epics:[{id:"EPIC-2031",title:"Claims auto-route",track:"AI/ML",owner:"Kiran B.",pts:25,st:"at-risk"},{id:"EPIC-2028",title:"Provider portal redesign",track:"Frontend",owner:"Tanya S.",pts:14,st:"in-progress"}]},
+             {v:"v2.5",d:"Jul 15",s:"Planned",epics:[{id:"EPIC-2044",title:"Mobile push notifications",track:"Mobile",owner:"Deepa L.",pts:10,st:"planned"}]}]},
+  {acct:"BioGen Labs",    dm:"Anita K.", plan:1.60,actual:1.30,rag:"A",rev3m:[1.80,1.62,1.30],
+   escItems:[{title:"Deliverable rejected by client",cat:"Quality of Deliverables",owner:"Anita K.",days:3,sev:"Critical"},{title:"Team communication gaps",cat:"Communication",owner:"Mohit P.",days:5,sev:"Medium"}],
+   aiItems:[{title:"Root cause analysis",owner:"Leela V.",due:"Jun 2",status:"Open"},{title:"Revised delivery timeline",owner:"Mohit P.",due:"Jun 4",status:"Open"},{title:"Client meeting minutes",owner:"Suresh J.",due:"Jun 3",status:"In Progress"}],
+   team:[{n:"Mohit P.",r:"PM",av:"MP"},{n:"Leela V.",r:"BA",av:"LV"},{n:"Suresh J.",r:"Dev Lead",av:"SJ"}],
+   releases:[{v:"v1.9",d:"Jun 20",s:"Delayed",epics:[{id:"EPIC-3021",title:"Compliance pack 26.2",track:"Compliance",owner:"Suresh J.",pts:22,st:"blocked"},{id:"EPIC-3018",title:"Audit log enhancement",track:"Backend",owner:"Leela V.",pts:14,st:"at-risk"}]}]},
+  {acct:"PharmCare",      dm:"Sanjay B.",plan:1.70,actual:1.80,rag:"G",rev3m:[1.62,1.68,1.80],
+   escItems:[],aiItems:[],
+   team:[{n:"Rita C.",r:"PM",av:"RC"},{n:"Anil D.",r:"Dev Lead",av:"AD"},{n:"Pooja N.",r:"QA",av:"PN"}],
+   releases:[{v:"v4.0",d:"Jul 1",s:"On Track",epics:[{id:"EPIC-4031",title:"SSO migration",track:"Platform",owner:"Anil D.",pts:16,st:"in-progress"},{id:"EPIC-4027",title:"Performance hotpath",track:"Backend",owner:"Pooja N.",pts:11,st:"planned"}]}]},
+  {acct:"WellnessOne",    dm:"Meena T.", plan:1.10,actual:1.00,rag:"R",rev3m:[1.32,1.20,1.00],
+   escItems:[{title:"Invoice unpaid 45 days",cat:"Invoices/Payments",owner:"Meena T.",days:45,sev:"Critical"},{title:"Resource non-compliance",cat:"Discipline",owner:"Vivek R.",days:12,sev:"High"},{title:"Budget exceeded by 18%",cat:"Budget",owner:"Sneha K.",days:8,sev:"High"}],
+   aiItems:[{title:"Escalation to finance",owner:"Meena T.",due:"Jun 1",status:"Open"},{title:"HR review for resource",owner:"Vivek R.",due:"Jun 3",status:"In Progress"},{title:"Revised budget forecast",owner:"Sneha K.",due:"Jun 5",status:"Open"},{title:"Client call — exec level",owner:"Rohan M.",due:"Jun 2",status:"Open"}],
+   team:[{n:"Vivek R.",r:"PM",av:"VR"},{n:"Sneha K.",r:"BA",av:"SK"},{n:"Rohan M.",r:"Dev Lead",av:"RM"}],
+   releases:[{v:"v5.1",d:"Jun 30",s:"At Risk",epics:[{id:"EPIC-5041",title:"EHR adapter",track:"Integration",owner:"Rohan M.",pts:24,st:"blocked"},{id:"EPIC-5038",title:"Billing reconciliation",track:"Backend",owner:"Sneha K.",pts:18,st:"at-risk"}]}]},
+  {acct:"NeuroLab",       dm:"Kiran R.", plan:0.90,actual:0.85,rag:"G",rev3m:[0.84,0.90,0.85],
+   escItems:[],
+   aiItems:[{title:"Prepare go-live checklist",owner:"Amit S.",due:"Jun 20",status:"Open"}],
+   team:[{n:"Amit S.",r:"PM",av:"AS"},{n:"Priya L.",r:"Dev Lead",av:"PL"}],
+   releases:[{v:"v2.0",d:"Aug 12",s:"Planned",epics:[{id:"EPIC-6011",title:"Provider portal redesign",track:"Frontend",owner:"Priya L.",pts:19,st:"planned"},{id:"EPIC-6008",title:"Mobile push notifications",track:"Mobile",owner:"Amit S.",pts:9,st:"planned"}]}]},
+  {acct:"CardioTech",     dm:"Priya S.", plan:1.30,actual:1.35,rag:"A",rev3m:[1.26,1.38,1.35],
+   escItems:[{title:"Milestone delay — Sprint 21",cat:"SDLC Discipline",owner:"Neeraj T.",days:14,sev:"High"}],
+   aiItems:[{title:"Revised sprint plan",owner:"Neeraj T.",due:"Jun 8",status:"Open"},{title:"Risk register update",owner:"Divya B.",due:"Jun 10",status:"In Progress"}],
+   team:[{n:"Neeraj T.",r:"PM",av:"NT"},{n:"Divya B.",r:"BA",av:"DB"},{n:"Sunil K.",r:"Dev Lead",av:"SK"},{n:"Ananya M.",r:"QA",av:"AM"}],
+   releases:[{v:"v3.5",d:"Jun 18",s:"On Track",epics:[{id:"EPIC-7033",title:"Patient onboarding revamp",track:"Backend",owner:"Sunil K.",pts:20,st:"in-progress"},{id:"EPIC-7029",title:"SSO migration",track:"Platform",owner:"Divya B.",pts:13,st:"planned"}]},
+             {v:"v3.6",d:"Sep 1",s:"Planned",epics:[{id:"EPIC-7045",title:"Claims auto-route",track:"AI/ML",owner:"Neeraj T.",pts:26,st:"planned"}]}]},
+  {acct:"PediaCare",      dm:"Ravi M.",  plan:0.60,actual:0.40,rag:"G",rev3m:[0.54,0.60,0.40],
+   escItems:[],aiItems:[],
+   team:[{n:"Kavya R.",r:"PM",av:"KR"},{n:"Manoj P.",r:"Dev Lead",av:"MP"}],
+   releases:[{v:"v1.2",d:"Jul 22",s:"On Track",epics:[{id:"EPIC-8009",title:"Reporting dashboard v2",track:"Full-stack",owner:"Manoj P.",pts:17,st:"in-progress"}]}]}
+];
+
+function _renderFlyoutBody(d){
+  var revId='ppf-rev-'+Date.now();
+  var sec1='<div class="flyout-section"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px;">Revenue — Last 3 Months (USD)</div>'
+    +'<div id="'+revId+'" style="height:130px;width:100%;"></div></div>';
+
+  var sevC={'Critical':'#991b1b','High':'#92400e','Medium':'#1e40af'};
+  var sevBg={'Critical':'#fee2e2','High':'#fef3c7','Medium':'#dbeafe'};
+  var stC={'Open':'#92400e','In Progress':'#1e40af','Blocked':'#581c87','Resolved':'#166534'};
+  var stBg={'Open':'#fef3c7','In Progress':'#dbeafe','Blocked':'#f3e8ff','Resolved':'#dcfce7'};
+
+  var escRows=d.escItems.map(function(e){
+    return '<div style="border:1px solid var(--border);border-left:3px solid var(--red);border-radius:7px;padding:9px 11px;margin-bottom:7px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">'
+      +'<div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--navy);">'+e.title+'</div>'
+      +'<div style="font-size:10px;color:var(--text-muted);margin-top:3px;">'+e.cat+' · Owner: '+e.owner+' · '+e.days+'d open</div></div>'
+      +'<span style="flex-shrink:0;background:'+(sevBg[e.sev]||'#fee2e2')+';color:'+(sevC[e.sev]||'#991b1b')+';padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;">'+e.sev+'</span>'
+      +'</div></div>';
+  }).join('');
+
+  var aiRows=d.aiItems.map(function(a){
+    return '<div style="border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:7px;padding:9px 11px;margin-bottom:7px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">'
+      +'<div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--navy);">'+a.title+'</div>'
+      +'<div style="font-size:10px;color:var(--text-muted);margin-top:3px;">Owner: '+a.owner+' · Due: '+a.due+'</div></div>'
+      +'<span style="flex-shrink:0;background:'+(stBg[a.status]||'#fef3c7')+';color:'+(stC[a.status]||'#92400e')+';padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;">'+a.status+'</span>'
+      +'</div></div>';
+  }).join('');
+
+  var noItems=d.escItems.length===0&&d.aiItems.length===0;
+  var sec2='<div class="flyout-section"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px;">Escalations &amp; Action Items</div>'
+    +(d.escItems.length>0?'<div style="font-size:10px;font-weight:600;color:var(--red);margin-bottom:5px;">ESCALATIONS</div>'+escRows:'')
+    +(d.aiItems.length>0?'<div style="font-size:10px;font-weight:600;color:var(--amber);margin-bottom:5px;">ACTION ITEMS</div>'+aiRows:'')
+    +(noItems?'<div style="background:#dcfce7;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;"><span style="font-size:18px;">&#10003;</span><div><div style="font-size:12px;font-weight:700;color:#166534;">All Clear</div><div style="font-size:11px;color:#166534;opacity:0.8;">No open escalations or action items</div></div></div>':'')
+    +'</div>';
+
+  // Team: 2 per row grid
+  var teamCards=d.team.map(function(m){
+    var bg=avColor(m.av);
+    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);">'
+      +'<div style="width:32px;height:32px;border-radius:50%;background:'+bg+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">'+m.av+'</div>'
+      +'<div><div style="font-size:11px;font-weight:700;color:var(--navy);">'+m.n+'</div>'
+      +'<div style="font-size:10px;color:var(--text-muted);">'+m.r+'</div></div>'
+      +'</div>';
+  }).join('');
+  var sec3='<div class="flyout-section"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px;">Team</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">'+teamCards+'</div></div>';
+
+  var sColorMap={'On Track':'#166534','At Risk':'#92400e','Planned':'#1e40af','Delayed':'#991b1b'};
+  var sBgMap={'On Track':'#dcfce7','At Risk':'#fef3c7','Planned':'#dbeafe','Delayed':'#fee2e2'};
+  var relCards=d.releases.map(function(r){
+    return '<div style="margin-bottom:12px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:0.4px;padding-bottom:6px;border-bottom:2px solid var(--border);margin-bottom:8px;">'
+      +'<span>'+r.v+' · '+r.epics.length+' epic'+(r.epics.length>1?'s':'')+'</span>'
+      +'<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:10px;color:var(--text-muted);font-weight:500;text-transform:none;letter-spacing:0;">'+r.d+'</span>'
+      +'<span style="background:'+(sBgMap[r.s]||'#dcfce7')+';color:'+(sColorMap[r.s]||'#166534')+';padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;text-transform:none;letter-spacing:0;">'+r.s+'</span></div></div>'
+      +r.epics.map(_epicCard).join('')+'</div>';
+  }).join('');
+  var sec4='<div class="flyout-section"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px;">Upcoming Releases</div>'+relCards+'</div>';
+
+  // Render chart after DOM settled
+  setTimeout(function(){
+    var el=document.getElementById(revId);if(!el)return;
+    var ec=echarts.init(el);
+    ec.setOption({
+      grid:{top:8,bottom:26,left:42,right:12},
+      tooltip:{trigger:'axis',valueFormatter:function(v){return '$'+v.toFixed(2)+'M';}},
+      xAxis:{type:'category',data:['Feb','Mar','Apr'],axisLabel:{fontSize:11}},
+      yAxis:{type:'value',axisLabel:{formatter:'${value}M',fontSize:10}},
+      series:[{type:'bar',data:d.rev3m,barWidth:'45%',
+        itemStyle:{color:function(p){return p.dataIndex===2?'#1e3a5f':'#93b4d4';}},
+        label:{show:true,position:'top',formatter:function(p){return '$'+p.value.toFixed(2)+'M';},fontSize:11}}]
+    });
+  },80);
+
+  return sec1+sec2+sec3+sec4;
+}
+
+window.openPmoPortfolioFlyout=function(idx){
+  var d=PMO_PORTFOLIO[idx];if(!d)return;
+  document.getElementById('ppf-title').textContent=d.acct+' — Portfolio Detail';
+  document.getElementById('ppf-body').innerHTML=_renderFlyoutBody(d);
+  document.getElementById('pmo-portfolio-overlay').classList.add('open');
+  var el=document.getElementById('pmo-portfolio-flyout');
+  el.style.right='0'; el.classList.add('open');
+};
+
+window.closePmoPortfolioFlyout=function(){
+  document.getElementById('pmo-portfolio-overlay').classList.remove('open');
+  var el=document.getElementById('pmo-portfolio-flyout');
+  el.classList.remove('open'); el.style.right='-600px';
+};
+
+window.openPmoYtdBillingFlyout=function(){
+  var tp=0,ta=0;
+  PMO_PORTFOLIO.forEach(function(a){tp+=a.plan;ta+=a.actual;});
+  var rows=PMO_PORTFOLIO.map(function(a){
+    var pct=Math.round(a.actual/a.plan*100);
+    var cls=pct>=100?'color:#166534;font-weight:600;':(pct>=90?'color:#92400e;font-weight:600;':'color:#991b1b;font-weight:600;');
+    return '<tr><td style="padding:7px 10px;font-size:13px;border-bottom:1px solid var(--border);">'+a.acct+'</td>'
+      +'<td style="padding:7px 10px;font-size:13px;text-align:right;border-bottom:1px solid var(--border);">$'+a.plan.toFixed(2)+'M</td>'
+      +'<td style="padding:7px 10px;font-size:13px;text-align:right;border-bottom:1px solid var(--border);">$'+a.actual.toFixed(2)+'M</td>'
+      +'<td style="padding:7px 10px;font-size:13px;text-align:right;border-bottom:1px solid var(--border);'+cls+'">'+pct+'%</td></tr>';
+  }).join('');
+  var tpct=Math.round(ta/tp*100);
+  var tcls=tpct>=100?'color:#166534;':(tpct>=90?'color:#92400e;':'color:#991b1b;');
+  document.getElementById('ppf-ytd-body').innerHTML=
+    '<div class="flyout-section"><table style="width:100%;border-collapse:collapse;">'
+    +'<thead><tr style="background:var(--bg);">'
+    +'<th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;">Account</th>'
+    +'<th style="padding:8px 10px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;">Plan</th>'
+    +'<th style="padding:8px 10px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;">Actual</th>'
+    +'<th style="padding:8px 10px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;">Attainment</th>'
+    +'</tr></thead><tbody>'+rows+'</tbody>'
+    +'<tfoot><tr style="background:var(--bg);">'
+    +'<td style="padding:9px 10px;font-size:13px;font-weight:700;">Total</td>'
+    +'<td style="padding:9px 10px;font-size:13px;font-weight:700;text-align:right;">$'+tp.toFixed(2)+'M</td>'
+    +'<td style="padding:9px 10px;font-size:13px;font-weight:700;text-align:right;">$'+ta.toFixed(2)+'M</td>'
+    +'<td style="padding:9px 10px;font-size:13px;font-weight:700;text-align:right;'+tcls+'">'+tpct+'%</td>'
+    +'</tr></tfoot></table></div>';
+  document.getElementById('pmo-ytd-overlay').classList.add('open');
+  var el=document.getElementById('pmo-ytd-flyout');
+  el.style.right='0'; el.classList.add('open');
+};
+
+window.closePmoYtdFlyout=function(){
+  document.getElementById('pmo-ytd-overlay').classList.remove('open');
+  var el=document.getElementById('pmo-ytd-flyout');
+  el.classList.remove('open'); el.style.right='-600px';
+};
+})();
+</script>
+</body>
+</html>

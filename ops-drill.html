@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ops Drill — Nalashaa Business Monitoring</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .compact-table { font-size: 11px; }
+    .compact-table td, .compact-table th { padding: 6px 8px; }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <div class="logo">NALASHAA</div>
+    <div class="top-nav-right">
+      <div class="alert-bell">
+        🔔
+        <div class="badge">3</div>
+      </div>
+      <div class="avatar">AM</div>
+    </div>
+  </div>
+
+    <div class="sidebar">
+    <div class="section-label">OVERVIEW</div>
+    <a href="org-pulse.html"><span class="icon"><i class="bi bi-house-heart-fill"></i></span> Org Pulse</a>
+    <a href="alerts.html"><span class="icon"><i class="bi bi-bell-fill"></i></span> Alerts</a>
+    <a href="action-items.html"><span class="icon"><i class="bi bi-list-check"></i></span> Action Items</a>
+
+    <div class="section-label">DASHBOARDS</div>
+    <a href="engineering.html" class="active"><span class="icon"><i class="bi bi-building"></i></span> Engineering</a>
+    <a href="account-management.html"><span class="icon"><i class="bi bi-briefcase-fill"></i></span> Account Mgmt</a>
+    <a href="sales.html"><span class="icon"><i class="bi bi-bar-chart-fill"></i></span> Sales</a>
+    <a href="hr.html"><span class="icon"><i class="bi bi-people-fill"></i></span> HR</a>
+    <a href="ta.html"><span class="icon"><i class="bi bi-person-plus-fill"></i></span> Talent Acquisition</a>
+    <a href="pmo.html"><span class="icon"><i class="bi bi-clipboard-data-fill"></i></span> PMO</a>
+    <a href="finance.html"><span class="icon"><i class="bi bi-cash-coin"></i></span> Finance</a>
+    <a href="solutions.html"><span class="icon"><i class="bi bi-diagram-3-fill"></i></span> Solutions</a>
+
+    <div class="section-label">CONFIGURATION</div>
+    <a href="kpi-thresholds.html"><span class="icon"><i class="bi bi-sliders"></i></span> KPI Thresholds</a>
+    <a href="settings.html"><span class="icon"><i class="bi bi-gear-fill"></i></span> Settings</a>
+    <a href="admin.html"><span class="icon"><i class="bi bi-shield-lock-fill"></i></span> Admin Console</a>
+
+    <div class="section-label">SUPPORT</div>
+    <a href="help-center.html"><span class="icon"><i class="bi bi-question-circle-fill"></i></span> Help Center</a>
+
+    <!-- Nalashaa branding -->
+    <div class="sidebar-brand">
+      <img src="nalashaa-logo.png" alt="Nalashaa" class="sidebar-brand-logo img-logo">
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="breadcrumb">
+      <a href="org-pulse.html">Org Pulse</a>
+      <span class="sep">/</span>
+      <a href="ops.html">System Health</a>
+      <span class="sep">/</span>
+      <span>Execution Log (27 Mar 2026)</span>
+    </div>
+    <div class="page-title">Daily Execution Log</div>
+    <div class="page-subtitle">Timestamp | Step | Duration | Status | Message</div>
+
+    <!-- Execution Log Table -->
+    <div class="card">
+      <div style="overflow-x: auto;">
+        <table class="compact-table">
+          <thead>
+            <tr>
+              <th>Timestamp (IST)</th>
+              <th>Step</th>
+              <th>Duration</th>
+              <th>Status</th>
+              <th>Message / Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>06:00:12</td>
+              <td>Data Sync Initiated</td>
+              <td>—</td>
+              <td><span class="badge badge-navy">Starting</span></td>
+              <td>Daily ETL job started</td>
+            </tr>
+            <tr>
+              <td>06:05:34</td>
+              <td>CRM Data Pull</td>
+              <td>5m 22s</td>
+              <td><span class="badge badge-green">✓ Success</span></td>
+              <td>2,847 records fetched from Dynamics CRM</td>
+            </tr>
+            <tr>
+              <td>06:10:48</td>
+              <td>HRIS Data Pull</td>
+              <td>5m 14s</td>
+              <td><span class="badge badge-green">✓ Success</span></td>
+              <td>320 employee records synced from SAP SuccessFactors</td>
+            </tr>
+            <tr>
+              <td>06:15:22</td>
+              <td>PMS Data Pull</td>
+              <td>4m 34s</td>
+              <td><span class="badge badge-green">✓ Success</span></td>
+              <td>1,206 project records fetched from Planview</td>
+            </tr>
+            <tr>
+              <td>06:20:06</td>
+              <td>Finance Data Pull</td>
+              <td>—</td>
+              <td><span class="badge badge-red">✗ Failed</span></td>
+              <td>Connection timeout to SAP Finance (retry scheduled 07:15)</td>
+            </tr>
+            <tr>
+              <td>06:25:18</td>
+              <td>Data Transformation</td>
+              <td>4m 52s</td>
+              <td><span class="badge badge-green">✓ Success</span></td>
+              <td>Data normalized and deduplicated</td>
+            </tr>
+            <tr>
+              <td>06:30:10</td>
+              <td>Data Validation</td>
+              <td>4m 38s</td>
+              <td><span class="badge badge-green">✓ Success</span></td>
+              <td>All source records validated against schema</td>
+            </tr>
+            <tr>
+              <td>06:35:05</td>
+              <td>Dashboard Aggregation</td>
+              <td>3m 21s</td>
+              <td><span class="badge badge-green">✓ Success</span></td>
+              <td>Computed 47 KPIs across 5 modules</td>
+            </tr>
+            <tr>
+              <td>06:40:42</td>
+              <td>Alerts Evaluation</td>
+              <td>2m 15s</td>
+              <td><span class="badge badge-amber">⚠ Warning</span></td>
+              <td>3 KPIs breaching thresholds detected; notifications queued</td>
+            </tr>
+            <tr>
+              <td>06:45:18</td>
+              <td>Report Generation</td>
+              <td>2m 38s</td>
+              <td><span class="badge badge-green">✓ Success</span></td>
+              <td>Executive brief, dashboards, alerts report generated</td>
+            </tr>
+            <tr style="background: #FEF3C7;">
+              <td>07:15:00</td>
+              <td>Finance Data Retry</td>
+              <td>—</td>
+              <td><span class="badge badge-navy">Pending</span></td>
+              <td>Scheduled retry in progress</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Summary Stats -->
+      <div style="margin-top: 14px; padding: 12px; background: #F0F9FF; border-left: 3px solid var(--blue); border-radius: 4px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; font-size: 11px;">
+          <div>
+            <div style="color: var(--text-muted); margin-bottom: 2px;">Total Duration</div>
+            <div style="font-weight: 600; font-size: 13px;">45m 33s</div>
+          </div>
+          <div>
+            <div style="color: var(--text-muted); margin-bottom: 2px;">Success Rate</div>
+            <div style="font-weight: 600; font-size: 13px;">89% (8/9)</div>
+          </div>
+          <div>
+            <div style="color: var(--text-muted); margin-bottom: 2px;">Records Processed</div>
+            <div style="font-weight: 600; font-size: 13px;">4,373</div>
+          </div>
+          <div>
+            <div style="color: var(--text-muted); margin-bottom: 2px;">Alerts Triggered</div>
+            <div style="font-weight: 600; font-size: 13px; color: var(--red);">3</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="data-freshness" style="margin-top: 14px;">
+        <div class="dot"></div>
+        <span>Data as of 27 Mar 2026, 07:45 IST • Scheduler</span>
+      </div>
+    </div>
+
+    <!-- Error Details -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Error Log & Resolution</div>
+      </div>
+      <div style="margin: 12px 0; padding: 12px; background: #FEE2E2; border-left: 3px solid var(--red); border-radius: 4px;">
+        <div style="font-weight: 600; color: var(--red); margin-bottom: 4px;">Finance Data Pull — Failed at 06:20:06</div>
+        <div style="font-size: 11px; color: var(--text); margin-bottom: 8px;">
+          <strong>Error:</strong> Connection timeout to SAP Finance ERP (max retry attempts exceeded)<br/>
+          <strong>Root Cause:</strong> Network latency spike between data warehouse and Finance system<br/>
+          <strong>Action:</strong> Automated retry scheduled for 07:15 IST; IT Ops notified for fallback
+        </div>
+        <div style="font-size: 10px; color: var(--text-muted);">Retry attempt 1/3 scheduled | Next: 07:15 IST</div>
+      </div>
+      <div class="data-freshness">
+        <div class="dot"></div>
+        <span>Data as of 27 Mar 2026, 07:45 IST • Scheduler</span>
+      </div>
+    </div>
+
+    <!-- Back Button -->
+    <div style="margin-top: 14px;">
+      <a href="ops.html" class="btn btn-secondary">← Back to System Health</a>
+    </div>
+  </div>
+  <!-- GLOBAL FOOTER -->
+  <div class="global-footer">Nalashaa &copy; 2026 &nbsp;&middot;&nbsp; All rights reserved</div>
+
+  <script src="shared.js"></script>
+</body>
+</html>
